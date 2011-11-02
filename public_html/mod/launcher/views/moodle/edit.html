@@ -1,0 +1,12 @@
+<script language="javascript" src="lib.js"></script>
+<form name="user" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create";?>" onsubmit="return validate_all(this)">
+<table border-collapse="collapse">
+    <?php
+    $arr_fields = array('name','shortname');
+    foreach($arr_fields as $field) {
+        moodle::print_input_field($field);
+    }
+?>
+
+</table>
+</form>
