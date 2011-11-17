@@ -1,12 +1,26 @@
 <script language="javascript" src="lib.js"></script>
-<form name="user" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create";?>" onsubmit="return validate_all(this)">
+<form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create";?>"
+    onsubmit="return show_average_loadtime()">
+Please enter the information for the new moodle environment.<p>
 <table border-collapse="collapse">
     <?php
     $arr_fields = array('name','shortname');
     foreach($arr_fields as $field) {
-        moodle::print_input_field($field);
+        $this->print_input_field($field, $moodle);
     }
-?>
 
+    $this->print_textarea_field('description', $moodle);
+    ?>
+    <tr>
+        <td><input type="submit" id="submit" name="submit" value="<?= get_string('submit')?>"/></td>
+    </tr>
 </table>
 </form>
+
+<div id="show_load" style="visibility: hidden">
+    The data is being processed. Please be patient.<br />
+    Averagely this process will take about 
+    <?php
+    echo ($moodle->get_average_loadtime() > 60) ? ($moodle->get_average_loadtime() / 60).' minutes.' : $moodle->get_average_loadtime().' seconds.';
+    ?>
+</div>
