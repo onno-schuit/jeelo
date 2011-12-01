@@ -1,1 +1,43 @@
+<script language="javascript" src="lib.js"></script>
+<form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=show";?>">
+<p></p>
+<?=get_string('show_passwords_below', 'launcher');?>
+<table border-collapse="collapse">
 
+    <tr><td><b>Database</b></td></tr>
+
+    <tr>
+        <td>Username</td>
+        <td><?=$moodle->db->name?></td>
+    </tr>
+    <tr>
+        <td>Password</td>
+        <td><?=key($moodle->db->password)?></td>
+    </tr>
+    <tr>
+        <td>Database name</td>
+        <td><?=$moodle->db->name?></td>
+    </tr>
+    
+    <tr><td><b>Admin</b></td></tr>
+
+    <tr>
+        <td>Username</td>
+        <td><?=$moodle->user->username?></td>
+    </tr>
+    <tr>
+        <td>Password</td>
+        <td><?=key($moodle->user->password)?></td>
+    </tr>
+
+    <tr><td><b>Website</b></td></tr>
+
+    <tr>
+        <td>URL</td>
+        <td><?=$moodle->cfg->wwwroot?></td>
+    </tr>
+    <tr>
+        <td><input type="submit" name="send" value="send"/></td>
+    </tr>
+</table>
+</form>

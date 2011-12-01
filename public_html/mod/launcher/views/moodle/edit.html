@@ -1,16 +1,37 @@
 <script language="javascript" src="lib.js"></script>
 <form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create";?>"
-    onsubmit="return show_average_loadtime()">
-Please enter the information for the new moodle environment.<p>
+    onsubmit="return show_average_loadtime()" enctype="multipart/form-data">
+<?=get_string('launcher_description', 'launcher');?>
 <table border-collapse="collapse">
+    <tr>
+        <td colspan='2'><b><?=get_string('settings_site', 'launcher');?></b></td>
+    </tr>
     <?php
-    $arr_fields = array('name','shortname');
+    $arr_fields = array('site_name','site_shortname'); // First set of variables
     foreach($arr_fields as $field) {
         $this->print_input_field($field, $moodle);
     }
 
-    $this->print_textarea_field('description', $moodle);
+    $this->print_textarea_field('site_description', $moodle);
     ?>
+    
+
+    <tr><td colspan='2'><hr /></td></tr>
+    <tr>
+        <td colspan='2'><b><?=get_string('settings_admin', 'launcher');?></b></td>
+    </tr>
+    <?php
+    $arr_fields = array('user_email'); // Second set of variables
+    foreach($arr_fields as $field) {
+        $this->print_input_field($field, $moodle);
+    }
+    ?>
+    </tr>
+    <tr>
+        <td>Upload gebruikers</td>
+        <td><input type="file" name="uploaduser" /></td>
+    </tr>
+    <tr><td colspan='2'><hr /></td></tr>
     <tr>
         <td><input type="submit" id="submit" name="submit" value="<?= get_string('submit')?>"/></td>
     </tr>
@@ -19,8 +40,13 @@ Please enter the information for the new moodle environment.<p>
 
 <div id="show_load" style="visibility: hidden">
     The data is being processed. Please be patient.<br />
-    Averagely this process will take about 
     <?php
-    echo ($moodle->get_average_loadtime() > 60) ? ($moodle->get_average_loadtime() / 60).' minutes.' : $moodle->get_average_loadtime().' seconds.';
+    if ($average_time = $moodle->get_average_loadtime()) {
+        if ($average_time != 0) {
+            echo 'Averagely this process will take about ';
+            echo sprintf( "%02.2d:%02.2d", floor( $average_time / 60 ), $average_time % 60 );
+            echo ' minutes.';
+        }
+    }
     ?>
 </div>

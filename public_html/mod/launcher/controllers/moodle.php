@@ -6,14 +6,6 @@ class moodle_controller extends controller
         global $CFG;
         
         $this->edit();
-
-
-        /* Script to upgrade modules
-         * Create a file, place it on the child moodle environment. Run the file, then delete it.
-         * Inside the file have these two files:
-         * require_once($CFG->libdir.'/upgradelib.php');
-         * upgrade_noncore(true));*/
-
 	} // function index
 
 	
@@ -25,23 +17,23 @@ class moodle_controller extends controller
     } // function edit
 
 
-    function show() {
+    function show($moodle = false) {
+        
+        if (!$moodle) $moodle = new moodle(required_param('moodle', PARAM_RAW));
+        if (!$moodle->sendmails()) return $this->get_view(array('moodle'=>$moodle, 'show'));
 
+        $this->get_view(array('moodle'=>$moodle), 'show');
     } // function show
 
 
-
-    function create() {
+    function create($moodle = false) {
         global $CFG;
         $moodle = new moodle(required_param('moodle', PARAM_RAW));
         if (!$moodle->insert()) return $this->edit($moodle);
-        
-        return redirect($CFG->wwwroot, get_string('msg_success', 'launcher'));
+
+        return $this->show($moodle);
+        // return redirect($CFG->wwwroot, get_string('msg_success', 'launcher'));
     } // function create
 
-//
-//    function loading() {
-//        $this->get_view();
-//    } // function loading
 }
 ?>
