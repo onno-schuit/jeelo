@@ -18,7 +18,7 @@ $CFG->admin     = 'admin';
 
 $CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode
 
-$CFG->passwordsaltmain = '@~:DPuq`&zi><jF/i5#tCJ]r A* 6';
+// $CFG->passwordsaltmain = '@~:DPuq`&zi><jF/i5#tCJ]r A* 6';
 
 require_once("$CFG->dirroot/lib/setup.php");
 // MAKE SURE WHEN YOU EDIT THIS FILE THAT THERE ARE NO SPACES, BLANK LINES,
