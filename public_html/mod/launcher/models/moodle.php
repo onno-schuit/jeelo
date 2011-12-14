@@ -4,6 +4,15 @@ class moodle extends user {
 
     static $table_name = 'launcher_moodles';
 
+
+    public static function set_dest_db() {
+        global $DEST_DB, $DB, $CFG;
+        $db_class = get_class($DB);
+        $DEST_DB = new $db_class();
+        $DEST_DB->connect($this->db->host, $this->db->user, key($this->db->password), $this->db->name, false);
+    } // function set_source_db
+    
+    
     function set_defaults() {
         global $CFG;
 
@@ -28,9 +37,13 @@ class moodle extends user {
         $this->user->city        = 'Changeme';
 
         // Config variables
-        $this->cfg->dirroot      = $this->get_stripped_dirroot();
-        $this->cfg->wwwroot      = "http://{$this->db->host}/{$this->db->name}";
-        $this->cfg->dataroot     = "{$this->cfg->dirroot}/{$this->db->name}/moodledata";
+        $this->cfg->shortname    = $this->db->name;
+        $this->cfg->root         = $this->get_stripped_dirroot();
+        $this->cfg->dirroot      = "{$this->cfg->root}/{$this->cfg->shortname}/public_html";
+        $this->cfg->wwwroot      = "http://{$this->db->host}/{$this->cfg->shortname}";
+        $this->cfg->dataroot     = "{$this->cfg->dirroot}/{$this->cfg->shortname}/moodledata";
+
+        static::set_dest_db();
 
         return true;
     } // function load_defaults
@@ -53,7 +66,7 @@ class moodle extends user {
     function get_stripped_shortname($val_to_strip) {
 
         if (isset($val_to_strip)) {
-            return preg_replace("/[^a-z_0-9]+/i", "", $val_to_strip);
+            return trim(strtolower(preg_replace("/[^a-z_0-9]+/i", "", $val_to_strip)));
         } else {
             return false;
         }
@@ -89,9 +102,11 @@ class moodle extends user {
         global $CFG, $launcher;
         $this->launcher_id = $launcher->id;
 
-        if (!$this->validate()) return false; // Validate form
+        // if (!$this->validate()) return false; // Validate form
         if (!$this->set_defaults()) return false; // set all default variables
-        if (!$this->create_moodle()) return false; // Copy the moodle codebase & database
+        // if (!$this->create_moodle()) return false; // Copy the moodle codebase & database
+        exit(print_object($CFG->dirroot).'<br />'.print_object($this->cfg->dirroot));
+        exit();
 
         return true;
     } // function insert
@@ -132,12 +147,13 @@ class moodle extends user {
 
 
     function create_admin() {
-        global $CFG;
-        $error = false;
+        global $CFG, $DEST_DB;
 
-        $con = mysql_connect($this->db->host, $this->db->name, key($this->db->password));
-        mysql_select_db($this->db->name);
-        $query = "
+        $this->user->id = $DEST_DB->get_record('user', 'username', 'admin');
+        $obj = $this->user;
+        $obj->password = $obj->password[key($obj->password)];
+        $error = (!$DEST_DB->update_record('user', $this->user));
+/*        $query = "
             UPDATE {$CFG->prefix}user SET
                 username   = '{$this->user->username}',
                 password   = '{$this->user->password[key($this->user->password)]}',
@@ -146,8 +162,8 @@ class moodle extends user {
                 lastname   = '{$this->user->lastname}',
                 city       = '{$this->user->city}'
             WHERE username = 'admin'";
-        if (!mysql_query($query)) die(mysql_error());
-        mysql_close($con);
+        $DEST_DB->execute_sql($query);
+ */
         return (!$error);
     } // function create_admin
 
@@ -157,13 +173,13 @@ class moodle extends user {
 
         $start_time = $this->get_page_time();
 
-        $this->recursive_copy("{$this->cfg->dirroot}/jeelo", $this->cfg->dirroot, $this->db->name);
+        $this->recursive_copy("{$this->cfg->root}/jeelo", $this->cfg->root, $this->cfg->shortname);
 
         $query = "CREATE DATABASE {$this->db->name}";
         $DB->execute($query);
 
         passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle_fresh.sql");
-        passthru("ln -s {$this->cfg->dirroot}/{$this->db->name}/public_html /var/www/{$this->db->name}");
+        passthru("ln -s {$this->cfg->root}/{$this->cfg->shortname}/public_html /var/www/{$this->cfg->shortname}");
 
         if (!$this->create_dbuser()) print_error('launcher', 'Failed to create database user for the new moodle environment.');
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
@@ -186,7 +202,7 @@ class moodle extends user {
         global $CFG;
 
         $error = false;
-        if (!$config = fopen("{$this->cfg->dirroot}/{$this->db->name}/public_html/config.php", "w")) return false;
+        if (!$config = fopen("{$this->cfg->dirroot}/config.php", "w")) return false;
         // Avoiding whitespaces in config file
         $config_input = '<?php
 unset($CFG);
@@ -204,7 +220,8 @@ $CFG->dboptions = array (
 "dbsocket" => 0,
 );
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
-$CFG->dataroot  = "'.$this->cfg->dirroot.'/'.$this->db->name.'/public_html";
+$CFG->dataroot  = "'.$this->cfg->dataroot.'";
+$CFG->dirroot  = "'.$this->cfg->dirroot.'";
 $CFG->admin     = "admin";
 $CFG->directorypermissions = 0777;
 $CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";
@@ -316,9 +333,9 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
 
     function sendmails() {
 
-    // email_to_user();
-    return false;
-} // function sendmails
+        // email_to_user();
+        return false;
+    } // function sendmails
 
 }
 ?>
