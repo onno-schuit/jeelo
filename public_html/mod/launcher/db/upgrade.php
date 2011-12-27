@@ -1,23 +1,23 @@
 <?php
 
+function xmldb_newmodule_upgrade($oldversion=0) {
 
-defined('MOODLE_INTERNAL') || die();
-function xmldb_launcher_upgrade($oldversion) {
+    global $CFG, $THEME, $db;
 
-    global $DB, $CFG;
+    $result = true;
 
-	$result = true;
-    $dbman = $DB->get_manager(); // loads ddl manager and xmldb classes
-    
-    /*
-    if ($result && $oldversion < 2011111704) {
+    if ($result && $oldversion < 2011120802) {
 
-        $query = "ALTER TABLE {$CFG->prefix}launcher CHANGE average_loadtime average_loadtime FLOAT( 20 ) UNSIGNED NULL DEFAULT NULL";
+    /// Define field picture to be added to signup_user_data
+        $table = new XMLDBTable('signup_user_data');
+        $field = new XMLDBField('picture');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, '0', 'yahoo');
 
-        $result = $result && $DB->execute($query);
+    /// Launch add field picture
+        $result = $result && add_field($table, $field);
     }
-    */
 
-/// Final return of upgrade result (true, all went good) to Moodle.
     return $result;
 }
+
+?>
