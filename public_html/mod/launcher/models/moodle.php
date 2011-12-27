@@ -16,8 +16,14 @@ class moodle extends user {
 
         // DB variables
         $this->db->host          = $CFG->dbhost;
-        $this->db->name          = $this->db->username       =   $this->get_stripped_shortname($this->site_shortname);
+        $this->db->name          = $this->get_site_real_name();
+        $this->db->username      = $this->get_site_real_name();
         $this->db->password      = $this->create_password();
+        
+        // Config variables
+        $this->cfg->wwwroot      = "http://{$this->db->host}/{$this->get_site_real_name()}";
+        $this->cfg->dirroot      = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html";
+        $this->cfg->dataroot     = "{$this->get_global_root()}/{$this->get_site_real_name()}/moodledata";
 
         // User variables
         $this->user->username    = 'admin';
@@ -27,11 +33,6 @@ class moodle extends user {
         $this->user->email       = $this->user_email;
         $this->user->city        = 'Changeme';
 
-        // Config variables
-        $this->cfg->dirroot      = $this->get_stripped_dirroot();
-        $this->cfg->wwwroot      = "http://{$this->db->host}/{$this->db->name}";
-        $this->cfg->dataroot     = "{$this->cfg->dirroot}/{$this->db->name}/moodledata";
-
         return true;
     } // function load_defaults
 
@@ -40,27 +41,22 @@ class moodle extends user {
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
         $this->add_rule('site_shortname', get_string('required'), function($site_shortname) { return ( trim($site_shortname) != '' ); });
 
-        if (isset($this->site_shortname)) $this->shortname_stripped = $this->get_stripped_shortname($this->site_shortname);
-        $obj->msg = (isset($this->shortname_stripped)) ? $this->shortname_stripped : '';
+        if (!$obj->msg = $this->get_site_real_name()) $obj->msg = '';
         $this->add_rule('site_shortname', get_string('maxlength', 'launcher', $obj), function($shortname_stripped) { return ( strlen($shortname_stripped) <= 16 ); });
         $this->add_rule('site_shortname', get_string('unique', 'launcher', $obj), function($shortname_stripped) {
-            global $DB;
-            return ( !$DB->get_record('launcher_moodles', array('shortname'=>$shortname_stripped) ) );
+            return ( !get_record('launcher_moodles', 'shortname', $shortname_stripped) );
         });
     } // function define_validation_rules
 
 
-    function get_stripped_shortname($val_to_strip) {
+    function get_site_real_name() {
 
-        if (isset($val_to_strip)) {
-            return preg_replace("/[^a-z_0-9]+/i", "", $val_to_strip);
-        } else {
-            return false;
-        }
+        if (!isset($this->site_shortname)) return false;
+        return strtolower(preg_replace("/[^a-z_0-9]+/i", "", $this->site_shortname));
     } // function get_stripped_shortname
 
 
-    function get_stripped_dirroot() { 
+    function get_global_root() { 
         global $CFG;
 
         $dirroot = '';
@@ -73,16 +69,6 @@ class moodle extends user {
 
         return $dirroot;
     } // function get_dirroot_stripped
-
-
-    function get_stripped_wwwroot() {
-        global $CFG;
-
-        $wwwroot = '';
-        $wwwroot_stripped = explode('/', $CFG->wwwroot, -2);
-        
-                
-    } // function get_stripped_wwwroot
 
 
     function insert() {
@@ -98,26 +84,26 @@ class moodle extends user {
 
 
     function insert_moodle() {
-        global $DB, $CFG, $id;
+        global $CFG, $id;
 
         $obj->name          = $this->site->name;
         $obj->shortname     = $this->site->shortname;
         $obj->description   = (isset($this->site->description) && $this->site->description != '') ? $this->site->description : '';
         $obj->launcher_id   = $id;
 
-        return ($DB->insert_record('launcher_moodles', $obj));
+        return (insert_record('launcher_moodles', $obj));
     } // function insert_moodle
 
     
     function create_dbuser() {
-        global $CFG, $DB;
+        global $CFG;
         
         $error = false;
         $query = "
         CREATE USER
             '{$this->db->name}'@'{$this->db->host}'
             IDENTIFIED BY '".key($this->db->password)."'";
-        if (!$DB->execute($query)) $error = true;
+        if (!execute_sql($query, false)) $error = true;
 
         $query = "
         GRANT ALL PRIVILEGES
@@ -125,7 +111,7 @@ class moodle extends user {
             TO '{$this->db->name}'@'{$this->db->host}'
             IDENTIFIED BY '".key($this->db->password)."'
             WITH GRANT OPTION";
-        if (!$DB->execute($query)) $error = true;
+        if (!execute_sql($query, false)) $error = true;
 
         return (!$error);
     } // function create_dbuser_and_admin
@@ -153,14 +139,14 @@ class moodle extends user {
 
 
     function create_moodle() {
-        global $CFG, $DB;
+        global $CFG;
 
         $start_time = $this->get_page_time();
 
-        $this->recursive_copy("{$this->cfg->dirroot}/jeelo", $this->cfg->dirroot, $this->db->name);
+        $this->recursive_copy($this->get_global_root(), $this->cfg->dirroot, $this->db->name);
 
         $query = "CREATE DATABASE {$this->db->name}";
-        $DB->execute($query);
+        execute_sql($query, false);
 
         passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle_fresh.sql");
         passthru("ln -s {$this->cfg->dirroot}/{$this->db->name}/public_html /var/www/{$this->db->name}");
@@ -206,8 +192,6 @@ $CFG->dboptions = array (
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
 $CFG->dataroot  = "'.$this->cfg->dirroot.'/'.$this->db->name.'/public_html";
 $CFG->admin     = "admin";
-$CFG->directorypermissions = 0777;
-$CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";
 require_once(dirname(__FILE__) . "/lib/setup.php");';
         if (!fwrite($config, trim($config_input))) return false;
         if (!fclose($config)) return false;
@@ -227,19 +211,19 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
 
 
     function store_load_time($start_time) {
-        global $DB, $launcher;
-        $oldtime = $DB->get_record('launcher', array('id'=>$launcher->id));
+        global $launcher;
+        $oldtime = get_record('launcher', 'id', $launcher->id);
         $end_time = $this->get_page_time();
         $obj->id = $launcher->id;
         $obj->average_loadtime = $oldtime->average_loadtime + ($end_time - $start_time);
         $obj->installed = $oldtime->installed + 1;
 
-        return ($DB->update_record('launcher', $obj));
+        return (update_record('launcher', $obj));
     } // function store_load_time
 
 
     function get_average_loadtime() {
-        global $DB, $CFG, $launcher;
+        global $CFG, $launcher;
 
         $sql = "
             SELECT (
@@ -247,7 +231,7 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
             ) as loadtime
             FROM {$CFG->prefix}launcher
             WHERE id = {$launcher->id}";
-        $average_load_time = $DB->get_record_sql($sql);
+        $average_load_time = get_record_sql($sql);
 
         return round($average_load_time->loadtime);
     } // function get_average_loadtime
@@ -314,11 +298,11 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
     }
 
 
-    function sendmails() {
+    function send_feedback_mails() {
 
-    // email_to_user();
-    return false;
-} // function sendmails
+        // email_to_user();
+        return true;
+    } // function sendmails
 
 }
 ?>
