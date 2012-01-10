@@ -455,7 +455,7 @@
 
         fwrite ($bf,start_tag("INFO",1,true));
 
-        //The name of the backup
+        //$preferences->backup_nameThe name of the backup
         fwrite ($bf,full_tag("NAME",2,false,$preferences->backup_name));
         //The moodle_version
         fwrite ($bf,full_tag("MOODLE_VERSION",2,false,$preferences->moodle_version));
@@ -2996,6 +2996,7 @@
                     }
                 }
             }
+
             if (!defined('BACKUP_SILENTLY')) {
                 echo "<li>".get_string("writingcoursedata");
                 //Start new ul (for course)

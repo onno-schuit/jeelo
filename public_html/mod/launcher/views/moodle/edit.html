@@ -21,16 +21,32 @@
         <td colspan='2'><b><?=get_string('settings_admin', 'launcher');?></b></td>
     </tr>
     <?php
-    $arr_fields = array('user_email'); // Second set of variables
+    $arr_fields = array('admin_email'); // Second set of variables
     foreach($arr_fields as $field) {
         $this->print_input_field($field, $moodle);
     }
     ?>
     </tr>
+    <tr><td colspan='2'><hr /></td></tr>
     <tr>
-        <td>Upload gebruikers</td>
-        <td><input type="file" name="uploaduser" /></td>
+        <td colspan='2'><b><?=get_string('settings_content', 'launcher');?></b></td>
     </tr>
+    <tr>
+        <td><?= get_string('categories', 'launcher')?></td>
+        <td>
+            <?php
+            $categories_preset = isset($moodle->categories) ? $moodle->categories : NULL;
+            $this->print_categories_checkboxes($categories_preset);
+            ?>
+        </td>
+    </tr>
+
+    <?php
+    $arr_uploadfields = array('upload_users', 'upload_groups');
+    foreach($arr_uploadfields as $field) {
+        $this->print_upload_field($field, $moodle);
+    }
+    ?>
     <tr><td colspan='2'><hr /></td></tr>
     <tr>
         <td><input type="submit" id="submit" name="submit" value="<?= get_string('submit')?>"/></td>
@@ -39,9 +55,9 @@
 </form>
 
 <div id="show_load" style="visibility: hidden">
-    The data is being processed. Please be patient.<br />
-    <?php
-    if ($average_time = $moodle->get_average_loadtime()) {
+    <br />
+<?php
+    if ($average_time = $this->get_average_loadtime()) {
         if ($average_time != 0) {
             echo 'Averagely this process will take about ';
             echo sprintf( "%02.2d:%02.2d", floor( $average_time / 60 ), $average_time % 60 );

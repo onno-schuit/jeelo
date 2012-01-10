@@ -7,6 +7,8 @@ class moodle extends user {
     function set_defaults() {
         global $CFG;
 
+        if (!$this) return false;
+
         if (!isset($this->site_shortname) || $this->site_shortname == '') print_error('Key variables not found.', 'launcher');
 
         // Site variables
@@ -30,7 +32,7 @@ class moodle extends user {
         $this->user->password    = $this->create_password();
         $this->user->firstname   = 'Admin';
         $this->user->lastname    = 'user';
-        $this->user->email       = $this->user_email;
+        $this->user->email       = $this->admin_email;
         $this->user->city        = 'Changeme';
 
         return true;
@@ -38,15 +40,40 @@ class moodle extends user {
 
 
     function define_validation_rules() {
+
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
         $this->add_rule('site_shortname', get_string('required'), function($site_shortname) { return ( trim($site_shortname) != '' ); });
+        $this->add_rule('admin_email', get_string('error_email', 'launcher'), function($admin_email) { return (validate_email($admin_email)); });
 
-        if (!$obj->msg = $this->get_site_real_name()) $obj->msg = '';
-        $this->add_rule('site_shortname', get_string('maxlength', 'launcher', $obj), function($shortname_stripped) { return ( strlen($shortname_stripped) <= 16 ); });
+        $this->validate_files_received();
+
+        $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
+            return ($upload_users['name'] != '') ? (end(explode(".", $upload_users['name'])) == 'csv') : true;
+        });
+        $this->add_rule('upload_groups', get_string('error_file_extension', 'launcher'), function($upload_groups) {
+            return ($upload_groups['name'] != '') ? (end(explode(".", $upload_groups['name'])) == 'csv') : true;
+        });
+
+        if (!$obj->msg = $this->get_site_real_name()) return false;
+        $this->add_rule('site_shortname', get_string('maxlength', 'launcher', $obj), function($shortname_stripped) {
+            return ( strlen($shortname_stripped) <= 16 );
+        });
         $this->add_rule('site_shortname', get_string('unique', 'launcher', $obj), function($shortname_stripped) {
             return ( !get_record('launcher_moodles', 'shortname', $shortname_stripped) );
         });
     } // function define_validation_rules
+
+
+    function validate_files_received() {
+        
+        if ($this->upload_users['name'] == '' && $this->upload_groups['name'] != '') {
+            soda_error::add_error($this, 'upload_users', get_string('error_groups_without_users', 'launcher'));
+        }
+        if ($this->upload_users['name'] != '' && $this->upload_groups['name'] == '') {
+            soda_error::add_error($this, 'upload_groups', get_string('error_users_without_groups', 'launcher'));
+        }
+
+    } // function validate_files
 
 
     function get_site_real_name() {
@@ -121,8 +148,6 @@ class moodle extends user {
         global $CFG;
         $error = false;
 
-        $con = mysql_connect($this->db->host, $this->db->name, key($this->db->password));
-        mysql_select_db($this->db->name);
         $query = "
             UPDATE {$CFG->prefix}user SET
                 username   = '{$this->user->username}',
@@ -132,32 +157,35 @@ class moodle extends user {
                 lastname   = '{$this->user->lastname}',
                 city       = '{$this->user->city}'
             WHERE username = 'admin'";
-        if (!mysql_query($query)) die(mysql_error());
-        mysql_close($con);
+        if (!launcher_helper::remote_execute($this, $query)) alert('Something went seriously wrong! Please contact a developer.');
         return (!$error);
     } // function create_admin
 
 
     function create_moodle() {
         global $CFG;
-
+/*
         $start_time = $this->get_page_time();
 
-        $this->recursive_copy($this->get_global_root(), $this->cfg->dirroot, $this->db->name);
+        $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
 
         $query = "CREATE DATABASE {$this->db->name}";
         execute_sql($query, false);
 
-        passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle_fresh.sql");
-        passthru("ln -s {$this->cfg->dirroot}/{$this->db->name}/public_html /var/www/{$this->db->name}");
+        passthru("mysql -u root -pmenno {$this->get_site_real_name()} < {$CFG->dataroot}/moodle_fresh.sql");
+        passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
 
         if (!$this->create_dbuser()) print_error('launcher', 'Failed to create database user for the new moodle environment.');
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
         if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
-        include('test.php');
-        if ($error) echo "Something went wrong. Please try to upload the remaining users manually.";
-        unset($error);
- 
+
+*/        
+        require_once('class.content_uploader.php');
+        $content_uploader = new content_uploader($this);
+        $content_uploader->upload();
+
+        exit(print_object('Done...'));
+
         $this->upgrade_modules($this->cfg->dataroot);
 
         if (!$this->insert_moodle()) return false; // Save new moodle environment in database
@@ -172,33 +200,36 @@ class moodle extends user {
         global $CFG;
 
         $error = false;
-        if (!$config = fopen("{$this->cfg->dirroot}/{$this->db->name}/public_html/config.php", "w")) return false;
+        if (!$config = fopen("{$this->cfg->dirroot}/config.php", "w")) return false;
         // Avoiding whitespaces in config file
-        $config_input = '<?php
+        $config_input = '<?php // Moodle Configuration File
+
 unset($CFG);
-global $CFG;
+
 $CFG = new stdClass();
-$CFG->dbtype    = "mysqli";
-$CFG->dblibrary = "native";
+$CFG->dbtype    = "mysql";
 $CFG->dbhost    = "'.$this->db->host.'";
 $CFG->dbname    = "'.$this->db->name.'";
-$CFG->dbuser    = "'.$this->db->name.'";
+$CFG->dbuser    = "'.$this->db->username.'";
 $CFG->dbpass    = "'.key($this->db->password).'";
+$CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
-$CFG->dboptions = array (
-"dbpersist" => 0,
-"dbsocket" => 0,
-);
+
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
-$CFG->dataroot  = "'.$this->cfg->dirroot.'/'.$this->db->name.'/public_html";
+$CFG->dirroot   = "'.$this->cfg->dirroot.'";
+$CFG->dataroot  = "'.$this->cfg->dataroot.'";
 $CFG->admin     = "admin";
-require_once(dirname(__FILE__) . "/lib/setup.php");';
+
+$CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode
+';// $CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'"; // Password salt
+$config_input .= '
+
+require_once("$CFG->dirroot/lib/setup.php");';
         if (!fwrite($config, trim($config_input))) return false;
         if (!fclose($config)) return false;
 
         return true;
     } // function create_config
-
 
     function get_page_time() {
 
@@ -208,33 +239,6 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
 
         return $starttime;
     } // function start_page_timer
-
-
-    function store_load_time($start_time) {
-        global $launcher;
-        $oldtime = get_record('launcher', 'id', $launcher->id);
-        $end_time = $this->get_page_time();
-        $obj->id = $launcher->id;
-        $obj->average_loadtime = $oldtime->average_loadtime + ($end_time - $start_time);
-        $obj->installed = $oldtime->installed + 1;
-
-        return (update_record('launcher', $obj));
-    } // function store_load_time
-
-
-    function get_average_loadtime() {
-        global $CFG, $launcher;
-
-        $sql = "
-            SELECT (
-                average_loadtime / installed
-            ) as loadtime
-            FROM {$CFG->prefix}launcher
-            WHERE id = {$launcher->id}";
-        $average_load_time = get_record_sql($sql);
-
-        return round($average_load_time->loadtime);
-    } // function get_average_loadtime
 
 
     function upgrade_modules($root) {
@@ -276,17 +280,22 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
 
 
     function recursive_copy($source, $dest, $diffDir){
+        global $CFG;
 
         $sourceHandle = opendir($source);
         if(!$diffDir) $diffDir = $source;
         mkdir($dest . '/' . $diffDir);
+
+        if ($dest == $this->get_global_root()) {
+            return ($this->recursive_copy($source, $dest . '/' . $diffDir, 'public_html'));
+        }
        
         while($resource = readdir($sourceHandle)){
 
             if (is_dir($source . '/' . $resource) && $resource == 'launcher') continue;
 
             if($resource == '.' || $resource == '..'
-                || $source . '/' . $resource == "{$this->cfg->dirroot}{$this->db->name}/public_html/config.php"
+                || $source . '/' . $resource == "{$CFG->dirroot}/config.php"
                 || $resource == 'moodle_fresh.sql') continue;
            
             if(is_dir($source . '/' . $resource)){
@@ -297,6 +306,10 @@ require_once(dirname(__FILE__) . "/lib/setup.php");';
         }
     }
 
+
+    function get_moodle_vars() {
+        return $this;
+    } // function get_moodle
 
     function send_feedback_mails() {
 
