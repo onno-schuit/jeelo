@@ -5,7 +5,7 @@ class launcher_helper extends helper {
     /* Executes query against the remote database */
     static function remote_execute($moodle, $query, $return_id = false) {
 
-        if (!$con = mysql_connect($moodle->db->host, $this->db->name, key($moodle->db->password))) return false;
+        if (!$con = mysql_connect($moodle->db->host, $moodle->db->name, key($moodle->db->password))) return false;
         if (!mysql_select_db($moodle->db->name)) return false;
 
         if (!mysql_query($query)) return false; // Execute the actual query

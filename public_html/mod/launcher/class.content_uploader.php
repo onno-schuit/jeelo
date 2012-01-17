@@ -9,8 +9,8 @@ class content_uploader extends model {
 
         // Set variables
         $this->moodle = parent::get_moodle_vars();
-        $this->fields_users = array('firstname', 'lastname', 'etc...');
-        $this->fields_groups = array('name', 'year');
+        $this->fields_users = array('voornaam', 'achternaam', 'etc...');
+        $this->fields_groups = array('naam', 'jaar');
         exit(print_object($this->moodle));
 
         // Check files received, if not break it off immidietly

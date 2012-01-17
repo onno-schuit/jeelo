@@ -41,6 +41,8 @@ class moodle extends user {
 
     function define_validation_rules() {
 
+        $this->add_uploaded_files();
+
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
         $this->add_rule('site_shortname', get_string('required'), function($site_shortname) { return ( trim($site_shortname) != '' ); });
         $this->add_rule('admin_email', get_string('error_email', 'launcher'), function($admin_email) { return (validate_email($admin_email)); });
@@ -62,6 +64,14 @@ class moodle extends user {
             return ( !get_record('launcher_moodles', 'shortname', $shortname_stripped) );
         });
     } // function define_validation_rules
+
+
+    function add_uploaded_files() {
+        if (!isset($_FILES)) return true;
+        foreach($_FILES as $key=>$file) {
+            $this->$key = $file;
+        }
+    } // function FunctionName
 
 
     function validate_files_received() {
@@ -157,14 +167,15 @@ class moodle extends user {
                 lastname   = '{$this->user->lastname}',
                 city       = '{$this->user->city}'
             WHERE username = 'admin'";
-        if (!launcher_helper::remote_execute($this, $query)) alert('Something went seriously wrong! Please contact a developer.');
+        echo $query;
+        if (!launcher_helper::remote_execute($this, $query)) error('Something went seriously wrong! Please contact a developer.');
         return (!$error);
     } // function create_admin
 
 
     function create_moodle() {
         global $CFG;
-/*
+///*
         $start_time = $this->get_page_time();
 
         $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
@@ -179,7 +190,7 @@ class moodle extends user {
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
         if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
 
-*/        
+//*/        
         require_once('class.content_uploader.php');
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
