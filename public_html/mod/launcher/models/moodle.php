@@ -175,7 +175,7 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-///*
+/*
         $start_time = $this->get_page_time();
 
         $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
@@ -190,7 +190,7 @@ class moodle extends user {
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
         if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
 
-//*/        
+*/        
         require_once('class.content_uploader.php');
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
@@ -319,6 +319,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
 
     function get_moodle_vars() {
+        exit(print_object($this));
         return $this;
     } // function get_moodle
 

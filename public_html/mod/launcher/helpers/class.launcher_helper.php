@@ -8,12 +8,12 @@ class launcher_helper extends helper {
         if (!$con = mysql_connect($moodle->db->host, $moodle->db->name, key($moodle->db->password))) return false;
         if (!mysql_select_db($moodle->db->name)) return false;
 
-        if (!mysql_query($query)) return false; // Execute the actual query
-
+        if (!$result = mysql_query($query)) return false; // Execute the actual query
+        
         if ($return_id) $id = mysql_insert_id();
         mysql_close($con);
 
-        return ($return_id) ? $id : true;
+        return ($return_id) ? $id : $result;
     } // function 
 
 

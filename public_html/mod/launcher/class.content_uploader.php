@@ -1,31 +1,97 @@
 <?php
 require_once('class.categories.php');
-require_once('class.file_handler.php');
 
+class content_uploader extends moodle {
 
-class content_uploader extends model {
+    function __construct(&$moodle) {
 
-    function __construct() {
-
+        $this->moodle = $moodle;
         // Set variables
-        $this->moodle = parent::get_moodle_vars();
-        $this->fields_users = array('voornaam', 'achternaam', 'etc...');
-        $this->fields_groups = array('naam', 'jaar');
-        exit(print_object($this->moodle));
+        $this->fields_users = array('firstname', 'lastname', 'email', 'city', 'country', 'rol1', 'rol2', 'group1', 'group2', 'group3');
+        $this->fields_groups = array('name', 'year');
 
         // Check files received, if not break it off immidietly
-        $this->has_files_received(array($moodle->upload_users, $moodle->upload_groups));
+        $this->has_files_received();
 
     } // function __construct
 
+
     function upload() {
         
-        if (!$this->create_categories($moodle)) print_error('launcher', 'Failed to create courses and categories.');
+        if (!$this->create_users()) error('Failed to create users.');
+        if (!$this->create_categories()) error('Failed to create courses and categories.');
 
         //$groups = $this->upload_groups($moodle->upload_groups);
         //$users = $this->upload_users($moodle->upload_users, $groups);
     } // function upload_start
 
+
+    // Creates users from the csv file
+    function create_users() {
+        
+        $line = 0;
+        $handler = fopen($this->moodle->upload_users['tmp_name'], 'r');
+        while($data = fgetcsv($handler, 0, ';')) {
+
+            $line ++;
+            // Check column names
+            if ($line == 1) {
+                if ($this->validate_columns($data, $this->fields_users)) continue;
+            }
+
+            // Continue with the users
+            $child_user = new stdClass();
+            foreach($this->fields_users as $key => $column) { // Assign column names to $group
+                $child_user->$column = $data[$key];
+            }
+
+            //$child_user_id = $this->create_user($child_user);
+            $child_user_id = 3;
+            if ($child_user->rol1 == 'beheerder' || $child_user->rol2 == 'beheerder') $this->create_enrollment($child_user_id, 'admin');
+        }
+    }
+
+
+    function create_enrollment($user_id, $role_name) {
+        global $CFG;
+
+        switch($role_name) {
+            case 'beheerder':
+                $role_name = 'admin';
+                break;
+            case 'icter':
+                $role_name = 'whatever';
+                break;
+        }
+        $query = "SELECT id FROM {$CFG->prefix}role WHERE shortname = '$role_name'";
+        if (!$role_result = launcher_helper::remote_execute($this->moodle, $query)) error('Couldn\'t select role.');
+
+        $role_assignment = new stdClass();
+        $role_assignment->roleid = mysql_result($role_result,0,0);
+        $role_assignment->contextid = ($role_name == 'admin') ? 1 : 2
+        $role_assignment->userid = $user_id;
+        $role_assignment->timemodified = time();
+        $role_assignment->enrol = 'manual';
+        //$role_assignment = ;
+    } // function create_enrollment
+
+    function create_user($child_user) {
+        
+        unset($child_user->rol1);
+        unset($child_user->rol2);
+        unset($child_user->group1);
+        unset($child_user->group2);
+        unset($child_user->group3);
+        $child_user->username = strtolower($child_user->firstname);
+        $child_user->password = hash_internal_user_password(strtolower($child_user->firstname)); // Should be changed, unsave
+        $child_user->mnethostid = 1;
+        $child_user->confirmed = 1;
+        $child_user->timemodified = time();
+        $query = $this->insert_query_join_properties('user', $child_user);
+
+        if (!$new_child_user_id = launcher_helper::remote_execute($this->moodle, $query, true)) error('Couldn\'t create user');
+
+    } // function create_user
 
 /*    function upload_groups($groups) {
         
@@ -49,26 +115,48 @@ class content_uploader extends model {
     } // function upload_groups
  */
 
-    function create_categories($moodle) {
+    function create_categories() {
 
-        $child_categories = new categories();
-        $uploader = new uploader();
-        foreach($moodle->categories as $parent_category) {
+        foreach($this->moodle->categories as $parent_category_id) {
 
-            $category_courses = get_records('course', 'category', $category_id);
-            if (!$child_categories = $child_categories->create_new_category($parent_category)) error('Failed to create categories.');
+            $parent_courses = get_records('course', 'category', $parent_category_id);
+            // if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            $child_category_id = 2;
 
-            $uploader->begin();
-            while($uploader_data = $uploader->next()) {
+            $line = 0;
+            $handler = fopen($this->moodle->upload_groups['tmp_name'], 'r');
+            while($data = fgetcsv($handler, 0, ';')) {
 
-                $uploader->line ++;
+                $line ++;
+                if ($line == 1) {
+                    if ($this->validate_columns($data, $this->fields_groups)) continue;
+                } // Check column names
 
-                if ($uploader->line == 1) $uploader->validate_columns($data);
+                // Continue with the groups
+                $child_group = new stdClass();
+                foreach($this->fields_groups as $key => $column) { // Assign column names to $group
+                    $child_group->$column = $data[$key];
+                }
+                $child_group->groupyear = $this->groupyears_to_array($child_group->year);
 
-                // Continue with next
+                foreach($parent_courses as $parent_course) {
+                    if (empty($parent_course->groupyear)) continue; // If no groupyear exists for the course we can't do anything with it.
+                    $parent_course->groupyear = $this->groupyears_to_array($parent_course->groupyear);
+
+                    if (!in_array($parent_course->groupyear, $child_group->groupyears)) continue; // This shouldn't happen
+                    // Create course
+                    if (!$child_course_id = $this->create_course($this->moodle, $child_category_id, $child_group, $parent_course)) error('Couldn\'t create course');
+                    // Create group
+                    $this->create_group($this->moodle, $child_course_id, $child_group);
+                    // Create enrollment
+                    
+
+                }
             }
+            exit(print_object('First category loop succesfull...'));
+
         }
-        exit();
+        exit(print_object('Force quit...'));
         
         foreach($moodle->categories as $category_id) {
 
@@ -111,17 +199,17 @@ class content_uploader extends model {
     } // function create_courses_and_categories()
 
 
-    function create_category($moodle, $category_id, $course_count) {
+    function create_category($category_id, $course_count) {
         global $CFG;
+
         $category = get_record('course_categories', 'id', $category_id);
         unset($category->id);
-        $category->timemodified = 0;
+        $category->timemodified = time();
         $category->coursecount = $course_count;
         $query = $this->insert_query_join_properties('course_categories', $category);
 
-        return launcher_helper::remote_execute($moodle, $query, true);
-
-    } // function create_category
+        return ($new_category_id = launcher_helper::remote_execute($this->moodle, $query, true)) ? $new_category_id : false;
+    } // function create_categories
 
 
     function create_course($moodle, $category_id, $group, $course) {
@@ -210,8 +298,9 @@ class content_uploader extends model {
     } // function groupyear_to_array
 
 
-    function has_files_received($files) {
+    function has_files_received() {
 
+        $files = array($this->moodle->upload_users, $this->moodle->upload_groups);
         foreach($files as $file) {
             if ($file['name'] == '') error('One of the uploaded files could not be found.');
         }
@@ -220,12 +309,12 @@ class content_uploader extends model {
     } // function has_files_received
 
 
-    function validate_columns($columns) {
+    function validate_columns($columns, $file) {
 
         $error_col = array();
         foreach($columns as $key => $column) {
             if (empty($column)) continue;
-            if ($this->fields_groups[$key] != $column) $error_col[] = $column;
+            if ($file[$key] != $column) $error_col[] = $column;
         }
         if (count($error_col) > 0) launcher_helper::error('The following columns in the csv file are not correct: <br />', $error_col);
 

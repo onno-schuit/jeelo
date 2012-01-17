@@ -17,7 +17,7 @@ class moodle_controller extends controller
     } // function edit
 
 
-    function show($moodle = false) {
+    function show($moodle) {
         
         //$this->has_access_rights();
         if (!$moodle) error("Mag niet...");
