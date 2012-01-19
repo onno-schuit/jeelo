@@ -167,7 +167,6 @@ class moodle extends user {
                 lastname   = '{$this->user->lastname}',
                 city       = '{$this->user->city}'
             WHERE username = 'admin'";
-        echo $query;
         if (!launcher_helper::remote_execute($this, $query)) error('Something went seriously wrong! Please contact a developer.');
         return (!$error);
     } // function create_admin
@@ -175,7 +174,6 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-/*
         $start_time = $this->get_page_time();
 
         $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
@@ -190,12 +188,10 @@ class moodle extends user {
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
         if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
 
-*/        
+
         require_once('class.content_uploader.php');
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
-
-        exit(print_object('Done...'));
 
         $this->upgrade_modules($this->cfg->dataroot);
 
@@ -303,7 +299,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
        
         while($resource = readdir($sourceHandle)){
 
-            if (is_dir($source . '/' . $resource) && $resource == 'launcher') continue;
+            if (is_dir($source . '/' . $resource) && ($resource == 'launcher' || $resource == 'soda')) continue;
 
             if($resource == '.' || $resource == '..'
                 || $source . '/' . $resource == "{$CFG->dirroot}/config.php"

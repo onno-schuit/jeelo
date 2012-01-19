@@ -11,8 +11,8 @@ class moodle_controller extends controller
 
 	
     function edit($moodle = false) {
-
         //$this->has_access_rights();
+
         $this->get_view(array('moodle'=>$moodle), 'edit');
     } // function edit
 
