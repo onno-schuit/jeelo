@@ -18,8 +18,9 @@ $string['msg_success'] = 'Worked like a charm!';
 
 $string['launcher_description'] = 'Please enter the information for the new moodle environment.<p>';
 $string['categories'] = 'Projects';
-$string['show_passwords_below'] = 'The moodle environment has been succesfully installed.<p>
-                                    You can find your new user information below.<br />';
+$string['moodle_succesfull_set_up'] = 'The moodle environment has been succesfully set up.<br />
+                                    All the important information is shown below. It has also been send to the specified email address.<br /><br />
+                                    Please do <b>not</b> lose this information.';
 $string['groupyear'] = 'Group year';
 
 $string['settings_site'] = 'Site settings';
@@ -39,8 +40,14 @@ $string['error_file_extension'] = 'You can only upload csv files.';
 $string['error_email'] = 'You have to fill out a correct email address.';
 
 
-$string['send_feedback_mails'] = 'An error occured while trying to send the feedback email messages.
+$string['no_feedbackmail_send'] = 'An error occured while trying to send the feedback email messages.
                                   <br />Please copy and paste the feedback manually.';
+
+$string['mail_feedback_subject'] = 'New Moodle environment details';
+$string['mail_feedback_body_start'] = 'Hello $a->name,<br /><br />
+                                        A new Moodle environment has just been created. Below you can find the details of this environment.<br />
+                                        Do <b>not</b> lose this information.<br /><br />';
+$string['mail_feedback_body_end'] = 'Sincerely,<br /><br />Solin';
 
 $string['error_key_variables'] = 'Key variables are missing. Please notify the programmers.';
 ?>

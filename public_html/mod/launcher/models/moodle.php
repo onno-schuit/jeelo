@@ -174,7 +174,7 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-        $start_time = $this->get_page_time();
+//        $start_time = $this->get_page_time();
 
         $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
 
@@ -183,21 +183,30 @@ class moodle extends user {
 
         passthru("mysql -u root -pmenno {$this->get_site_real_name()} < {$CFG->dataroot}/moodle_fresh.sql");
         passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
-
+ 
         if (!$this->create_dbuser()) print_error('launcher', 'Failed to create database user for the new moodle environment.');
         if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
         if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
-
-
+ 
         require_once('class.content_uploader.php');
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
 
-        $this->upgrade_modules($this->cfg->dataroot);
+        $this->site->shortname   = $this->site_shortname;
+        $this->site->name        = $this->site_name;
+        $this->site->description = $this->site_description;
+        $query = "UPDATE {$CFG->prefix}course SET
+                    fullname = '{$this->site->name}',
+                    shortname = '{$this->site->shortname}',
+                    summary = '{$this->site->description}'
+                  WHERE category = 0";
+        if (!launcher_helper::remote_execute($this, $query)) error('Failed to set name for the moodle environment');
+
+        // $this->upgrade_modules($this->cfg->dirroot); <-- DIT KOMT LATER
 
         if (!$this->insert_moodle()) return false; // Save new moodle environment in database
 
-        $this->store_load_time($start_time);
+        // $this->store_load_time($start_time);
  
         return true;
     } // function create_moodle
@@ -272,12 +281,13 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
     function create_upgrade_file($root) {
         global $CFG;
+        exit(print_object($CFG->libdir));
 
         $filename = "$root/upgrade.php";
         $upgrade_file = fopen($filename, 'w');
         $string = "<?php";
         $string .= "\n".'require_once("{$CFG->libdir}/upgradelib.php");';
-        $string .= "\nupgrade_noncore(true)";
+        $string .= "\nupgrade_noncore(true);";
         $string .= "\n?>";
         fwrite($upgrade_file, $string);
         fclose($upgrade_file); // Now the file has been created
@@ -315,15 +325,59 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
 
     function get_moodle_vars() {
-        exit(print_object($this));
         return $this;
     } // function get_moodle
 
     function send_feedback_mails() {
+        global $CFG;
 
-        // email_to_user();
-        return true;
+        $email_to = new stdClass();
+        $email_to->mailformat = 1;
+        $email_to->email = $this->user->email;
+        $email_to->name = $this->user->firstname;
+
+        $body = get_string('mail_feedback_body_start', 'launcher', $email_to);
+        $body .= $this->get_feedback_body();
+        $body .= get_string('mail_feedback_body_end', 'launcher', $email_to);
+        $subject = get_string('mail_feedback_subject', 'launcher');
+
+        return (email_to_user($email_to, $CFG->noreplyaddress, $subject, $body, $body));
     } // function sendmails
 
+    function get_feedback_body() {
+        $body = "
+            <table border-collapse='collapse'>
+                <tr><td><b>Database information</b></td></tr>
+                <tr>
+                    <td>Username</td>
+                    <td>{$this->db->username}</td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td>".key($this->db->password)."</td>
+                </tr>
+                <tr>
+                    <td>Database name</td>
+                    <td>{$this->db->name}</td>
+                </tr>
+                <tr><td>&nbsp;</td></tr><tr><td><b>Moodle Admin information</b></td></tr>
+                <tr>
+                    <td>Username</td>
+                    <td>{$this->user->username}</td>
+                </tr>
+                <tr>
+                    <td>Password</td>
+                    <td>".key($this->user->password)."</td>
+                </tr>
+                <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
+                <tr>
+                    <td>URL</td>
+                    <td>{$this->cfg->wwwroot}</td>
+                </tr>
+            </table>";
+        
+        // exit(print_object($body));
+        return $body;
+    } // function get_feedback_body
 }
 ?>

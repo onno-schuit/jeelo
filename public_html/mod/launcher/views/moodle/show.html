@@ -1,14 +1,23 @@
 <script language="javascript" src="lib.js"></script>
 <form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=show";?>">
 <p></p>
-<?=get_string('show_passwords_below', 'launcher');?>
+<?=get_string('moodle_succesfull_set_up', 'launcher');?>
+
+<?php
+if (isset($_SESSION['messages']['no_feedback_send'])) {
+    echo "<br /><br /><b>Important!</b><br />";
+    echo $_SESSION['messages']['no_feedback_send'];
+    echo '<br /><br />';
+    unset($_SESSION['messages']['no_feedback_send']);
+}
+?>
 <table border-collapse="collapse">
 
-    <tr><td><b>Database</b></td></tr>
+    <tr><td><b>Database information</b></td></tr>
 
     <tr>
         <td>Username</td>
-        <td><?=$moodle->db->name?></td>
+        <td><?=$moodle->db->username?></td>
     </tr>
     <tr>
         <td>Password</td>
@@ -19,7 +28,7 @@
         <td><?=$moodle->db->name?></td>
     </tr>
     
-    <tr><td><b>Admin</b></td></tr>
+    <tr><td>&nbsp;</td></tr><tr><td><b>Moodle Admin information</b></td></tr>
 
     <tr>
         <td>Username</td>
@@ -30,14 +39,15 @@
         <td><?=key($moodle->user->password)?></td>
     </tr>
 
-    <tr><td><b>Website</b></td></tr>
+    <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
 
     <tr>
         <td>URL</td>
         <td><?=$moodle->cfg->wwwroot?></td>
     </tr>
-    <tr>
+
+<!--    <tr>
         <td><input type="submit" name="send" value="send"/></td>
-    </tr>
+    </tr> -->
 </table>
-</form>
+
