@@ -6,44 +6,39 @@ class content_uploader extends moodle {
     function __construct(&$moodle) {
 
         $this->moodle = $moodle;
+        
+        // Check files received, if not break it off immidietly
+        if (!$this->has_files_received()) launcher_helper::print_error('3000');
 
         // Set variables
-        $this->fields_users = array('firstname', 'lastname', 'email', 'city', 'country', 'rol1', 'rol2', 'group1', 'group2', 'group3');
-        $this->fields_groups = array('name', 'year');
+        $this->fields_users = array(
+                'firstname'=>'voornaam',
+                'lastname'=>'achternaam',
+                'email'=>'email',
+                'city'=>'woonplaats',
+                'country'=>'land',
+                'rol1'=>'rol1',
+                'rol2'=>'rol2',
+                'group1'=>'groep1',
+                'group2'=>'groep2',
+                'group3'=>'groep3'
+            );
+        $this->fields_groups = array('name'=>'naam', 'year'=>'jaar');
         $this->possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
-
-        // Check files received, if not break it off immidietly
-        $this->has_files_received();
 
     } // function __construct
 
-    function get_or_create_context($context_level, $instance_id) {
-
-        $data = array('context_level'=>$context_level, 'instance_id'=>$instance_id);
-        $curl = curl_init($this->moodle->cfg->wwwroot.'/get_or_create_context.php');
-
-        curl_setopt($curl,CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        $context_id = curl_exec($curl);
-        curl_close ($curl);
-        if ($context_id == 'false') error('Failed to create context for context level ' . $context_level . ' and instance id ' . $instance_id);
-
-        return $context_id;
-    } // function get_or_create_context
 
     function upload() {
         global $CFG;
         
-        if (!$context_file = $this->create_context_file()) error('Failed to create context file.');
-        if (!$this->create_users()) error('Failed to create users.');
-        if (!$this->create_categories()) error('Failed to create courses and categories.');
-        if (!$this->destroy_context_file($context_file)) echo "Failed to delete the context file. Please delete the following file manually: <br />{$this->moodle->cfg->wwwroot}/get_or_create_context.php";
+//        if (!$context_file = $this->create_context_file()) launcher_helper::print_error('3001');
+//        if (!$this->create_users()) launcher_helper::print_error('3002');
+        if (!$this->create_child_content()) launcher_helper::print_error('3003');
+        if (!$this->destroy_context_file($context_file)) launcher_helper::print_error('3004');
 
         return true;
-        //$groups = $this->upload_groups($moodle->upload_groups);
-        //$users = $this->upload_users($moodle->upload_users, $groups);
-    } // function upload_start
+    } // function upload
 
 
     // Creates users from the csv file
@@ -56,20 +51,31 @@ class content_uploader extends moodle {
             $line ++;
             // Check column names
             if ($line == 1) {
-                if ($this->validate_columns($data, $this->fields_users)) continue;
+				continue;
+                // if ($this->validate_columns($data, $this->fields_users)) continue;
             }
 
             // Continue with the users
-            //$child_user = new stdClass();
-            foreach($this->fields_users as $key => $column) { // Assign column names to $group
-                $child_user->$column = $data[$key];
-            }
+            $child_user = new stdClass();
+            $child_user = $this->assign_column_names($data, $child_user, 'fields_users');
 
-            $child_user_id = $this->create_user($child_user); // Wont need the user id for now
+            if (!$this->create_user($child_user)) return false;
+            unset($child_user);
         }
         return true;
     }
 
+
+    function assign_column_names($data, $obj, $fields_type) {
+
+        $count = 0;
+        foreach($this->$fields_type as $key => $column) { // Assign column names to $group
+            $obj->$key = $data[$count];
+            $count ++;
+        }
+
+        return $obj;
+    } // function assign_column_names
 
     function create_admin_enrollment($user_id) {
         global $CFG;
@@ -91,12 +97,7 @@ class content_uploader extends moodle {
 
 
     function create_user($child_user) {
-        
-        unset($child_user->rol1);
-        unset($child_user->rol2);
-        unset($child_user->group1);
-        unset($child_user->group2);
-        unset($child_user->group3);
+
         $child_user->username = strtolower($child_user->email);
         $child_user->password = hash_internal_user_password(strtolower($child_user->firstname)); // Should be changed, unsafe
         $child_user->mnethostid = 1;
@@ -106,16 +107,17 @@ class content_uploader extends moodle {
 
         if (!$new_child_user_id = launcher_helper::remote_execute($this->moodle, $query, true)) error('Couldn\'t create user');
 
+		return $new_child_user_id;
     } // function create_user
 
 
-    function create_categories() {
+    function create_child_content() {
 
         foreach($this->moodle->categories as $parent_category_id) {
 
             $parent_courses = get_records('course', 'category', $parent_category_id);
-            if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
-//            $child_category_id = 2;
+            //if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            $child_category_id = 2;
 
             $line = 0;
             $handler = fopen($this->moodle->upload_groups['tmp_name'], 'r');
@@ -123,14 +125,14 @@ class content_uploader extends moodle {
 
                 $line ++;
                 if ($line == 1) {
+					//continue;
                     if ($this->validate_columns($data, $this->fields_groups)) continue;
                 } // Check column names
 
                 // Continue with the groups
                 $child_group = new stdClass();
-                foreach($this->fields_groups as $key => $column) { // Assign column names to $group
-                    $child_group->$column = $data[$key];
-                }
+                $child_group = $this->assign_column_names($data, $child_group, 'fields_groups');
+
                 $child_group->groupyears = $this->groupyears_to_array($child_group->year);
 
                 foreach($parent_courses as $parent_course) {
@@ -156,18 +158,12 @@ class content_uploader extends moodle {
                             break;
                         }
                     }
-                    /*
-                    foreach($child_group->groupyears as $child_group_year) {
-
-                        if (!in_array($child_group_year, $parent_course->groupyear)) continue; // This shouldn't happen
-                        exit(print_object($parent_course->groupyear));
-
-                    }*/
                 }
+                unset($child_group);
             }
         }
         return true;
-    } // function create_courses_and_categories()
+    } // function create_child_content
 
 
     function add_group_members($moodle, $course_id, $group_id, $course_id) {
@@ -180,14 +176,13 @@ class content_uploader extends moodle {
             $line ++;
             // Check column names
             if ($line == 1) {
-                if ($this->validate_columns($data, $this->fields_users)) continue;
+				continue;
+                // if ($this->validate_columns($data, $this->fields_users)) continue;
             }
 
-            // Continue with the users
+            // Continue with the groups
             $child_user = new stdClass();
-            foreach($this->fields_users as $key => $column) { // Assign column names to $group
-                $child_user->$column = $data[$key];
-            }
+            $child_user = $this->assign_column_names($child_user, 'fields_groups');
 
             if (!empty($child_user->group1)) $child_user->groups[] = $child_user->group1;
             if (!empty($child_user->group2)) $child_user->groups[] = $child_user->group2;
@@ -216,14 +211,14 @@ class content_uploader extends moodle {
         global $CFG;
 
         $filename = "{$this->moodle->cfg->dirroot}/get_or_create_context.php";
-        $upgrade_file = fopen($filename, 'w');
+        if (!$upgrade_file = fopen($filename, 'w')) return false;
         $string = '<?php';
         $string .= "\n" . 'require_once("config.php");';
         $string .= "\n" . '$context = get_context_instance($_POST["context_level"],$_POST["instance_id"]);';
         $string .= "\n" . 'echo ($context) ? $context->id: "false";';
         $string .= "\n" . '?>';
-        fwrite($upgrade_file, $string);
-        fclose($upgrade_file); // Now the file has been created
+        if (!fwrite($upgrade_file, $string)) return false;
+        if (!fclose($upgrade_file)) return false;
 
         return $filename;
     } // function create_context_file
@@ -255,13 +250,6 @@ class content_uploader extends moodle {
             }
             if (!$role_query) continue;
 
-            /*$context_query = "SELECT * FROM {$CFG->prefix}context WHERE contextlevel = '".CONTEXT_COURSE."' AND instanceid = '$course_id'";
-            $context = launcher_helper::remote_execute($this->moodle, $context_query, true);
-            $context = (mysql_num_rows($context) == 0) ? $this->get_or_create_context(CONTEXT_COURSE, $course_id) : mysql_result($context, 0, 0);
-             */
-            /*if (!$context = get_record('context', 'contextlevel', CONTEXT_COURSE, 'instanceid', $course_id)) {
-                $context = get_or_create_context(CONTEXT_COURSE, $course_id);
-            }*/
             $role_result = launcher_helper::remote_execute($this->moodle, $role_query);
             $role_id = mysql_result($role_result,0,0);
             $context_id = $this->get_or_create_context(CONTEXT_COURSE, $course_id);
@@ -308,45 +296,15 @@ class content_uploader extends moodle {
 
 
     function create_course($moodle, $category_id, $group, $course) {
-        global $CFG;
 
-        // Courses
-        $new_course = clone($course);
-        $new_course->category = $category_id;
-        $new_course->fullname .= " - {$group->name}";
-        $new_course->shortname .= "_{$group->name}";
-        unset($new_course->groupyear); // Dont need this any more...
+        require_once('class.backup_restore.php');
+        $backup_restore = new backup_restore($moodle, $category_id, $group, $course);
 
-        $query = $this->insert_query_join_properties('course', $new_course);
-        $new_course_id = launcher_helper::remote_execute($moodle, $query, true);
-        if (!$context_id = $this->get_or_create_context(CONTEXT_COURSE, $new_course_id)) error('Couldn\'t create course context');
+        if (!$backup_restore->create_backup_folder()) error('Couldn\'t create backup folder');
+        if (!$backup_name = $backup_restore->course_backup($category_id, $group, $course)) error('Failed to create backup.');
+        if (!$backup_restore->course_restore($backup_name, $course)) error('Failed to restore the backup.');
 
-        $course_tables = array('course_allowed_modules', 'course_modules', 'course_sections');
-        foreach($course_tables as $course_table) {
-            $this->insert_into_course_tables($moodle, $course, $course_table, $new_course_id);
-        }
-
-        $modules = get_records_sql("SELECT * FROM {$CFG->prefix}modules WHERE name != 'launcher' AND name != 'soda'");
-        foreach($modules as $module) {
-            //exit(print_object($module));
-            if (!$activities = get_records($module->name, 'course', $course->id)) continue;
-            foreach($activities as $activity) {
-                $activity->course = $new_course_id;
-                $query = $this->insert_query_join_properties($module->name, $activity);
-                if (!launcher_helper::remote_execute($moodle, $query)) exit('Foutmelding');
-            }
-        }
-
-        if (!$parent_blocks = get_records('block')) return $new_course_id;
-        foreach($parent_blocks as $parent_block) { // Loop through all blocks
-
-            if (!$parent_block_instances = get_records_sql("SELECT * FROM {$CFG->prefix}block_instance WHERE blockid = {$parent_block->id} AND pageid = {$course->id}")) continue;
-            foreach($parent_block_instances as $parent_block_instance) { // Loop through all block instances for this course
-                if (!$this->create_block_instance($parent_block, $parent_block_instance, $new_course_id)) error("Couldn't create block instance for course id {$new_course_id} and (parent) block id {$parent_block_instance->id}");
-            }
-
-        }
-        return $new_course_id;
+        return true;
     } // function create_course
 
 
@@ -392,8 +350,8 @@ class content_uploader extends moodle {
     function create_group($moodle, $course_id, $group) {
         $new_group = clone($group);
         $new_group->courseid = $course_id;
-        unset($new_group->year); // Don't need this anymore.
-        unset($new_group->groupyears); // Don't need this anymore.
+        /*unset($new_group->year); // Don't need this anymore.
+        unset($new_group->groupyears); // Don't need this anymore.*/
 
         $query = $this->insert_query_join_properties('groups', $new_group);
 
@@ -403,6 +361,8 @@ class content_uploader extends moodle {
 
     function insert_query_join_properties($table, $object) {
         global $CFG;
+
+        $object = $this->filter_wrong_columns($table, $object);
 
         $query = "INSERT INTO {$CFG->prefix}$table (";
         $values = $fields = array();
@@ -422,6 +382,17 @@ class content_uploader extends moodle {
     } // function join_properties_and_values
 
 
+    function filter_wrong_columns($table, $object) {
+        global $CFG;
+        $query = "SHOW COLUMNS FROM {$CFG->prefix}$table";
+        $columns = get_records_sql($query, false);
+        foreach($object as $key=>$obj_column) {
+            if (!isset($columns[$key])) unset($object->$key);
+        }
+        return $object;
+    } // function filter_wrong_columns
+
+
     function groupyears_to_array($groupyears) {
         return array_filter(explode('/', $groupyears));
     } // function groupyear_to_array
@@ -429,25 +400,43 @@ class content_uploader extends moodle {
 
     function has_files_received() {
 
+        $error = false;
         $files = array($this->moodle->upload_users, $this->moodle->upload_groups);
         foreach($files as $file) {
-            if ($file['name'] == '') error('One of the uploaded files could not be found.');
+            if ($file['name'] == '') $error = true;
         }
 
-        return true;
+        return (!$error);
     } // function has_files_received
 
 
-    function validate_columns($columns, $file) {
+    function validate_columns($columns_to_validate, $correct_column_names) {
 
         $error_col = array();
-        foreach($columns as $key => $column) {
-            if (empty($column)) continue;
-            if ($file[$key] != $column) $error_col[] = $column;
+        foreach($columns_to_validate as $key => $column_to_validate) {
+            if (empty($column_to_validate)) continue;
+
+            if (!in_array($column_to_validate, $correct_column_names)) $error_col[] = $column_to_validate;
         }
         if (count($error_col) > 0) launcher_helper::error('The following columns in the csv file are not correct: <br />', $error_col);
 
         return true;
     } // function validate_columns
+
+
+    function get_or_create_context($context_level, $instance_id) {
+
+        $data = array('context_level'=>$context_level, 'instance_id'=>$instance_id);
+        $curl = curl_init($this->moodle->cfg->wwwroot.'/get_or_create_context.php');
+
+        curl_setopt($curl,CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $context_id = curl_exec($curl);
+        curl_close ($curl);
+        if ($context_id == 'false') error('Failed to create context for context level ' . $context_level . ' and instance id ' . $instance_id);
+
+        return $context_id;
+    } // function get_or_create_context
 }
 ?>

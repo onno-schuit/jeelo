@@ -5,7 +5,7 @@ class launcher_helper extends helper {
     /* Executes query against the remote database */
     static function remote_execute($moodle, $query, $return_id = false) {
 
-        if (!$con = mysql_connect($moodle->db->host, $moodle->db->name, key($moodle->db->password))) return false;
+        if (!$con = mysql_connect($moodle->db->host, $moodle->db->name, $moodle->get_password($moodle->db->password))) return false;
         if (!mysql_select_db($moodle->db->name)) return false;
 
         if (!$result = mysql_query($query)) return false; // Execute the actual query
@@ -15,6 +15,46 @@ class launcher_helper extends helper {
 
         return ($return_id) ? $id : $result;
     } // function 
+
+
+    /* Menno de Ridder, 06-02-2012
+     *
+     * This function prints errors based on an error code.
+     * The error codes are listed in the readme, together
+     * with at which page the error is called from and a
+     * possible reason for the failure.
+     *
+     * Codes
+     * 1000 - 1999  /controllers/moodle.php
+     * 2000 - 2999  /models/moodle.php
+     * 3000 - 3999  /class.content_uploader.php
+     *
+     * @param string $code The code of the error. */
+    static function print_error($code) {
+        $errors = array(
+            '1000'=>'A required parameter was missing.',
+
+            '2000'=>'Failed to create child moodle codebase.',
+            '2001'=>'Failed to set up child moodle database.',
+            '2002'=>'Failed to insert content in the child moodle.',
+            '2003'=>'Failed to set up the child URL.',
+            '2004'=>'Failed to save the child in the mother database.',
+            '2005'=>'Failed to create child database.',
+            '2006'=>'Failed to save the child in the mother database.',
+            '2007'=>'Failed to save the child in the mother database.',
+            '2008'=>'Failed to save the child in the mother database.',
+
+            '3000'=>'Failed to identify the csv files.',
+            '3001'=>'Failed to create context files.',
+            '3002'=>'Failed to create users.',
+            '3003'=>'Failed to create categories',
+            '3004'=>'Failed to delete context files.'
+        );
+
+        if (!isset($errors[$code])) return "Error code '$code' could not be found.";
+        
+        error("Error $code: {$errors[$code]}");
+    } // function print_error
 
 
     function print_input_field($field, $moodle) {
