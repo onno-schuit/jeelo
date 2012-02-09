@@ -32,10 +32,9 @@ class content_uploader extends moodle {
     function upload() {
         global $CFG;
         
-//        if (!$context_file = $this->create_context_file()) launcher_helper::print_error('3001');
-//        if (!$this->create_users()) launcher_helper::print_error('3002');
+        if (!$this->create_users()) launcher_helper::print_error('3002');
         if (!$this->create_child_content()) launcher_helper::print_error('3003');
-        if (!$this->destroy_context_file($context_file)) launcher_helper::print_error('3004');
+        if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
 
         return true;
     } // function upload
@@ -116,8 +115,8 @@ class content_uploader extends moodle {
         foreach($this->moodle->categories as $parent_category_id) {
 
             $parent_courses = get_records('course', 'category', $parent_category_id);
-            //if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
-            $child_category_id = 2;
+            // if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            $child_category_id = 2
 
             $line = 0;
             $handler = fopen($this->moodle->upload_groups['tmp_name'], 'r');
@@ -153,7 +152,7 @@ class content_uploader extends moodle {
                             if (!$child_group_id = $this->create_group($this->moodle, $child_course_id, $child_group)) error('Couldn\'t create group.');
                             // Add users to groups
                             $this->add_group_members($this->moodle, $child_course_id, $child_group_id, $child_course_id);
-
+ 
                             // Everything went well, break to avoid copying the course another time
                             break;
                         }
@@ -182,7 +181,7 @@ class content_uploader extends moodle {
 
             // Continue with the groups
             $child_user = new stdClass();
-            $child_user = $this->assign_column_names($child_user, 'fields_groups');
+            $child_user = $this->assign_column_names($data, $child_user, 'fields_users');
 
             if (!empty($child_user->group1)) $child_user->groups[] = $child_user->group1;
             if (!empty($child_user->group2)) $child_user->groups[] = $child_user->group2;
@@ -207,26 +206,13 @@ class content_uploader extends moodle {
     } // function create_enrollments
 
 
-    function create_context_file() {
-        global $CFG;
+    function destroy_used_files() {
+        
+        if (!unlink("{$this->moodle->cfg->dirroot}/class.restore_backup.php")) error('Didn\'t unlink');
+        if (!unlink("{$this->moodle->cfg->dirroot}/get_or_create_context.php")) error('Didn\'t unlink');
 
-        $filename = "{$this->moodle->cfg->dirroot}/get_or_create_context.php";
-        if (!$upgrade_file = fopen($filename, 'w')) return false;
-        $string = '<?php';
-        $string .= "\n" . 'require_once("config.php");';
-        $string .= "\n" . '$context = get_context_instance($_POST["context_level"],$_POST["instance_id"]);';
-        $string .= "\n" . 'echo ($context) ? $context->id: "false";';
-        $string .= "\n" . '?>';
-        if (!fwrite($upgrade_file, $string)) return false;
-        if (!fclose($upgrade_file)) return false;
-
-        return $filename;
-    } // function create_context_file
-
-
-    function destroy_context_file($upgrade_file) {
-        return (unlink($upgrade_file));
-    } // function destroy_context_file
+        return true;
+    } // function destroy_used_files
 
 
     function create_enrollment($user_id, $course_id, $rol1, $rol2) {
@@ -297,12 +283,35 @@ class content_uploader extends moodle {
 
     function create_course($moodle, $category_id, $group, $course) {
 
-        require_once('class.backup_restore.php');
-        $backup_restore = new backup_restore($moodle, $category_id, $group, $course);
-
+        require_once('class.backup_course.php');
+        $backup_restore = new backup_course($moodle->cfg->dataroot);
         if (!$backup_restore->create_backup_folder()) error('Couldn\'t create backup folder');
         if (!$backup_name = $backup_restore->course_backup($category_id, $group, $course)) error('Failed to create backup.');
-        if (!$backup_restore->course_restore($backup_name, $course)) error('Failed to restore the backup.');
+
+        $course_to_post = array();
+        foreach($course as $key => $property) {
+            $course_to_post[$key] = $property;
+        }
+
+        $data = array(
+            'course'=>$course_to_post,
+            'backup_name'=>$backup_name,
+            'group_name'=>$group->name
+        );
+        exit(print_object($data));
+        $curl = curl_init($moodle->cfg->wwwroot.'/class.restore_backup.php');
+
+        curl_setopt($curl,CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        $result = curl_exec($curl);
+        curl_close ($curl);
+
+        echo $result;
+        if ($result == 'false') error('Failed to create backup course id '.$course->id);
+
+        unset($backup_restore);
+        exit('Done?');
 
         return true;
     } // function create_course

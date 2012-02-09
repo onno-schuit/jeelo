@@ -10,6 +10,8 @@ class moodle_controller extends controller
 
 	
     function edit($moodle = false) {
+        global $CFG;
+
         $this->has_access_rights();
 
         $this->get_view(array('moodle'=>$moodle), 'edit');

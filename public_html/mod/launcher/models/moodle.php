@@ -78,13 +78,14 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
 
-//        if (!$this->create_codebase()) launcher_helper::print_error('2000');
-//        if (!$this->set_up_database()) launcher_helper::print_error('2001');
+        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        if (!$this->set_up_database()) launcher_helper::print_error('2001');
+        
+        // Set up static link
+        if (!$this->set_up_website()) launcher_helper::print_error('2003');
+ 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
-        // Set up static lin
-        if (!$this->set_up_website()) launcher_helper::print_error('2003');
-
         // Finally, store key variables in the mother database
         if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
 
@@ -95,7 +96,11 @@ class moodle extends user {
     function create_codebase() {
         global $CFG;
 
-        if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name())) return false;
+        // Create public_html
+        if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name(), 'public_html')) return false;
+        // Create moodle_data
+        if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
+        // if (!$this->recursive_copy("{$this->get_global_root()}/jeelo19}", $this->get_global_root(), $this->get_site_real_name())) return false;
         if (!$this->create_config()) return false;
 
         return true;
@@ -123,7 +128,7 @@ class moodle extends user {
     function insert_database() {
         global $CFG;
         // Inserting database using sudo command
-        passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle_fresh.sql");
+        passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle.sql");
 
         $query = "SHOW TABLES";
         $result = launcher_helper::remote_execute($this, $query);
@@ -133,10 +138,13 @@ class moodle extends user {
 
 
     function insert_child_content() {
+        global $CFG;
         require_once('class.content_uploader.php');
 
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
+
+        return true;
 
         $this->site->shortname   = $this->site_shortname;
         $this->site->name        = $this->site_name;
@@ -159,8 +167,9 @@ class moodle extends user {
 
 
     function website_is_linked() {
-        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
-        return ($result === 0);
+/*        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
+return ($result === 0);*/
+        return true;
     }
 
 
@@ -299,16 +308,18 @@ require_once("$CFG->dirroot/lib/setup.php");';
     } // function start_page_timer
  */
 
-    function recursive_copy($source, $dest, $diffDir){
+    function recursive_copy($source, $dest, $diffDir, $folder = false){
         global $CFG;
 
         $sourceHandle = opendir($source);
         if(!$diffDir) $diffDir = $source;
-        if (!mkdir($dest . '/' . $diffDir)) return false;
-
-        if ($dest == $this->get_global_root()) {
-            return ($this->recursive_copy($source, $dest . '/' . $diffDir, 'public_html'));
+        
+        // Only create global child folder if the function's called for public_html
+        if ($folder != 'moodle_data') {
+            if (!mkdir($dest . '/' . $diffDir)) return false;
         }
+
+        if ($folder) return ($this->recursive_copy($source, $dest . '/' . $diffDir, $folder));
        
         while($resource = readdir($sourceHandle)){
 
@@ -316,7 +327,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
             if($resource == '.' || $resource == '..'
                 || $source . '/' . $resource == "{$CFG->dirroot}/config.php"
-                || $resource == 'moodle_fresh.sql') continue;
+                || $resource == 'moodle.sql') continue;
            
             if(is_dir($source . '/' . $resource)){
                 $this->recursive_copy($source . '/' . $resource, $dest, $diffDir . '/' . $resource);
