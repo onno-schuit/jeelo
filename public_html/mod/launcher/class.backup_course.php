@@ -37,6 +37,15 @@ class backup_course {
         $preferences->backup_users = 2; // 0=All, 1=Course, 2=None
         $preferences->backup_logs = 0; //0=No, 1=Yes
         $preferences->backup_user_files = 0; // 0=No, 1=Yes
+        //$preferences->backup_course_files = 1; // 1 = yes?
+
+        /*
+        foreach($preferences->mods as $module) {
+            $module->backup = 1;
+            foreach($module->instances as $instance) {
+                $instance->backup = 1;
+            }
+        }*/
 
         return (@schedule_backup_course_execute($preferences)) ? $preferences->backup_name : false;
         

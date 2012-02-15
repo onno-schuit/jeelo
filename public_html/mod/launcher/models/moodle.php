@@ -9,7 +9,7 @@ class moodle extends user {
         global $CFG, $launcher;
         $this->launcher_id = $launcher->id;
 
-//        if (!$this->validate()) return false; // Validate form
+        if (!$this->validate()) return false; // Validate form
         if (!$this->set_defaults()) return false; // set all default variables
         if (!$this->create_moodle()) return false; // Start the create moodle processes
 
@@ -79,15 +79,15 @@ class moodle extends user {
         global $CFG;
 
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        
+        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+ 
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
         
-        // Set up static link
-        if (!$this->set_up_website()) launcher_helper::print_error('2003');
- 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
         // Finally, store key variables in the mother database
-        if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
+        // if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
 
         return true;
     } // function create_moodle
@@ -159,7 +159,7 @@ class moodle extends user {
     } // function insert_child_content
 
 
-    function set_up_website() {
+    function set_up_website_link() {
 
         passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
         return ($this->website_is_linked());

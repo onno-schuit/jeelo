@@ -41,13 +41,11 @@ class restore_backup {
         $file = "{$this->backup_folder}/$backup_name";
         define('RESTORE_SILENTLY', true);
 
-        $backup_unique_code = restore_precheck($course->id, $file, $error_output, true);
+        $backup_unique_code = @restore_precheck($course->id, $file, $error_output, true);
 
         // Build up the restore object
         $course_header = $SESSION->course_header;
         $info = $SESSION->info;
-
-        $course_header->course_shortname = "{$course->shortname} - $group_name";
 
         $restore = new stdClass();
         $restore->backup_unique_code = $backup_unique_code;
@@ -74,7 +72,7 @@ class restore_backup {
             }
         }
 
-        $restore->file = $CFG->dataroot . '/' . $this->backup_folder . '/' . $file;
+        $restore->file = $CFG->dataroot . '/' . $file;
         $restore->restoreto = 2;
         $restore->metacourse = 0; //No restore of meta courses
         $restore->users = 2; //restore of users. 1=Course, 2=None
@@ -96,12 +94,16 @@ class restore_backup {
         $SESSION->restore->restore_course_files = $restore->course_files;
         $SESSION->restore->restore_site_files   = $restore->site_files;
 
-        // TEST THIS
         $restore->deleting = true; //There is nothing to delete when we restore to a new course
 
-        if (!@restore_execute($restore, $info, $course_header, $errorstr)) return false;
+        $course_header->course_shortname = "{$course->shortname} - $group_name";
+        $course_header->course_fullname = "{$course->fullname} - $group_name";
 
-        return ($this->get_last_restored_course_id($course, $group_shortname));
+        if (!@restore_execute($restore, $info, $course_header, $errorstr)) return false;
+        if (!@$this->delete_backup_file($restore->file)) return false;
+        unset($restore);
+
+        return ($new_course_id = @$this->get_last_restored_course_id($course, $group_name)) ? $new_course_id : false;
 
     } // function restore
 
@@ -110,8 +112,19 @@ class restore_backup {
         if (!$new_course = get_record('course', 'shortname', $course->shortname.' - '.$group_name)) return false;
         return $new_course->id;
     } // function get_last_restored_course_id
+
+
+    function delete_backup_file($backup_name) {
+        return (unlink($backup_name)) ? true : false;
+    } // function delete_backup_file
 }
 
+
+//Increase timelimit and memory limit for this script.
+set_time_limit(0);
+raise_memory_limit('512M');
+
+$error = false;
 // Fetching variables
 $course = new stdClass();
 foreach($_POST['course'] as $key => $property) {
@@ -119,11 +132,10 @@ foreach($_POST['course'] as $key => $property) {
 }
 $backup_name = $_POST['backup_name'];
 $group_name = $_POST['group_name'];
-var_dump($course);echo '<br />';
-exit();
 
 // Running script
 $restore_backup = new restore_backup();
-echo ($course_id = $restore_backup->course_restore($backup_name, $course, $group_name)) ? $course_id : 'false';
-
+if (!$course_id = $restore_backup->course_restore($backup_name, $course, $group_name)) $error = true;
+echo ($error) ? 'false' : $course_id; // Return course id
+unset($restore_backup);
 ?>

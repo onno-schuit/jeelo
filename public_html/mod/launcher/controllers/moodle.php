@@ -30,9 +30,10 @@ class moodle_controller extends controller
 
     function create($moodle = false) {
         $this->has_access_rights();
-
         $moodle = new moodle(required_param('moodle', PARAM_RAW));
+
         if (!$moodle->validate_and_create()) return $this->edit($moodle);
+
 
         /*$_SESSION['pw_db'] = $moodle->db->password;
         $_SESSION['pw_user'] = $moodle->user->password;*/
