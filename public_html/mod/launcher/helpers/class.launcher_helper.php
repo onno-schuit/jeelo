@@ -57,6 +57,35 @@ class launcher_helper extends helper {
     } // function print_error
 
 
+    function print_menu() {
+        global $id;
+        echo "<a href='index.php?id=$id&controller=moodle&action=add_school'>Create a new school</a><br />";
+        echo "<a href='index.php?id=$id&controller=moodle&action=add_schoolyear'>Add a new school year</a>";
+    } // function print_menu
+
+
+    function print_moodles_dropdown($schoolyear) {
+        $moodle_environments = $this->get_moodle_environments();
+
+        echo "<select name='{$this->model_name}[environment_id]' onChange='this.form.submit();'>";
+        echo "<option value='select'>".get_string('select')."</option>"; 
+        foreach($moodle_environments as $environment) {
+
+            $selected = (isset($schoolyear->environment->id) && ($schoolyear->environment->id == $environment->id)) ? 'selected' : '';
+            echo "<option value='{$environment->id}' $selected>{$environment->name}</option>";
+
+        }
+        echo "</select>";
+    } // function print_moodles_dropdown
+
+
+    function get_moodle_environments() {
+        global $CFG;
+        if (!$moodle_environments = get_records('launcher_moodles')) error(get_string('no_moodles', 'launcher'));
+        return $moodle_environments;
+    } // function get_moodle_environments
+
+
     function print_input_field($field, $moodle) {
 
         $preset_value = (isset($moodle->$field)) ? $moodle->$field : '';

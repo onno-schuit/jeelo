@@ -78,12 +78,12 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
 
-        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+/*        if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
         if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
-        
+ */        
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
         // Finally, store key variables in the mother database
@@ -182,12 +182,9 @@ return ($result === 0);*/
 
 
     function validate_files_received() {
-        
-        if ($this->upload_users['name'] == '' && $this->upload_groups['name'] != '') {
+    
+        if ((isset($this->upload_users['name']) && $this->this_users['name']) == '' && (isset($this->upload_groups['name']) && $this->upload_roups!= '')) {
             soda_error::add_error($this, 'upload_users', get_string('error_groups_without_users', 'launcher'));
-        }
-        if ($this->upload_users['name'] != '' && $this->upload_groups['name'] == '') {
-            soda_error::add_error($this, 'upload_groups', get_string('error_users_without_groups', 'launcher'));
         }
 
     } // function validate_files
