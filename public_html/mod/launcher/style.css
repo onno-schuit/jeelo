@@ -1,1 +1,28 @@
+div.container {
+    margin: 10px;
+    height: 100%;
+    width: 100%;
+}
+
+div.container_left {
+    font-size: 16px;
+    float: left;
+    padding-right: 50px;
+
+    min-height: 250px;
+}
+
+div.container_right {
+
+}
+
+div.launcher_header {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+div.content_header {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
 

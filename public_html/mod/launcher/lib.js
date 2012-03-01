@@ -7,3 +7,7 @@ function show_average_loadtime() {
   return true;
 }
 
+
+function mask_unmask(element) {
+  element.type = (element.type == 'password') ? 'text' : 'password';
+}

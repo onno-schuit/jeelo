@@ -8249,7 +8249,6 @@ define('RESTORE_GROUPS_GROUPINGS', 3);
 
         //Location of the xml file
         $xml_file = $CFG->dataroot."/temp/backup/".$restore->backup_unique_code."/moodle.xml";
-        exit(print_object($xml_file));
 
         // Re-assure xml file is in place before any further process
         if (! $status = restore_check_moodle_file($xml_file)) {

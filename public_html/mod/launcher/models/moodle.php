@@ -4,12 +4,21 @@ class moodle extends user {
 
     static $table_name = 'launcher_moodles';
 
+
+    function validate_and_create() {
+        global $CFG, $launcher;
+        $this->launcher_id = $launcher->id;
+
+        if (!$this->validate()) return false; // Validate form
+        if (!$this->set_defaults()) return false; // set all default variables
+        if (!$this->create_moodle()) return false; // Start the create moodle processes
+
+        return true;
+    } // function insert
+
+
     function set_defaults() {
         global $CFG;
-
-        if (!$this) return false;
-
-        if (!isset($this->site_shortname) || $this->site_shortname == '') print_error('Key variables not found.', 'launcher');
 
         // Site variables
         $this->site->shortname   = $this->site_shortname;
@@ -23,9 +32,9 @@ class moodle extends user {
         $this->db->password      = $this->create_password();
         
         // Config variables
-        $this->cfg->wwwroot      = "http://{$this->db->host}/{$this->get_site_real_name()}";
+        $this->cfg->wwwroot      = "http://localhost/{$this->get_site_real_name()}";
         $this->cfg->dirroot      = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html";
-        $this->cfg->dataroot     = "{$this->get_global_root()}/{$this->get_site_real_name()}/moodledata";
+        $this->cfg->dataroot     = "{$this->get_global_root()}/{$this->get_site_real_name()}/moodle_data";
 
         // User variables
         $this->user->username    = 'admin';
@@ -35,8 +44,16 @@ class moodle extends user {
         $this->user->email       = $this->admin_email;
         $this->user->city        = 'Changeme';
 
+        // Server variables
+        $this->server->server    = $this->server_name;
+        $this->server->domain    = $this->domain;
+
+        $this->dumps_location    = '/etc/moodle_clients';
+        $this->sql_filename      = "{$this->server->domain}_sql_".date("Ymd");
+        $this->codebase_filename = "{$this->server->domain}_codebase_".date("Ymd");
+
         return true;
-    } // function load_defaults
+    } // function set_defaults
 
 
     function define_validation_rules() {
@@ -66,6 +83,149 @@ class moodle extends user {
     } // function define_validation_rules
 
 
+    function create_moodle() {
+        global $CFG;
+        
+        /* 
+        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        
+        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+ 
+        if (!$this->set_up_database()) launcher_helper::print_error('2001');
+
+        if (!$this->insert_child_content()) launcher_helper::print_error('2002');
+        
+        // Store key variables in the mother database
+        if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
+         */
+        // Finally prepair for transfer to the client
+        if (!$this->zip_codebase_and_database()) launcher_helper::print_error('2009');
+
+        return true;
+    } // function create_moodle
+
+
+    function zip_codebase_and_database() {
+        
+        // exit(print_object("cp {$this->sql_filename}.sql {$this->dumps_location}/db/"));
+        shell_exec("mysqldump -Qu root -pmenno --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
+
+        shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
+        shell_exec("tar -czvf {$this->dumps_location}/code/{$this->codebase_filename}.tgz {$this->get_global_root()}/{$this->site->shortname}");
+
+        return ($this->save_database_in_buffer_db());
+    } // function zip_codebase_and_database
+
+
+    /* Save database in buffer db
+     * This function will save the database in
+     * jeelo_buffer. Once its set there the cliet
+     * will know an environment is ready for copy. */
+    function save_database_in_buffer_db() {
+        $query = "INSERT INTO client_moodles (
+            timecreated, domain, short_code, sql_filename, codebase_filename, is_for_client, status, exit_code, timemodified ) VALUES (
+                '".date('Y-m-d H:i:s')."',
+                '{$this->domain}',
+                '{$this->site->shortname}',
+                '{$this->dumps_location}/{$this->sql_filename}',
+                '{$this->dumps_location}/{$this->codebase_filename}',
+                'client',
+                'new',
+                '0',
+                '".time()."');";
+
+        if (!$con = mysql_connect("localhost", "root", "menno")) die(mysql_error());
+        if (!mysql_select_db("jeelo_buffer")) die(mysql_error());
+        if (!mysql_query($query)) die(mysql_error());
+        mysql_close($con);
+        unset($con);
+        
+        return true;
+    } // function save_database_in_buffer_db
+
+
+    function create_codebase() {
+        global $CFG;
+
+        // Create public_html
+        if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name(), 'public_html')) return false;
+        // Create moodle_data
+        if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
+        // Create log folder
+        if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/logs")) return false;
+        // if (!$this->recursive_copy("{$this->get_global_root()}/jeelo19}", $this->get_global_root(), $this->get_site_real_name())) return false;
+        if (!$this->create_config()) return false;
+
+        return true;
+    } // function create_codebase
+
+
+    function set_up_database() {
+
+        if (!$this->create_database()) return false;
+        if (!$this->create_db_user()) return false;
+        if (!$this->insert_database()) return false;
+        if (!$this->create_site_admin()) return false;
+
+        return true;
+    } // function set_up_database
+
+
+    function create_database() {
+        $query = "CREATE DATABASE {$this->db->name}";
+
+        return execute_sql($query, false);
+    } // function create_database
+
+
+    function insert_database() {
+        global $CFG;
+        // Inserting database using sudo command
+        passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle.sql");
+
+        $query = "SHOW TABLES";
+        $result = launcher_helper::remote_execute($this, $query);
+
+        return (mysql_num_rows($result) > 0) ? true : false;  
+    } // function insert_database
+
+
+    function insert_child_content() {
+        global $CFG;
+        require_once('class.content_uploader.php');
+
+        $content_uploader = new content_uploader($this);
+        $content_uploader->upload();
+
+        return true;
+
+        $this->site->shortname   = $this->site_shortname;
+        $this->site->name        = $this->site_name;
+        $this->site->description = $this->site_description;
+        $query = "UPDATE {$CFG->prefix}course SET
+                    fullname = '{$this->site->name}',
+                    shortname = '{$this->site->shortname}',
+                    summary = '{$this->site->description}'
+                  WHERE category = 0";
+
+        return (launcher_helper::remote_execute($this, $query));
+    } // function insert_child_content
+
+
+    function set_up_website_link() {
+
+        passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
+        return ($this->website_is_linked());
+    } // function set_up_website
+
+
+    function website_is_linked() {
+/*        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
+return ($result === 0);*/
+        return true;
+    }
+
+
     function add_uploaded_files() {
         if (!isset($_FILES)) return true;
         foreach($_FILES as $key=>$file) {
@@ -75,12 +235,9 @@ class moodle extends user {
 
 
     function validate_files_received() {
-        
-        if ($this->upload_users['name'] == '' && $this->upload_groups['name'] != '') {
+    
+        if ((isset($this->upload_users['name']) && $this->upload_users['name']) == '' && (isset($this->upload_groups['name']) && $this->upload_groups!= '')) {
             soda_error::add_error($this, 'upload_users', get_string('error_groups_without_users', 'launcher'));
-        }
-        if ($this->upload_users['name'] != '' && $this->upload_groups['name'] == '') {
-            soda_error::add_error($this, 'upload_groups', get_string('error_users_without_groups', 'launcher'));
         }
 
     } // function validate_files
@@ -96,120 +253,62 @@ class moodle extends user {
     function get_global_root() { 
         global $CFG;
 
-        $dirroot = '';
-        $dirroot_stripped = explode('/', $CFG->dirroot, -2);
-        for($i = 0; $i < count($dirroot_stripped); $i ++)
-        {
-            if ($dirroot_stripped[$i] == '') continue;
-            $dirroot .= '/'.$dirroot_stripped[$i];
-        }
+		$new_dirroot = '/home/menno/php_projects/jeelos';
 
-        return $dirroot;
+        return $new_dirroot;
     } // function get_dirroot_stripped
 
 
-    function insert() {
-        global $CFG, $launcher;
-        $this->launcher_id = $launcher->id;
-
-        if (!$this->validate()) return false; // Validate form
-        if (!$this->set_defaults()) return false; // set all default variables
-        if (!$this->create_moodle()) return false; // Copy the moodle codebase & database
-
-        return true;
-    } // function insert
-
-
-    function insert_moodle() {
+    function save_child_in_mother_database() {
         global $CFG, $id;
 
-        $obj->name          = $this->site->name;
-        $obj->shortname     = $this->site->shortname;
-        $obj->description   = (isset($this->site->description) && $this->site->description != '') ? $this->site->description : '';
-        $obj->launcher_id   = $id;
+        $child_site = new stdClass();
+        $child_site->name          = $this->site->name;
+        $child_site->shortname     = $this->site->shortname;
+        $child_site->admin_email   = $this->admin_email;
+        $child_site->description   = (isset($this->site->description)) ? $this->site->description : '';
+        $child_site->launcher_id   = $id;
 
-        return (insert_record('launcher_moodles', $obj));
-    } // function insert_moodle
+        return (insert_record('launcher_moodles', $child_site));
+    } // function save_child_in_mother_database
 
     
-    function create_dbuser() {
+    function create_db_user() {
         global $CFG;
         
-        $error = false;
         $query = "
         CREATE USER
             '{$this->db->name}'@'{$this->db->host}'
-            IDENTIFIED BY '".key($this->db->password)."'";
-        if (!execute_sql($query, false)) $error = true;
+            IDENTIFIED BY '".$this->get_password($this->db->password)."'";
+        if (!execute_sql($query, false)) return false;
 
         $query = "
         GRANT ALL PRIVILEGES
             ON {$this->db->name} . *
-            TO '{$this->db->name}'@'{$this->db->host}'
-            IDENTIFIED BY '".key($this->db->password)."'
+            TO '{$this->db->username}'@'{$this->db->host}'
+            IDENTIFIED BY '".$this->get_password($this->db->password)."'
             WITH GRANT OPTION";
-        if (!execute_sql($query, false)) $error = true;
+        if (!execute_sql($query, false)) return false;
 
-        return (!$error);
-    } // function create_dbuser_and_admin
+        return true;
+    } // function create_db_user
 
 
-    function create_admin() {
+    function create_site_admin() {
         global $CFG;
-        $error = false;
 
         $query = "
             UPDATE {$CFG->prefix}user SET
                 username   = '{$this->user->username}',
-                password   = '{$this->user->password[key($this->user->password)]}',
+                password   = '{$this->get_password_hash($this->user->password)}',
                 email      = '{$this->user->email}',
                 firstname  = '{$this->user->firstname}',
                 lastname   = '{$this->user->lastname}',
                 city       = '{$this->user->city}'
             WHERE username = 'admin'";
-        if (!launcher_helper::remote_execute($this, $query)) error('Something went seriously wrong! Please contact a developer.');
-        return (!$error);
-    } // function create_admin
 
-
-    function create_moodle() {
-        global $CFG;
-//        $start_time = $this->get_page_time();
-
-        $this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name());
-
-        $query = "CREATE DATABASE {$this->db->name}";
-        execute_sql($query, false);
-
-        passthru("mysql -u root -pmenno {$this->get_site_real_name()} < {$CFG->dataroot}/moodle_fresh.sql");
-        passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
- 
-        if (!$this->create_dbuser()) print_error('launcher', 'Failed to create database user for the new moodle environment.');
-        if (!$this->create_admin()) print_error('launcher', 'Failed to create admin user for the new moodle environment.');
-        if (!$this->create_config()) print_error('launcher', 'Failed to edit config.php.');
- 
-        require_once('class.content_uploader.php');
-        $content_uploader = new content_uploader($this);
-        $content_uploader->upload();
-
-        $this->site->shortname   = $this->site_shortname;
-        $this->site->name        = $this->site_name;
-        $this->site->description = $this->site_description;
-        $query = "UPDATE {$CFG->prefix}course SET
-                    fullname = '{$this->site->name}',
-                    shortname = '{$this->site->shortname}',
-                    summary = '{$this->site->description}'
-                  WHERE category = 0";
-        if (!launcher_helper::remote_execute($this, $query)) error('Failed to set name for the moodle environment');
-
-        // $this->upgrade_modules($this->cfg->dirroot); <-- DIT KOMT LATER
-
-        if (!$this->insert_moodle()) return false; // Save new moodle environment in database
-
-        // $this->store_load_time($start_time);
- 
-        return true;
-    } // function create_moodle
+        return (launcher_helper::remote_execute($this, $query));
+    } // function create_site_admin
 
 
     function create_config() {
@@ -227,27 +326,31 @@ $CFG->dbtype    = "mysql";
 $CFG->dbhost    = "'.$this->db->host.'";
 $CFG->dbname    = "'.$this->db->name.'";
 $CFG->dbuser    = "'.$this->db->username.'";
-$CFG->dbpass    = "'.key($this->db->password).'";
+$CFG->dbpass    = "'.$this->get_password($this->db->password).'";
 $CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
 
+$CFG->wwwroot   = sprintf("http%s://%s", isset($_SERVER["HTTPS"]) ? "s" : "", $_SERVER["SERVER_NAME"])
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
 $CFG->dirroot   = "'.$this->cfg->dirroot.'";
 $CFG->dataroot  = "'.$this->cfg->dataroot.'";
 $CFG->admin     = "admin";
 
-$CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode
-';// $CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'"; // Password salt
+$CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode';
+if (isset($CFG->passwordsaltmain)) {
+    $config_input .= '
+$CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";';
+}
 $config_input .= '
-
 require_once("$CFG->dirroot/lib/setup.php");';
+
         if (!fwrite($config, trim($config_input))) return false;
         if (!fclose($config)) return false;
 
         return true;
     } // function create_config
 
-    function get_page_time() {
+/*    function get_page_time() {
 
         $starttime = microtime();
         $startarray = explode(" ", $starttime);
@@ -255,57 +358,20 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
         return $starttime;
     } // function start_page_timer
+ */
 
-
-    function upgrade_modules($root) {
-
-        if (!$upgrade_file = $this->create_upgrade_file($root)) print_error('launcher', 'Failed to create upgrade file');
-        if (!$this->execute_upgrade($upgrade_file)) print_error('launcher', 'Failed to execute upgrade');
-        if (!$this->delete_upgrade_file($upgrade_file)) print_error('launcher', 'Failed to delete upgrade file');
-        
-        return true;
-    } // function upgrade_modules
-
-
-    function execute_upgrade($upgrade_file) {
-        global $CFG;
-        require_once($upgrade_file);
-        return true;
-    } // function execute_upgrade
-
-
-    function delete_upgrade_file($upgrade_file) {
-        return (unlink($upgrade_file));
-    } // function delete_upgrade_file
-
-
-    function create_upgrade_file($root) {
-        global $CFG;
-        exit(print_object($CFG->libdir));
-
-        $filename = "$root/upgrade.php";
-        $upgrade_file = fopen($filename, 'w');
-        $string = "<?php";
-        $string .= "\n".'require_once("{$CFG->libdir}/upgradelib.php");';
-        $string .= "\nupgrade_noncore(true);";
-        $string .= "\n?>";
-        fwrite($upgrade_file, $string);
-        fclose($upgrade_file); // Now the file has been created
-
-        return $filename;
-    } // function create_upgrade_file
-
-
-    function recursive_copy($source, $dest, $diffDir){
+    function recursive_copy($source, $dest, $diffDir, $folder = false){
         global $CFG;
 
         $sourceHandle = opendir($source);
         if(!$diffDir) $diffDir = $source;
-        mkdir($dest . '/' . $diffDir);
-
-        if ($dest == $this->get_global_root()) {
-            return ($this->recursive_copy($source, $dest . '/' . $diffDir, 'public_html'));
+        
+        // Only create global child folder if the function's called for public_html
+        if ($folder != 'moodle_data') {
+            if (!mkdir($dest . '/' . $diffDir)) return false;
         }
+
+        if ($folder) return ($this->recursive_copy($source, $dest . '/' . $diffDir, $folder));
        
         while($resource = readdir($sourceHandle)){
 
@@ -313,20 +379,17 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
             if($resource == '.' || $resource == '..'
                 || $source . '/' . $resource == "{$CFG->dirroot}/config.php"
-                || $resource == 'moodle_fresh.sql') continue;
+                || $resource == 'moodle.sql') continue;
            
             if(is_dir($source . '/' . $resource)){
                 $this->recursive_copy($source . '/' . $resource, $dest, $diffDir . '/' . $resource);
             } else {
-                copy($source . '/' . $resource, $dest . '/' . $diffDir . '/' . $resource);
+                if (!copy($source . '/' . $resource, $dest . '/' . $diffDir . '/' . $resource)) return false;
             }
         }
+        return true;
     }
 
-
-    function get_moodle_vars() {
-        return $this;
-    } // function get_moodle
 
     function send_feedback_mails() {
         global $CFG;
@@ -343,7 +406,8 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
         return (email_to_user($email_to, $CFG->noreplyaddress, $subject, $body, $body));
     } // function sendmails
-
+    
+    
     function get_feedback_body() {
         $body = "
             <table border-collapse='collapse'>
@@ -354,7 +418,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
                 </tr>
                 <tr>
                     <td>Password</td>
-                    <td>".key($this->db->password)."</td>
+                    <td>".$this->get_password($this->db->password)."</td>
                 </tr>
                 <tr>
                     <td>Database name</td>
@@ -367,7 +431,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
                 </tr>
                 <tr>
                     <td>Password</td>
-                    <td>".key($this->user->password)."</td>
+                    <td>".$this->get_password($this->user->password)."</td>
                 </tr>
                 <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
                 <tr>
