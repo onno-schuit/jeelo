@@ -55,6 +55,9 @@ class Database_Mysql
 {
 	var $dbh; // mysql handle
 	var $error_str;
+    var $prefix;
+    public $user;
+    public $pass;
 
 	function __construct()
 	{
@@ -70,6 +73,8 @@ class Database_Mysql
 		{
 			throw new Exception($this->error());
 		}
+        $this->user = $user;
+        $this->pass = $pass;
 		return true;
 	}
 
@@ -177,6 +182,14 @@ class Database_Mysql
 			}
 			$query .= $m[$i];
 		}
+        
+        // replace {table_name} with {$prefix}table_name
+        preg_match_all('/\{[a-z0-9_]+\}/', $query, $matches);
+        foreach ($matches[0] as $table) {
+            $table_name = str_replace('{', '', $table);
+            $table_name = str_replace('}', '', $table_name);
+            $query = str_replace($table, $this->prefix . $table_name, $query);
+        }
 		return new DatabaseResult_Mysql($query, $this, $resultless);
 	}
 
