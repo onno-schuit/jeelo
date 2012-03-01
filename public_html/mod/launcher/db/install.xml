@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/launcher/db" VERSION="20120104" COMMENT="XMLDB file for Moodle mod/launcher"
+<XMLDB PATH="mod/launcher/db" VERSION="20120229" COMMENT="XMLDB file for Moodle mod/launcher"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -11,6 +11,7 @@
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="name field for moodle instances" PREVIOUS="course" NEXT="intro"/>
         <FIELD NAME="intro" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="General introduction of the launcher activity" PREVIOUS="name" NEXT="introformat"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)" PREVIOUS="intro" NEXT="timecreated"/>
+
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="introformat" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="average_loadtime"/>
         <FIELD NAME="average_loadtime" TYPE="float" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" ENUM="false" COMMENT="The average load time neccesary to create a new moodle environment." PREVIOUS="timemodified" NEXT="installed"/>
@@ -20,6 +21,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
       <INDEXES>
+
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
@@ -28,8 +30,10 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Name of the moodle environment" PREVIOUS="id" NEXT="shortname"/>
         <FIELD NAME="shortname" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="Shortname of the moodle environment" PREVIOUS="name" NEXT="description"/>
-        <FIELD NAME="description" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Description of the moodle environment" PREVIOUS="shortname" NEXT="launcher_id"/>
-        <FIELD NAME="launcher_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="ID of the launcher it belongs to" PREVIOUS="description"/>
+        <FIELD NAME="description" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Description of the moodle environment" PREVIOUS="shortname" NEXT="admin_email"/>
+
+        <FIELD NAME="admin_email" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="Email of the admin that created the environment. This is also the email of the main admin on the moodle environment." PREVIOUS="description" NEXT="launcher_id"/>
+        <FIELD NAME="launcher_id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" COMMENT="ID of the launcher it belongs to" PREVIOUS="admin_email"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

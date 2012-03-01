@@ -44,6 +44,14 @@ class moodle extends user {
         $this->user->email       = $this->admin_email;
         $this->user->city        = 'Changeme';
 
+        // Server variables
+        $this->server->server    = $this->server_name;
+        $this->server->domain    = $this->domain;
+
+        $this->dumps_location    = '/etc/moodle_clients';
+        $this->sql_filename      = "{$this->server->domain}_sql_".date("Ymd");
+        $this->codebase_filename = "{$this->server->domain}_codebase_".date("Ymd");
+
         return true;
     } // function set_defaults
 
@@ -77,20 +85,63 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-
-/*        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        
+        /* 
+        if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
         if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
- */        
+
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
-        // Finally, store key variables in the mother database
-        // if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
+        // Store key variables in the mother database
+        if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
+         */
+        // Finally prepair for transfer to the client
+        if (!$this->zip_codebase_and_database()) launcher_helper::print_error('2009');
 
         return true;
     } // function create_moodle
+
+
+    function zip_codebase_and_database() {
+        
+        // exit(print_object("cp {$this->sql_filename}.sql {$this->dumps_location}/db/"));
+        shell_exec("mysqldump -Qu root -pmenno --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
+
+        shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
+        shell_exec("tar -czvf {$this->dumps_location}/code/{$this->codebase_filename}.tgz {$this->get_global_root()}/{$this->site->shortname}");
+
+        return ($this->save_database_in_buffer_db());
+    } // function zip_codebase_and_database
+
+
+    /* Save database in buffer db
+     * This function will save the database in
+     * jeelo_buffer. Once its set there the cliet
+     * will know an environment is ready for copy. */
+    function save_database_in_buffer_db() {
+        $query = "INSERT INTO client_moodles (
+            timecreated, domain, short_code, sql_filename, codebase_filename, is_for_client, status, exit_code, timemodified ) VALUES (
+                '".date('Y-m-d H:i:s')."',
+                '{$this->domain}',
+                '{$this->site->shortname}',
+                '{$this->dumps_location}/{$this->sql_filename}',
+                '{$this->dumps_location}/{$this->codebase_filename}',
+                'client',
+                'new',
+                '0',
+                '".time()."');";
+
+        if (!$con = mysql_connect("localhost", "root", "menno")) die(mysql_error());
+        if (!mysql_select_db("jeelo_buffer")) die(mysql_error());
+        if (!mysql_query($query)) die(mysql_error());
+        mysql_close($con);
+        unset($con);
+        
+        return true;
+    } // function save_database_in_buffer_db
 
 
     function create_codebase() {
@@ -100,6 +151,8 @@ class moodle extends user {
         if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name(), 'public_html')) return false;
         // Create moodle_data
         if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
+        // Create log folder
+        if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/logs")) return false;
         // if (!$this->recursive_copy("{$this->get_global_root()}/jeelo19}", $this->get_global_root(), $this->get_site_real_name())) return false;
         if (!$this->create_config()) return false;
 
@@ -183,7 +236,7 @@ return ($result === 0);*/
 
     function validate_files_received() {
     
-        if ((isset($this->upload_users['name']) && $this->this_users['name']) == '' && (isset($this->upload_groups['name']) && $this->upload_roups!= '')) {
+        if ((isset($this->upload_users['name']) && $this->upload_users['name']) == '' && (isset($this->upload_groups['name']) && $this->upload_groups!= '')) {
             soda_error::add_error($this, 'upload_users', get_string('error_groups_without_users', 'launcher'));
         }
 
@@ -212,6 +265,7 @@ return ($result === 0);*/
         $child_site = new stdClass();
         $child_site->name          = $this->site->name;
         $child_site->shortname     = $this->site->shortname;
+        $child_site->admin_email   = $this->admin_email;
         $child_site->description   = (isset($this->site->description)) ? $this->site->description : '';
         $child_site->launcher_id   = $id;
 
@@ -276,6 +330,7 @@ $CFG->dbpass    = "'.$this->get_password($this->db->password).'";
 $CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
 
+$CFG->wwwroot   = sprintf("http%s://%s", isset($_SERVER["HTTPS"]) ? "s" : "", $_SERVER["SERVER_NAME"])
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
 $CFG->dirroot   = "'.$this->cfg->dirroot.'";
 $CFG->dataroot  = "'.$this->cfg->dataroot.'";

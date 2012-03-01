@@ -6,12 +6,8 @@ raise_memory_limit('512M');
 
 class content_uploader extends moodle {
 
-    function __construct(&$moodle) {
 
-        $this->moodle = $moodle;
-        
-        // Check files received, if not break it off immidietly
-        if (!$this->has_files_received()) launcher_helper::print_error('3000');
+    function __construct(&$moodle) {
 
         // Set variables
         $this->fields_users = array(
@@ -27,7 +23,12 @@ class content_uploader extends moodle {
                 'group3'=>'groep3'
             );
         $this->fields_groups = array('name'=>'naam', 'year'=>'jaar');
-        static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
+        $this->possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
+
+        $this->moodle = $moodle;
+        
+        // Check files received, if not break it off immidietly
+        if (!$this->has_files_received()) launcher_helper::print_error('3000');
 
     } // function __construct
 
@@ -37,7 +38,7 @@ class content_uploader extends moodle {
         
         if (!$this->create_users()) launcher_helper::print_error('3002');
         if (!$this->create_child_content()) launcher_helper::print_error('3003');
-        if (!$this->create_nonstandard_role_assignments()) launcher_helper::print_error('3005');
+       // if (!$this->create_nonstandard_role_assignments()) launcher_helper::print_error('3005');
         if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
 
         return true;
@@ -55,8 +56,8 @@ class content_uploader extends moodle {
             $line ++;
             // Check column names
             if ($line == 1) {
-				continue;
-                // if ($this->validate_columns($data, $this->fields_users)) continue;
+				// continue;
+                if ($this->validate_columns($data, $this->fields_users)) continue;
             }
 
             // Continue with the users
@@ -145,41 +146,50 @@ class content_uploader extends moodle {
         foreach($this->moodle->categories as $parent_category_id) {
 
             $parent_courses = get_records_sql("SELECT * FROM {$CFG->prefix}course WHERE category = $parent_category_id AND groupyear != ''");
-            // if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
             $child_category_id = 2;
 
-            $this->read_and_validate_csv_file('groups', function($child_group) use($CFG, $child_category_id, $parent_courses) {
+            $moodle = $this->moodle;
+            $line = 0;
+            $handler = fopen($_FILES["upload_groups"]["tmp_name"], 'r');
+            while($data = fgetcsv($handler, 0, ';')) {
+                $line ++;
+                if ($line == 1) {
+                    if ($this->validate_columns($data, $this->fields_groups)) continue;
+                } // Check column names
+
+                $child_group = new stdClass();
+                $child_group = $this->assign_column_names($data, $child_group, 'fields_groups');
+
+                //  $this->read_and_validate_csv_file('groups', function($child_group) use($CFG, $child_category_id, $parent_courses, $moodle) {
 
                 // Continue with the groups
-                $child_group->year = content_uploader::groupyears_to_array($child_group->year);
+                $child_group->year = $this->groupyears_to_array($child_group->year);
 
                 foreach($parent_courses as $parent_course) {
                     // If its not an array yet convert it
 
-                    exit(print_object(content_uploader::possible_groups));
-
-                    if (!is_array($parent_course->groupyear)) $parent_course->groupyear = content_uploader::groupyears_to_array($parent_course->groupyear);
+                    if (!is_array($parent_course->groupyear)) $parent_course->groupyear = $this->groupyears_to_array($parent_course->groupyear);
 
                     foreach($this->possible_groups as $possible_group) {
 
-                        foreach($child_group->groupyears as $child_group_year) {
-                            if (!in_array($child_group_year, $possible_group)) continue;
+                        foreach($child_group->year as $child_group_year) {
+                            if (!in_array($child_group_year, $this->possible_groups)) continue;
                             if (!in_array($child_group_year, $parent_course->groupyear)) continue;
 
                             // Create course
-                            if (!$child_course_id = static::create_course($this->moodle, $child_category_id, $child_group, $parent_course)) error("Couldn't create course");
+                            if (!$child_course_id = $this->create_course($moodle, $child_category_id, $child_group, $parent_course)) error("Couldn't create course");
                             // Create group
-                            if (!$child_group_id = static::create_group($this->moodle, $child_course_id, $child_group)) error("Couldn't create group.");
+                            if (!$child_group_id = $this->create_group($moodle, $child_course_id, $child_group)) error("Couldn't create group.");
                             // Add users to groups
-                            if (!static::add_group_members($this->moodle, $child_course_id, $child_group_id)) error("Couldn't add group members.");
+                            if (!$this->add_group_members($moodle, $child_course_id, $child_group_id)) error("Couldn't add group members.");
  
                             // Everything went well, break to avoid copying the course another time
                             break;
                         }
                     }
                 }
-
-            });
+            };
 //            }
         }
         return true;
@@ -190,7 +200,7 @@ class content_uploader extends moodle {
         global $CFG;
 
         $line = 0;
-        $handler = fopen($this->moodle->upload_users['tmp_name'], 'r');
+        $handler = fopen($moodle->upload_users['tmp_name'], 'r');
         while($data = fgetcsv($handler, 0, ';')) {
 
             $line ++;
@@ -350,7 +360,7 @@ class content_uploader extends moodle {
     } // function create_categories
 
 
-    static function create_course($moodle, $category_id, $group, $course) {
+    function create_course($moodle, $category_id, $group, $course) {
         global $CFG;
 
         if (!$backup_name = $this->create_backup($moodle, $category_id, $group, $course)) error("Failed to create backup for parent course {$course->id}");
@@ -448,7 +458,7 @@ class content_uploader extends moodle {
     } // function filter_wrong_columns
 
 
-    static function groupyears_to_array($groupyear) {
+    function groupyears_to_array($groupyear) {
         return array_filter(explode('/', $groupyear));
     } // function groupyear_to_array
 

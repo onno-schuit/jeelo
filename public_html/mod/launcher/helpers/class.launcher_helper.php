@@ -43,6 +43,7 @@ class launcher_helper extends helper {
             '2006'=>'Failed to save the child in the mother database.',
             '2007'=>'Failed to save the child in the mother database.',
             '2008'=>'Failed to save the child in the mother database.',
+            '2009'=>'Failed to create zip file from codebase and database.',
 
             '3000'=>'Failed to identify the csv files.',
             '3001'=>'Failed to create context files.',
@@ -88,7 +89,9 @@ class launcher_helper extends helper {
 
     function print_input_field($field, $moodle) {
 
-        $preset_value = (isset($moodle->$field)) ? $moodle->$field : '';
+        // Set the preset value if one is already set
+        // Set default of the field 'server' to 'localhost'
+        $preset_value = (isset($moodle->$field)) ? $moodle->$field : ($field == 'server_name') ? 'localhost' : '';
         echo "
         <tr>
             <td>".get_string($field, 'launcher')."</td>
