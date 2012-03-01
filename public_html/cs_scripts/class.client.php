@@ -41,7 +41,38 @@ class client extends base {
     }
     
     public static function create_codebase($domain, $short_code) {
-        mkdir(self::$target_folder . $domain);
+        $target = self::$target_folder . $domain;
+        self::log("Creating folder: $target");
+        mkdir($target, 0755); // without the public_html folder
+
+        // symlink the subdomain (demo.jeelo.nl);
+        $cmd = sprintf("ln -s %s %s", $target, self::$target_folder . $short_code . ".jeelo.nl");
+        self::log($cmd);
+        shell_exec($cmd);
+    }
+    
+    public static function get_codebase_from_server($record_id, $domain) {
+        $request = array(
+            'request' => 'get_codebase',
+            'id' => $record_id
+        );
+        
+        $response = self::get_server_response($request);
+        // check if we have file contents or maybe an error
+        if (strlen($response) < 100 && strstr($response, 'error')) {
+            self::log($response);
+            die();
+        }
+        
+        // write contents to temp file
+        $tmpfile = self::$target_folder . $domain . '/site.tgz';
+        self::log("Creating file " . $tmpfile);
+        file_put_contents($tmpfile, $response);
+        
+        // extract contents
+        $cmd = sprintf("tar -xz -C %s -f %s", dirname($tmpfile), $tmpfile);
+        self::log($cmd);
+        shell_exec($cmd); 
     }
     
     public static function get_db_from_server($record_id, $short_code) {
@@ -111,8 +142,9 @@ class client extends base {
         $user_and_pass = self::create_database_user($short_code);
         self::get_db_from_server($id, $short_code);
         
-        self::create_codebase($short_code);
-        self::get_codebase_from_server($id, $short_code);
+        self::create_codebase($domain, $short_code);
+        self::get_codebase_from_server($id, $domain);
+        self::update_moodle_config($domain, $user_and_pass); 
         
         
         
@@ -135,6 +167,12 @@ class client extends base {
             }
         }
         
+    }
+    
+    static public function update_moodle_config($domain, $user_and_pass) {
+        $folder = self::$target_folder . $domain;
+        list($username, $password) = $user_and_pass;
+        // 2do: open config file and replace user and password
     }
     
     static public function update_server_status($record_id, $status, $exit_code=0) {

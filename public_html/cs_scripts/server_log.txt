@@ -67,3 +67,8 @@ SELECT * FROM {client_moodles} WHERE is_for_client='client' AND status='new'2012
 2012-03-01 14:03:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND status='new'
 2012-03-01 14:03:30 127.0.0.1: request=set_status&id=1&status=being_processed&exit_code=0&for=client&hash=285f54b49c471e7726f7823e1fd41cac
 2012-03-01 14:03:30 127.0.0.1: request=get_database&id=1&for=client&hash=8b650cc568b9a1f301325b4eafbe1fcd
+2012-03-01 14:39:51 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-01 14:39:51 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND status='new'
+2012-03-01 14:39:51 127.0.0.1: request=set_status&id=1&status=being_processed&exit_code=0&for=client&hash=285f54b49c471e7726f7823e1fd41cac
+2012-03-01 14:39:51 127.0.0.1: request=get_database&id=1&for=client&hash=8b650cc568b9a1f301325b4eafbe1fcd
+2012-03-01 14:39:52 127.0.0.1: request=get_codebase&id=1&for=client&hash=f74d6d6da7bf5c7a552bab3d971411ec

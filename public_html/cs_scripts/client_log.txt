@@ -130,3 +130,21 @@
 2012-03-01 14:03:30 gunzip -c /tmp/jmdlEiDdCe.gz > /tmp/jmdlEiDdCe
 2012-03-01 14:03:30 mysql -u root  demo < /tmp/jmdlEiDdCe
 2012-03-01 14:03:30 Mysql ouput: []
+2012-03-01 14:39:51 http://jeelo.debian.local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-01 14:39:51 Processing: 1;2012-03-01 14:39:18;demo.jeelo.nl;demo
+2012-03-01 14:39:51 http://jeelo.debian.local/cs_scripts/server.php?request=set_status&id=1&status=being_processed&exit_code=0&for=client&hash=285f54b49c471e7726f7823e1fd41cac
+2012-03-01 14:39:51 Updated status for record 1 to being_processed: ok
+2012-03-01 14:39:51 CREATE DATABASE `demo`
+2012-03-01 14:39:51 CREATE USER 'demo'@'localhost' IDENTIFIED BY 'b4bcbb2676422b7f0698eb221bc1f1c6'
+2012-03-01 14:39:51 GRANT USAGE ON * . * TO 'demo'@'localhost' IDENTIFIED BY 'b4bcbb2676422b7f0698eb221bc1f1c6' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0
+2012-03-01 14:39:51 GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER , CREATE TEMPORARY TABLES , CREATE VIEW , EVENT, TRIGGER, SHOW VIEW , CREATE ROUTINE, ALTER ROUTINE, EXECUTE ON `demo` . * TO 'demo'@'localhost'
+2012-03-01 14:39:51 http://jeelo.debian.local/cs_scripts/server.php?request=get_database&id=1&for=client&hash=8b650cc568b9a1f301325b4eafbe1fcd
+2012-03-01 14:39:51 Creating file /tmp/jmdlRLhgaD.gz
+2012-03-01 14:39:51 gunzip -c /tmp/jmdlRLhgaD.gz > /tmp/jmdlRLhgaD
+2012-03-01 14:39:51 mysql -u root  demo < /tmp/jmdlRLhgaD
+2012-03-01 14:39:51 Mysql ouput: []
+2012-03-01 14:39:51 Creating folder: /home/jeelos/demo.jeelo.nl
+2012-03-01 14:39:51 ln -s /home/jeelos/demo.jeelo.nl /home/jeelos/demo.jeelo.nl
+2012-03-01 14:39:52 http://jeelo.debian.local/cs_scripts/server.php?request=get_codebase&id=1&for=client&hash=f74d6d6da7bf5c7a552bab3d971411ec
+2012-03-01 14:39:52 Creating file /home/jeelos/demo.jeelo.nl/site.tgz
+2012-03-01 14:39:52 tar -xz -C /home/jeelos/demo.jeelo.nl -f /home/jeelos/demo.jeelo.nl/site.tgz
