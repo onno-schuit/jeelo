@@ -5,7 +5,7 @@ require_once("class.base.php");
 class client extends base {
     
     static $client_name = 'client';
-    static $server_url = 'http://jeelo.debian.local/cs_scripts/server.php';
+    static $server_url = 'http://127.0.0.1/jeelo19/cs_scripts/server.php';
     static $target_folder = '/home/jeelos/';
     static $log_file = './client_log.txt';
     static $log_echo = true;
@@ -46,7 +46,8 @@ class client extends base {
         mkdir($target, 0755); // without the public_html folder
 
         // symlink the subdomain (demo.jeelo.nl);
-        $cmd = sprintf("ln -s %s %s", $target, self::$target_folder . $short_code . ".jeelo.nl");
+        symlink($target, self::$target_folder . $short_code . ".jeelo.nl");
+        // $cmd = sprintf("ln -s %s %s", $target, self::$target_folder . $short_code . ".jeelo.nl");
         self::log($cmd);
         shell_exec($cmd);
     }

@@ -2,7 +2,7 @@
 
 require_once("class.server.php");
 
-server::init_db('localhost', 'root', '', 'jeelo_test');
+server::init_db('localhost', 'root', 'menno', 'jeelo_buffer');
 
 $query_string = $_SERVER['QUERY_STRING'];
 

@@ -86,34 +86,53 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
         
-        /* 
+         
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
-        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+  //      if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
-
+/*
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
         // Store key variables in the mother database
         if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
          */
-        // Finally prepair for transfer to the client
+        // Prepair files for transfer to client (by cron)
         if (!$this->zip_codebase_and_database()) launcher_helper::print_error('2009');
+
+        // We don't need the created sourcecode and db anymore, remove them
+        if (!$this->remove_sourcecode_and_db()) launcher_helper::print_error('2009');
+
+        // Finally tell the cron we have an environment ready for transfer
+        if (!$this->save_database_in_buffer_db()) launcher_helper::print_error('2009');
 
         return true;
     } // function create_moodle
 
 
+    function remove_sourcecode_and_db() {
+        /* Remove database
+         * Remove user
+         * Remove codebase folder
+         */
+
+        $query = "DROP DATABASE {$this->db->name}; DROP USER '{$this->db->user}'@'{$this->db->host}';";
+        if (!execute_sql($query, false)) return false;
+        shell_exec("rm -R {$this->get_global_root()}/{$this->site->shortname}");
+
+        return true;
+    } // function remove_sourcecode_and_db
+
+
     function zip_codebase_and_database() {
-        
-        // exit(print_object("cp {$this->sql_filename}.sql {$this->dumps_location}/db/"));
-        shell_exec("mysqldump -Qu root -pmenno --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
-
+        global $CFG;
+        shell_exec("mysqldump -Qu {$CFG->dbuser} -p{$CFG->dbpass} --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
         shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
-        shell_exec("tar -czvf {$this->dumps_location}/code/{$this->codebase_filename}.tgz {$this->get_global_root()}/{$this->site->shortname}");
+        chdir("{$this->get_global_root()}/{$this->site->shortname}");
+        shell_exec("tar -cz -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
 
-        return ($this->save_database_in_buffer_db());
+        return true;
     } // function zip_codebase_and_database
 
 
@@ -122,23 +141,24 @@ class moodle extends user {
      * jeelo_buffer. Once its set there the cliet
      * will know an environment is ready for copy. */
     function save_database_in_buffer_db() {
+        global $CFG;
         $query = "INSERT INTO client_moodles (
             timecreated, domain, short_code, sql_filename, codebase_filename, is_for_client, status, exit_code, timemodified ) VALUES (
                 '".date('Y-m-d H:i:s')."',
                 '{$this->domain}',
                 '{$this->site->shortname}',
-                '{$this->dumps_location}/{$this->sql_filename}',
-                '{$this->dumps_location}/{$this->codebase_filename}',
+                '{$this->dumps_location}/db/{$this->sql_filename}.gz',
+                '{$this->dumps_location}/code/{$this->codebase_filename}.tgz',
                 'client',
                 'new',
                 '0',
                 '".time()."');";
 
-        if (!$con = mysql_connect("localhost", "root", "menno")) die(mysql_error());
-        if (!mysql_select_db("jeelo_buffer")) die(mysql_error());
+        if (!$connection = mysql_connect("localhost", "root", "menno")) die(mysql_error());
+        if (!mysql_select_db("jeelo_buffer", $connection)) die(mysql_error());
         if (!mysql_query($query)) die(mysql_error());
-        mysql_close($con);
-        unset($con);
+        mysql_close($connection);
+        unset($connection);
         
         return true;
     } // function save_database_in_buffer_db
