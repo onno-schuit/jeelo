@@ -6,6 +6,7 @@ class client extends base {
     
     static $client_name = 'client';
     static $server_url = 'http://jeelo.debian.local/cs_scripts/server.php';
+    static $target_folder = '/home/jeelos/';
     static $log_file = './client_log.txt';
     static $log_echo = true;
  
@@ -37,6 +38,10 @@ class client extends base {
             'password' => $password
         );
 
+    }
+    
+    public static function create_codebase($domain, $short_code) {
+        mkdir(self::$target_folder . $domain)
     }
     
     public static function get_db_from_server($record_id, $short_code) {
@@ -105,6 +110,9 @@ class client extends base {
         self::create_database($short_code);
         $user_and_pass = self::create_database_user($short_code);
         self::get_db_from_server($id, $short_code);
+        
+        self::create_codebase($short_code);
+        self::get_codebase_from_server($id, $short_code);
         
         
         
