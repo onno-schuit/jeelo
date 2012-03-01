@@ -41,7 +41,7 @@ class client extends base {
     }
     
     public static function create_codebase($domain, $short_code) {
-        mkdir(self::$target_folder . $domain)
+        mkdir(self::$target_folder . $domain);
     }
     
     public static function get_db_from_server($record_id, $short_code) {
