@@ -177,6 +177,12 @@ class client extends base {
         $start = strpos($config_contents, "'", $offset); // find first single quote from there
         $end = strpos($config_contents, "'", $start+1); // find next single quote
         
+        /* Werkt niet, moet pass uit config.php worden, want die wordt via mail opgestuurd.
+         * Ook wijzigen:
+         * 		$CFG->dirroot
+         * 		$CFG->wwwroot
+         * 		$CFG->dataroot
+         */
         $config_contents = substr($config_contents, 0, $start+1) . $password . substr($config_contents, $end);
         
         file_put_contents($folder .'/public_html/config.php');
