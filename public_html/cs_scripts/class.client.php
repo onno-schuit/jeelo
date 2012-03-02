@@ -147,8 +147,7 @@ class client extends base {
         self::get_codebase_from_server($id, $domain);
         self::update_moodle_config($domain, $user_and_pass); 
         
-        
-        
+        self::update_server_status($id, 'processed', 0); // everything ok! 
     }
 
 
@@ -173,7 +172,15 @@ class client extends base {
     static public function update_moodle_config($domain, $user_and_pass) {
         $folder = self::$target_folder . $domain;
         list($username, $password) = $user_and_pass;
-        // 2do: open config file and replace user and password
+        
+        $config_contents = file_get_contents($folder . '/public_html/config.php');
+        $offset = strpos($config_contents, 'CFG->dbpass'); // find the line with CFG->dbpass
+        $start = strpos($config_contents, "'", $offset); // find first single quote from there
+        $end = strpos($config_contents, "'", $start+1); // find next single quote
+        
+        $config_contents = substr($config_contents, 0, $start+1) . $password . substr($config_contents, $end);
+        
+        file_put_contents($folder .'/public_html/config.php');
     }
     
     static public function update_server_status($record_id, $status, $exit_code=0) {
@@ -189,18 +196,3 @@ class client extends base {
     
 }
 
-
-/*
-
-- create database
-- create database user + pw
-- get database sql
-- unzip and import db sql
-- create www root folder
-- get code base
-- unzip code base
-- create apache vhost file
-- restart apache
-
-
-*/
