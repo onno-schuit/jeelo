@@ -23,7 +23,6 @@ function xmldb_chat_upgrade($oldversion=0) {
 
     $result = true;
 
-	/*
     if ($result && $oldversion < 2007012100) {
 
     /// Changing precision of field lang on table chat_users to (30)
@@ -34,7 +33,6 @@ function xmldb_chat_upgrade($oldversion=0) {
     /// Launch change of precision for field lang
         $result = $result && change_field_precision($table, $field);
     }
-    */
 
 //===== 1.9.0 upgrade line ======//
 

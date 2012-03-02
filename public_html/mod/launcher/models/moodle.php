@@ -63,7 +63,9 @@ class moodle extends user {
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
         $this->add_rule('site_shortname', get_string('required'), function($site_shortname) { return ( trim($site_shortname) != '' ); });
         $this->add_rule('admin_email', get_string('error_email', 'launcher'), function($admin_email) { return (validate_email($admin_email)); });
-
+        $this->add_rule('server_name', get_string('required'), function($server_name) { return ( trim($server_name) != '' ); });
+        $this->add_rule('domain', get_string('required'), function($domain) { return ( trim($domain) != '' ); });
+ 
         $this->validate_files_received();
 
         $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
@@ -86,63 +88,73 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
         
-         
+        
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
-  //      if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+        //if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
-/*
-        if (!$this->insert_child_content()) launcher_helper::print_error('2002');
+
+        /*if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
         // Store key variables in the mother database
         if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
          */
-        // Prepair files for transfer to client (by cron)
-        if (!$this->zip_codebase_and_database()) launcher_helper::print_error('2009');
-
-        // We don't need the created sourcecode and db anymore, remove them
-        if (!$this->remove_sourcecode_and_db()) launcher_helper::print_error('2009');
-
-        // Finally tell the cron we have an environment ready for transfer
-        if (!$this->save_database_in_buffer_db()) launcher_helper::print_error('2009');
+        // Finally prepair for transfer to the client
+        if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
 
         return true;
     } // function create_moodle
 
 
-    function remove_sourcecode_and_db() {
-        /* Remove database
-         * Remove user
-         * Remove codebase folder
-         */
-
-        $query = "DROP DATABASE {$this->db->name}; DROP USER '{$this->db->user}'@'{$this->db->host}';";
-        if (!execute_sql($query, false)) return false;
-        shell_exec("rm -R {$this->get_global_root()}/{$this->site->shortname}");
+    function prepair_transfer_to_client() {
+        
+        if (!$this->copy_codebase_and_database()) return false;
+        if (!$this->remove_unneccesary_db_and_codebase()) return false;
+        if (!$this->save_client_in_buffer_db()) return false;
 
         return true;
-    } // function remove_sourcecode_and_db
+    } // function prepair_transfer_to_client
 
 
-    function zip_codebase_and_database() {
+    function copy_codebase_and_database() {
         global $CFG;
+        // Dump and zip database
         shell_exec("mysqldump -Qu {$CFG->dbuser} -p{$CFG->dbpass} --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
         shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
+        // Delete .sql file again, we got it zipped now anyway
+        shell_exec("rm {$this->dumps_location}/db/{$this->sql_filename}.sql");
+
+        // Zip codebase
         chdir("{$this->get_global_root()}/{$this->site->shortname}");
         shell_exec("tar -cz -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
 
         return true;
-    } // function zip_codebase_and_database
+    } // function copy_codebase_and_database
 
 
-    /* Save database in buffer db
-     * This function will save the database in
-     * jeelo_buffer. Once its set there the cliet
-     * will know an environment is ready for copy. */
-    function save_database_in_buffer_db() {
+    function remove_unneccesary_db_and_codebase() {
         global $CFG;
-        $query = "INSERT INTO client_moodles (
+
+        // Delete user and database
+        $query = "DROP USER '{$this->db->user}'@'{$this->db->host}'";
+        execute_sql($query, false);
+        $query =  "DROP DATABASE {$this->db->name}";
+        execute_sql($query, false);
+
+        shell_exec("rm -R {$this->get_global_root()}/{$this->get_site_real_name()}");
+
+        return true;
+    } // function remove_unneccesary_db_and_codebase
+
+
+    /* Save client in buffer db
+     * This function will save the client variables
+     * in jeelo_buffer. Once its set there the cliet
+     * will know an environment is ready for copy.*/
+    function save_client_in_buffer_db() {
+        global $CFG;
+        $query = "INSERT INTO jeelo_buffer.client_moodles (
             timecreated, domain, short_code, sql_filename, codebase_filename, is_for_client, status, exit_code, timemodified ) VALUES (
                 '".date('Y-m-d H:i:s')."',
                 '{$this->domain}',
@@ -154,11 +166,10 @@ class moodle extends user {
                 '0',
                 '".time()."');";
 
-        if (!$connection = mysql_connect("localhost", "root", "menno")) die(mysql_error());
-        if (!mysql_select_db("jeelo_buffer", $connection)) die(mysql_error());
+        if (!$con = mysql_connect("localhost", "{$CFG->dbuser}", "{$CFG->dbpass}")) die(mysql_error());
+        // if (!mysql_select_db("jeelo_buffer", $con)) die(mysql_error()); // Avoid selecting db
         if (!mysql_query($query)) die(mysql_error());
-        mysql_close($connection);
-        unset($connection);
+        mysql_close($con);
         
         return true;
     } // function save_database_in_buffer_db
@@ -286,6 +297,8 @@ return ($result === 0);*/
         $child_site->name          = $this->site->name;
         $child_site->shortname     = $this->site->shortname;
         $child_site->admin_email   = $this->admin_email;
+        $child_site->server_name   = $this->server_name;
+        $child_site->domain        = $this->domain;
         $child_site->description   = (isset($this->site->description)) ? $this->site->description : '';
         $child_site->launcher_id   = $id;
 

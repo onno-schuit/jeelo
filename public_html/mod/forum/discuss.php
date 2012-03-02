@@ -62,10 +62,6 @@
             error('You can\'t move to that forum - it doesn\'t exist!', $return);
         }
 
-        if ($forumto->type == 'single') {
-            error('Cannot move discussion to a simple single discussion forum.', $return);
-        }
-
         if (!$cmto = get_coursemodule_from_instance('forum', $forumto->id, $course->id)) {
             error('Target forum not found in this course.', $return);
         }
@@ -191,8 +187,6 @@
             }
             $section = -1;
             $forummenu = array();
-            // Check forum types and eliminate simple discussions.
-            $forumcheck = get_records('forum', 'course', $course->id, '', 'id, type');
             foreach ($modinfo->instances['forum'] as $forumcm) {
                 if (!$forumcm->uservisible || !has_capability('mod/forum:startdiscussion',
                     get_context_instance(CONTEXT_MODULE,$forumcm->id))) {
@@ -203,9 +197,7 @@
                     $forummenu[] = "-------------- $strsection $forumcm->sectionnum --------------";
                 }
                 $section = $forumcm->sectionnum;
-                $forumidcompare = $forumcm->instance != $forum->id;
-                $forumtypecheck = $forumcheck[$forumcm->instance]->type !== 'single';
-                if ($forumidcompare and $forumtypecheck) {
+                if ($forumcm->instance != $forum->id) {
                     $url = "discuss.php?d=$discussion->id&amp;move=$forumcm->instance&amp;sesskey=".sesskey();
                     $forummenu[$url] = format_string($forumcm->name);
                 }

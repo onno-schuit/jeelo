@@ -46,8 +46,7 @@ class client extends base {
         mkdir($target, 0755); // without the public_html folder
 
         // symlink the subdomain (demo.jeelo.nl);
-        symlink($target, self::$target_folder . $short_code . ".jeelo.nl");
-        // $cmd = sprintf("ln -s %s %s", $target, self::$target_folder . $short_code . ".jeelo.nl");
+        symlink($target/public_html, "/var/www/$short_code.jeelo.nl");
         self::log($cmd);
         shell_exec($cmd);
     }

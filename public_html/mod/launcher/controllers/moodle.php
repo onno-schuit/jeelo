@@ -37,7 +37,7 @@ class moodle_controller extends controller
     } // function show
 
 
-    function create_school($moodle = false) { // Create schoolyear
+    function create_school($moodle = false) {
         $this->has_access_rights();
         $moodle = new moodle(required_param('moodle', PARAM_RAW));
 
@@ -50,7 +50,7 @@ class moodle_controller extends controller
     } // function create
 
 
-    function create_schoolyear($schoolyear = false) {
+    function create_schoolyear($schoolyear = false) { // Create schoolyear
         $this->has_access_rights();
 
         require_once('models/schoolyear.php');

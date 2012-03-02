@@ -100,13 +100,6 @@ class course_edit_form extends moodleform {
             $mform->setConstant('shortname', $course->shortname);
         }
 
-
-        /* Hack by Menno de Ridder, Solin, 2012-01-03
-         * This hack is added to link the course with the groups. */
-        $mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100" size="20"');
-        $mform->setHelpButton('groupyear', array('groupyear', get_string('groupyear', 'launcher')), true);
-
-
         $mform->addElement('text','idnumber', get_string('idnumbercourse'),'maxlength="100"  size="10"');
         $mform->setHelpButton('idnumber', array('courseidnumber', get_string('idnumbercourse')), true);
         $mform->setType('idnumber', PARAM_RAW);

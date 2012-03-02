@@ -1,4 +1,4 @@
-<?PHP //$Id: block_login.php,v 1.22.2.5 2011/12/09 16:11:48 moodlerobot Exp $
+<?PHP //$Id: block_login.php,v 1.22.2.4 2008/03/03 11:41:03 moodler Exp $
 
 class block_login extends block_base {
     function init() {
@@ -49,12 +49,7 @@ class block_login extends block_base {
             $this->content->text .= '<input type="text" name="username" id="login_username" value="'.s($username).'" /></div>';
 
             $this->content->text .= '<div class="c1 fld password"><label for="login_password">'.get_string('password').'</label>';
-
-            if (!empty($CFG->loginpasswordautocomplete)) {
-                $this->content->text .= '<input type="password" name="password" id="login_password" value="" autocomplete="off" /></div>';
-            } else {
-                $this->content->text .= '<input type="password" name="password" id="login_password" value="" /></div>';
-            }
+            $this->content->text .= '<input type="password" name="password" id="login_password" value="" /></div>';
 
             $this->content->text .= '<div class="c1 btn"><input type="submit" value="'.get_string('login').'" /></div>';
 

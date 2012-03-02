@@ -1,4 +1,4 @@
-<?php // $Id: security.php,v 1.21.2.16 2011/12/09 16:11:48 moodlerobot Exp $
+<?php // $Id: security.php,v 1.21.2.15 2010/03/19 07:58:52 skodak Exp $
 
 if ($hassiteconfig) { // speedup for non-admins, add all caps used on this page
 
@@ -67,7 +67,6 @@ if ($hassiteconfig) { // speedup for non-admins, add all caps used on this page
     $temp->add(new admin_setting_configcheckbox('cookiehttponly', get_string('cookiehttponly', 'admin'), get_string('configcookiehttponly', 'admin'), 0));
     $temp->add(new admin_setting_configcheckbox('regenloginsession', get_string('regenloginsession', 'admin'), get_string('configregenloginsession', 'admin'), 1));
     $temp->add(new admin_setting_configtext('excludeoldflashclients', get_string('excludeoldflashclients', 'admin'), get_string('configexcludeoldflashclients', 'admin'), '10.0.12', PARAM_TEXT));
-    $temp->add(new admin_setting_configcheckbox('loginpasswordautocomplete', get_string('loginpasswordautocomplete', 'admin'), get_string('loginpasswordautocomplete_help', 'admin'), 0));
     $ADMIN->add('security', $temp);
 
 
