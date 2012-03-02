@@ -91,15 +91,15 @@ class moodle extends user {
         
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
-        //if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
-
-        /*if (!$this->insert_child_content()) launcher_helper::print_error('2002');
+ 
+        if (!$this->insert_child_content()) launcher_helper::print_error('2002');
         
         // Store key variables in the mother database
         if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
-         */
+        
         // Finally prepair for transfer to the client
         if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
 
@@ -142,7 +142,9 @@ class moodle extends user {
         $query =  "DROP DATABASE {$this->db->name}";
         execute_sql($query, false);
 
+        // Remove old codebase and symlink
         shell_exec("rm -R {$this->get_global_root()}/{$this->get_site_real_name()}");
+        shell_exec("rm /var/www/{$this->get_site_real_name()}");
 
         return true;
     } // function remove_unneccesary_db_and_codebase
@@ -227,8 +229,6 @@ class moodle extends user {
 
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
-
-        return true;
 
         $this->site->shortname   = $this->site_shortname;
         $this->site->name        = $this->site_name;
@@ -363,7 +363,7 @@ $CFG->dbpass    = "'.$this->get_password($this->db->password).'";
 $CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
 
-$CFG->wwwroot   = sprintf("http%s://%s", isset($_SERVER["HTTPS"]) ? "s" : "", $_SERVER["SERVER_NAME"])
+//$CFG->wwwroot   = sprintf("http%s://%s", isset($_SERVER["HTTPS"]) ? "s" : "", $_SERVER["SERVER_NAME"])
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
 $CFG->dirroot   = "'.$this->cfg->dirroot.'";
 $CFG->dataroot  = "'.$this->cfg->dataroot.'";

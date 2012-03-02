@@ -43,9 +43,6 @@ class moodle_controller extends controller
 
         if (!$moodle->validate_and_create()) return $this->add_school($moodle);
 
-        /*$_SESSION['pw_db'] = $moodle->db->password;
-        $_SESSION['pw_user'] = $moodle->user->password;*/
-
         $this->show_school_created($moodle);
     } // function create
 

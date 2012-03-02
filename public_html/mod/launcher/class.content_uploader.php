@@ -36,10 +36,10 @@ class content_uploader extends moodle {
     function upload() {
         global $CFG;
         
-        if (!$this->create_users()) launcher_helper::print_error('3002');
-        if (!$this->create_child_content()) launcher_helper::print_error('3003');
-       // if (!$this->create_nonstandard_role_assignments()) launcher_helper::print_error('3005');
-        if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
+//        if (!$this->create_users()) launcher_helper::print_error('3002');
+//        if (!$this->create_child_content()) launcher_helper::print_error('3003');
+        if (!$this->create_nonstandard_enrollments()) launcher_helper::print_error('3005');
+//        if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
 
         return true;
     } // function upload
@@ -147,9 +147,11 @@ class content_uploader extends moodle {
 
             $parent_courses = get_records_sql("SELECT * FROM {$CFG->prefix}course WHERE category = $parent_category_id AND groupyear != ''");
             if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
-            $child_category_id = 2;
+//            $child_category_id = 2;
 
             $moodle = $this->moodle;
+            // $this->read_and_validate_csv_file('groups', function($child_group) use($CFG, $child_category_id, $parent_courses, $moodle) {
+
             $line = 0;
             $handler = fopen($_FILES["upload_groups"]["tmp_name"], 'r');
             while($data = fgetcsv($handler, 0, ';')) {
@@ -159,22 +161,24 @@ class content_uploader extends moodle {
                 } // Check column names
 
                 $child_group = new stdClass();
+                // Create object with the right data and column names
                 $child_group = $this->assign_column_names($data, $child_group, 'fields_groups');
 
-                //  $this->read_and_validate_csv_file('groups', function($child_group) use($CFG, $child_category_id, $parent_courses, $moodle) {
-
-                // Continue with the groups
+                // Create an array from the groupyears
                 $child_group->year = $this->groupyears_to_array($child_group->year);
 
+                // Loop over courses
                 foreach($parent_courses as $parent_course) {
-                    // If its not an array yet convert it
 
+                    // If not set yet: create array from parent groupyears
                     if (!is_array($parent_course->groupyear)) $parent_course->groupyear = $this->groupyears_to_array($parent_course->groupyear);
 
+                    // Possible groups: 1/2, 3/4, 5/6, 7/8
                     foreach($this->possible_groups as $possible_group) {
 
+                        // Possibly there are more years assigned to 1 group
                         foreach($child_group->year as $child_group_year) {
-                            if (!in_array($child_group_year, $this->possible_groups)) continue;
+                            if (!in_array($child_group_year, $possible_group)) continue;
                             if (!in_array($child_group_year, $parent_course->groupyear)) continue;
 
                             // Create course
@@ -189,7 +193,7 @@ class content_uploader extends moodle {
                         }
                     }
                 }
-            };
+            }
 //            }
         }
         return true;
@@ -218,7 +222,7 @@ class content_uploader extends moodle {
             $child_db_user_id = mysql_result($child_db_user, 0, 0);
 
             // Enroll user
-            if (!$this->create_enrollment($child_db_user_id, $course_id, $csv_user->rol1, $csv_user->rol2)) error('Error creating enrollment.');
+            if (!$this->create_enrollment($child_db_user_id, $course_id, array($csv_user->rol1, $csv_user->rol2))) error('Error creating enrollment.');
 
             if ($csv_user->rol1 == 'beheerder' || $csv_user->rol2 == 'beheerder') continue; // Admins don't need groups, skip the creation
 
@@ -268,27 +272,41 @@ class content_uploader extends moodle {
     } // function destroy_used_files
 
 
-    function create_enrollment($user_id, $course_id, $rol1, $rol2) {
+    function create_enrollment($user_id, $course_id, $roles, $multiple_courses = false) {
         global $CFG;
 
         $error = false;
-        $roles = array($rol1, $rol2);
         foreach($roles as $role) {
+            if (empty($role)) continue;
 
-            // Only add student and teacher for now
-            switch($role) {
-                case 'leerling':
+            $break = false;
+            // Only add student and teacher for now, the other roles need access to more courses
+            switch(true) {
+                case ($role == 'leerling' && !$multiple_courses):
                     $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'student'";
                     break;
-                case 'leerkracht':
+                case ($role == 'leerkracht' && !$multiple_courses):
                     $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'teacher'";
                     break;
+
+                case ($role == 'invalkracht' && $multiple_courses):
+                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'substitute'";
+                    break;
+                case ($role == 'schoolleider' && $multiple_courses):
+                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'schoolleader'";
+                    break;
+                case ($role == 'beheerder' && $multiple_courses):
+                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'admin'";
+                    break;
+
                 default:
-                    continue; // If a different role type is assigned skip it
+                    $break = true; // If a different role type is assigned skip it
                     break;
             }
+            if ($break) continue;
 
-            $role_result = launcher_helper::remote_execute($this->moodle, $role_query);
+            if (!$role_result = launcher_helper::remote_execute($this->moodle, $role_query)) continue;
+
             $role_id = mysql_result($role_result,0,0);
             $context_id = trim($this->get_or_create_context(CONTEXT_COURSE, $course_id));
 
@@ -308,7 +326,8 @@ class content_uploader extends moodle {
     } // function create_enrollment
 
 
-    function create_nonstandard_role_assignments() {
+    function create_nonstandard_enrollments() {
+        global $CFG;
         
         $line = 0;
         $handler = fopen($this->moodle->upload_users['tmp_name'], 'r');
@@ -323,23 +342,15 @@ class content_uploader extends moodle {
             $csv_user = new stdClass();
             $csv_user = $this->assign_column_names($data, $csv_user, 'fields_users');
 
-            switch($role) {
-                case 'invalkracht':
-                    $courses_query = "SELECT * FROM {$CFG->prefix}course WHERE category > 0 AND visible = 1";
-                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'substitute'";
-                    break;
-                case 'schoolleider':
-                    $courses_query = "SELECT * FROM {$CFG->prefix}course WHERE category > 0 AND visible = 1";
-                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'schoolleader'";
-                    break;
-                case 'beheerder':
-                    $courses_query = "SELECT * FROM {$CFG->prefix}course WHERE category = 0";
-                    $role_query = "SELECT * FROM {$CFG->prefix}role WHERE shortname = 'admin'";
-                    break;
-            }
-            $courses_result = launcher_helper::remote_execute($this->moodle, $courses_query);
-            while($course = mysql_fetch_array($courses_result)) {
-                
+            $user_query = "SELECT * FROM {$CFG->prefix}user WHERE username='{$csv_user->email}' AND deleted = 0";
+            $user_result = launcher_helper::remote_execute($this->moodle, $user_query);
+            $user_id = mysql_result($user_result, 0, 0);
+
+            $query = "SELECT * FROM {$CFG->prefix}course WHERE category > 0 AND visible = 1";
+            $courses = launcher_helper::remote_execute($this->moodle, $query);
+            while($course = mysql_fetch_array($courses)) {
+                // Assign roles now
+                $this->create_enrollment($user_id, $course['id'], array($csv_user->rol1, $csv_user->rol2), true);
             }
         }
     } // function create_nonstandard_role_assignments

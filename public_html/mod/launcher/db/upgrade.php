@@ -23,10 +23,26 @@ function xmldb_launcher_upgrade($oldversion=0) {
         $table = new XMLDBTable('launcher_moodles');
         $field = new XMLDBField('admin_email');
         $field->setAttributes(XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, null, null, 'description');
-
-    /// Launch add field id
         $result = $result && add_field($table, $field);
+
+		// Launch add field id
+		// $result = $result && add_field($table, $field);
     }
+
+    if ($result && $oldversion < 2012030201) {
+
+        $table = new XMLDBTable('launcher_moodles');
+
+		$field = new XMLDBField('domain');
+        $field->setAttributes(XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, null, null, 'admin_email');
+        $result = $result && add_field($table, $field);
+
+		$field = new XMLDBField('server_name');
+        $field->setAttributes(XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null, null, null, 'domain');
+        $result = $result && add_field($table, $field);
+        
+	}
+
 
 
     return $result;
