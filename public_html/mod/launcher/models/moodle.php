@@ -67,6 +67,7 @@ class moodle extends user {
         $this->add_rule('domain', get_string('required'), function($domain) { return ( trim($domain) != '' ); });
  
         $this->validate_files_received();
+        //if (!$this->validate_files_received()) soda_error::add_error($this, 'upload_users', get_string('required'));
 
         $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
             return ($upload_users['name'] != '') ? (end(explode(".", $upload_users['name'])) == 'csv') : true;
@@ -87,7 +88,6 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-        
         
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
@@ -122,7 +122,7 @@ class moodle extends user {
         // Dump and zip database
         shell_exec("mysqldump -Qu {$CFG->dbuser} -p{$CFG->dbpass} --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
         shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
-        // Delete .sql file again, we got it zipped now anyway
+        // Delete .sql file, we got it zipped now anyway
         shell_exec("rm {$this->dumps_location}/db/{$this->sql_filename}.sql");
 
         // Zip codebase
@@ -137,7 +137,7 @@ class moodle extends user {
         global $CFG;
 
         // Delete user and database
-        $query = "DROP USER '{$this->db->user}'@'{$this->db->host}'";
+        $query = "DROP USER '{$this->db->username}'@'{$this->db->host}'";
         execute_sql($query, false);
         $query =  "DROP DATABASE {$this->db->name}";
         execute_sql($query, false);
@@ -168,8 +168,7 @@ class moodle extends user {
                 '0',
                 '".time()."');";
 
-        if (!$con = mysql_connect("localhost", "{$CFG->dbuser}", "{$CFG->dbpass}")) die(mysql_error());
-        // if (!mysql_select_db("jeelo_buffer", $con)) die(mysql_error()); // Avoid selecting db
+        if (!$con = mysql_connect("{$CFG->dbhost}", "{$CFG->dbuser}", "{$CFG->dbpass}")) die(mysql_error());
         if (!mysql_query($query)) die(mysql_error());
         mysql_close($con);
         
@@ -225,7 +224,7 @@ class moodle extends user {
 
     function insert_child_content() {
         global $CFG;
-        require_once('class.content_uploader.php');
+        require_once("{$CFG->dirroot}/class.content_uploader.php");
 
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
@@ -267,10 +266,14 @@ return ($result === 0);*/
 
     function validate_files_received() {
     
-        if ((isset($this->upload_users['name']) && $this->upload_users['name']) == '' && (isset($this->upload_groups['name']) && $this->upload_groups!= '')) {
-            soda_error::add_error($this, 'upload_users', get_string('error_groups_without_users', 'launcher'));
+        if ((isset($this->upload_users['name']) && $this->upload_users['name']) == '') {
+            soda_error::add_error($this, 'upload_users', get_string('required'));
+        }
+        if ((isset($this->upload_groups['name']) && $this->upload_groups['name']) == '') {
+            soda_error::add_error($this, 'upload_groups', get_string('required'));
         }
 
+        return true;
     } // function validate_files
 
 
@@ -363,7 +366,6 @@ $CFG->dbpass    = "'.$this->get_password($this->db->password).'";
 $CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
 
-//$CFG->wwwroot   = sprintf("http%s://%s", isset($_SERVER["HTTPS"]) ? "s" : "", $_SERVER["SERVER_NAME"])
 $CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
 $CFG->dirroot   = "'.$this->cfg->dirroot.'";
 $CFG->dataroot  = "'.$this->cfg->dataroot.'";

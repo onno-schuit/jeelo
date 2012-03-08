@@ -49,7 +49,9 @@ class launcher_helper extends helper {
             '3001'=>'Failed to create context files.',
             '3002'=>'Failed to create users.',
             '3003'=>'Failed to create categories',
-            '3004'=>'Failed to delete context files.'
+            '3004'=>'Failed to delete context files.',
+
+            '4000'=>'Failed to set up the files to create a new schoolyear.'
         );
 
         if (!isset($errors[$code])) return "Error code '$code' could not be found.";
@@ -91,7 +93,7 @@ class launcher_helper extends helper {
 
         // Set the preset value if one is already set
         // Set default of the field 'server' to 'localhost'
-        $preset_value = (isset($moodle->$field)) ? $moodle->$field : ($field == 'server_name') ? 'localhost' : '';
+        $preset_value = (isset($moodle->$field)) ? $moodle->$field : (($field == 'server_name') ? 'localhost' : '');
         echo "
         <tr>
             <td>".get_string($field, 'launcher')."</td>
@@ -117,6 +119,7 @@ class launcher_helper extends helper {
 
     function print_upload_field($field, $moodle) {
 
+        //exit(print_object(soda_error::$validation_errors));
         echo "
         <tr>
             <td>".get_string($field, 'launcher')."</td>

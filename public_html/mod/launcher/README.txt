@@ -5,6 +5,9 @@ Put soda on invisible in the moodle environment!
 Uitzondering maken voor new moodle als er nog geen variabelen zijn...
 
 
+Als gebruikers niet in de csv staan worden ze op deleted gezet!!
+
+
 The following file should be added:
 /lang/en_utf8/help/groupyear.html
 

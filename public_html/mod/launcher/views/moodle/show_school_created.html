@@ -1,53 +1,57 @@
+<link href="style.css" rel="stylesheet" type="text/css">
 <script language="javascript" src="lib.js"></script>
-<form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=show";?>">
-<p></p>
-<?=get_string('moodle_succesfull_set_up', 'launcher');?>
 
-<?php
-if (isset($_SESSION['messages']['no_feedback_send'])) {
-    echo "<br /><br /><b>Important!</b><br />";
-    echo $_SESSION['messages']['no_feedback_send'];
-    echo '<br /><br />';
-    unset($_SESSION['messages']['no_feedback_send']);
-}
-?>
-<table border-collapse="collapse">
+<div class="container">
+    <div class="launcher_header">
+        <?=get_string('launcher_header', 'launcher');?>
+    </div>
+    <div class="container_left">
+        <?php $this->print_menu();?>
+    </div>
+    <div class="container_right">
 
-    <tr><td><b>Database information</b></td></tr>
+        <div class="content_header">
+            <?=get_string('moodle_succesfull_set_up', 'launcher');?>
+        </div>
 
-    <tr>
-        <td>Username</td>
-        <td><?=$moodle->db->username?></td>
-    </tr>
-    <tr>
-        <td>Password</td>
-        <td><?=key($moodle->db->password)?></td>
-    </tr>
-    <tr>
-        <td>Database name</td>
-        <td><?=$moodle->db->name?></td>
-    </tr>
-    
-    <tr><td>&nbsp;</td></tr><tr><td><b>Moodle Admin information</b></td></tr>
+        <table border-collapse="collapse">
 
-    <tr>
-        <td>Username</td>
-        <td><?=$moodle->user->username?></td>
-    </tr>
-    <tr>
-        <td>Password</td>
-        <td><?=key($moodle->user->password)?></td>
-    </tr>
+            <tr><td><b>Database information</b></td></tr>
 
-    <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
+            <tr>
+                <td>Username</td>
+                <td><?=$moodle->db->username?></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><?=key($moodle->db->password)?></td>
+            </tr>
+            <tr>
+                <td>Database name</td>
+                <td><?=$moodle->db->name?></td>
+            </tr>
+            
+            <tr><td>&nbsp;</td></tr><tr><td><b>Moodle Admin information</b></td></tr>
 
-    <tr>
-        <td>URL</td>
-        <td><?=$moodle->cfg->wwwroot?></td>
-    </tr>
+            <tr>
+                <td>Username</td>
+                <td><?=$moodle->user->username?></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><?=key($moodle->user->password)?></td>
+            </tr>
 
-<!--    <tr>
-        <td><input type="submit" name="send" value="send"/></td>
-    </tr> -->
-</table>
+            <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
 
+            <tr>
+                <td>URL</td>
+                <td><?=$moodle->cfg->wwwroot?></td>
+            </tr>
+
+        </table>
+
+        </div>
+    </div> <!-- End container right -->
+</div> <!-- End container -->
+<div style="clear: both;"></div>

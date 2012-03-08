@@ -26,38 +26,26 @@ class backup_course {
     } // function __construct
 
 
-    function course_backup($category_id, $group, $course) {
+    function course_backup($category_id, $course) {
         global $CFG;
 
         $preferences = schedule_backup_course_configure($course);
         
-        $preferences->backup_destination = "{$this->child_dataroot}/{$this->backup_folder}";
-        // $preferences->backup_destination = "{$this->moodle->cfg->dataroot}/{$this->backup_folder}";
-
+        $preferences->backup_destination = $this->child_dataroot.'/'.$this->backup_folder;
         $preferences->backup_users = 2; // 0=All, 1=Course, 2=None
         $preferences->backup_logs = 0; //0=No, 1=Yes
         $preferences->backup_user_files = 0; // 0=No, 1=Yes
-        //$preferences->backup_course_files = 1; // 1 = yes?
-
-        /*
-        foreach($preferences->mods as $module) {
-            $module->backup = 1;
-            foreach($module->instances as $instance) {
-                $instance->backup = 1;
-            }
-        }*/
 
         return (@schedule_backup_course_execute($preferences)) ? $preferences->backup_name : false;
-        
     } // function backup
 
 
-    function create_backup_folder() {
+    function create_backup_folder($backups_root) {
         global $CFG;
 
         // return true;
-        if (is_dir("{$this->child_dataroot}/{$this->backup_folder}")) return true;
-        return (mkdir("{$this->child_dataroot}/{$this->backup_folder}"));
+        if (is_dir($this->child_dataroot.'/'.$this->backup_folder)) return true;
+        return (mkdir($target));
         
     } // function create_backup_folder
 }

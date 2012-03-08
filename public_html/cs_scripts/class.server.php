@@ -46,13 +46,17 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT * FROM {client_moodles} WHERE is_for_client='%s' AND status='new'", $for);
+        $query = sprintf("SELECT * FROM {client_moodles} WHERE is_for_client='%s' AND (status='new' OR status='update')", $for);
         self::log($query);
+
         // run the query
         $rows = $db->fetch_rows($query); 
         // output all rows as csv
         foreach ($rows as $row) {
-            echo $row['id'] . ';' . $row['timecreated'] . ';' . $row['domain'] . ';' . $row['short_code'] . "\n";
+            foreach($row as $key=>$column){
+                echo ($key != 'timemodified') ? "$column;" : $column;
+            }
+            echo "\n";
         }
         // halt
         die();

@@ -1,3 +1,7 @@
+<?php
+// Will return error if it fails
+$this->get_moodle_environments();
+?>
 <link href="style.css" rel="stylesheet" type="text/css">
 <script language="javascript" src="lib.js"></script>
 
@@ -29,16 +33,17 @@
             $this->print_input_field('site_name', $schoolyear);
             $this->print_textarea_field('site_description', $schoolyear);
             ?>
-            <tr>
+<!--            <tr>
                 <td><?=get_string('db_username', 'launcher')?></td>
                 <td><input type="text" disabled value="<?=(isset($schoolyear->environment->shortname)) ? $schoolyear->environment->shortname : ''?>" /></td>
-            </tr>
+            </tr> -->
+<!--
             <tr>
                 <td><?=get_string('db_password', 'launcher')?> <label title="<?=get_string('db_password_explentation', 'launcher')?>">(?)</label></td>
                 <td><input type="password" name="<?=$this->model_name?>[db_password]" id="password" value=""/>
                     <input type="checkbox" name="unmask" onchange="mask_unmask(document.getElementById('password'));">
                         <?=get_string('unmask', 'launcher')?></td> 
-            </tr>
+            </tr>-->
             <tr><td colspan='2'><hr /></td></tr>
             <tr>
                 <td><?=get_string('admin_email', 'launcher')?></td>

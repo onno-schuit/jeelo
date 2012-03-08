@@ -1,6 +1,7 @@
 <?php
 
 require_once("class.base.php");
+require_once("../config.php");
 
 class client extends base {
     
@@ -46,9 +47,8 @@ class client extends base {
         mkdir($target, 0755); // without the public_html folder
 
         // symlink the subdomain (demo.jeelo.nl);
-        symlink($target/public_html, "/var/www/$short_code.jeelo.nl");
-        self::log($cmd);
-        shell_exec($cmd);
+        symlink("$target/public_html", "/var/www/$short_code.jeelo.nl");
+        self::log("Creating symlink: $target/public_html, /var/www/$short_code.jeelo.nl");
     }
     
     public static function get_codebase_from_server($record_id, $domain) {
@@ -121,7 +121,7 @@ class client extends base {
             $pairs[] = "$varname=$value";
         }
         $query_string = join('&', $pairs);
-        
+
         // add hash to the $query_string
         $hash = self::create_hash_from_query_string($query_string);
         $query_string .= "&hash=$hash";
@@ -135,24 +135,80 @@ class client extends base {
     
     public static function process_client_from_csv($csv_line) {
         self::log("Processing: $csv_line");
-        list($id, $datetime, $domain, $short_code) = explode(';', $csv_line);
+        list($id, $datetime, $domain, $short_code, $status) = explode(';', $csv_line);
         
-        self::update_server_status($id, 'being_processed'); 
+        // Update status FIRST
+        // self::update_server_status($id, 'being_processed'); 
+
+        switch($status) {
+            case 'new':
+                self::process_new_client($csv_line);
+                break;
+            case 'update':
+                self::process_update_client($csv_line);
+                break;
+        }
+
+        // self::update_server_status($id, 'processed', 0); // everything ok! 
+    }
+
+
+    public static function process_update_client($csv_line) {
+        list($id, $datetime, $domain, $short_code, $status) = explode(';', $csv_line);
+
+        /* update course 1
+         * update all course categories, set them invisible
+         * insert / update / delete users
+         * insert new courses / groups / enrollments
+         */
+
+        // Update course 1
+        // self::update_sitewide_course($short_code);
+
+        // Update all course categories
+        self::set_existing_categories_invisible();
+    }
+
+
+    public static function set_existing_categories_invisible() {
+
+        $request = array(
+            'request' => 'set_status',
+            'id' => $record_id,
+            'status' => $status,
+            'exit_code' => $exit_code,
+        );
+        $response = self::get_server_response($request);
+        self::log("Updated status for record $record_id to $status: $response");
+    }
+
+
+    function update_sitewide_course($short_code) {
+        global $CFG;
+
+        $site_course = get_record('launcher_moodles', 'shortname', $short_code);
+    } // function FunctionName
+
+
+    public static function process_new_client($csv_line) {
+        list($id, $datetime, $domain, $short_code, $status) = explode(';', $csv_line);
+        
         self::create_database($short_code);
         $user_and_pass = self::create_database_user($short_code);
         self::get_db_from_server($id, $short_code);
         
         self::create_codebase($domain, $short_code);
         self::get_codebase_from_server($id, $domain);
+
         self::update_moodle_config($domain, $user_and_pass); 
-        
-        self::update_server_status($id, 'processed', 0); // everything ok! 
+
     }
 
 
     static public function run() {
+
         $request = array(
-            'request' => 'get_available_clients',
+            'request' => 'get_available_clients'
         );
         $response = self::get_server_response($request);
         
@@ -170,22 +226,38 @@ class client extends base {
     
     static public function update_moodle_config($domain, $user_and_pass) {
         $folder = self::$target_folder . $domain;
-        list($username, $password) = $user_and_pass;
+
+        $username = $user_and_pass['username'];
+        $password = $user_and_pass['password'];
         
         $config_contents = file_get_contents($folder . '/public_html/config.php');
-        $offset = strpos($config_contents, 'CFG->dbpass'); // find the line with CFG->dbpass
-        $start = strpos($config_contents, "'", $offset); // find first single quote from there
-        $end = strpos($config_contents, "'", $start+1); // find next single quote
+
+        $fields_to_change = array(
+            '$CFG->dbpass'=>$password,
+            '$CFG->dirroot'=>'/home/jeelos/'.$domain.'/public_html',
+            '$CFG->wwwroot'=>'http://localhost/'.$domain,
+            '$CFG->dataroot'=>'/home/jeelos/'.$domain.'/moodle_data'
+        );
+        foreach($fields_to_change as $field=>$value) {
+
+            $config_contents = self::set_config_contents($config_contents, $field, $value);
         
-        /* Werkt niet, moet pass uit config.php worden, want die wordt via mail opgestuurd.
-         * Ook wijzigen:
-         * 		$CFG->dirroot
-         * 		$CFG->wwwroot
-         * 		$CFG->dataroot
-         */
-        $config_contents = substr($config_contents, 0, $start+1) . $password . substr($config_contents, $end);
+        }
         
-        file_put_contents($folder .'/public_html/config.php');
+        file_put_contents($folder .'/public_html/config.php', $config_contents);
+    }
+
+
+    function set_config_contents($config_contents, $field, $value) {
+
+        $offset = strpos($config_contents, $field); // find the line with CFG->dbpass
+
+        $start = strpos($config_contents, '"', $offset); // find first double quote from there
+        $end = strpos($config_contents, '"', $start+1); // find next double quote
+
+        $config_contents = substr($config_contents, 0, $start+1) . $value . substr($config_contents, $end);
+        
+        return $config_contents;
     }
     
     static public function update_server_status($record_id, $status, $exit_code=0) {

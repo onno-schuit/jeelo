@@ -37,9 +37,46 @@ class moodle_controller extends controller
     } // function show
 
 
+    function show_schoolyear_created($moodle) {
+        $this->has_access_rights();
+
+        if (!$moodle) error(launcher_helper::print_error("1000"));
+
+        $this->get_view(array('moodle'=>$moodle), 'show_schoolyear_created');
+    } // function show_schoolyear_created
+
+
     function create_school($moodle = false) {
         $this->has_access_rights();
-        $moodle = new moodle(required_param('moodle', PARAM_RAW));
+
+
+/*        global $CFG;
+        $file = "{$CFG->dirroot}/theme/test/style.css";
+        // Array ( full tag => value to be changed )
+        $fields_to_change = array('body {'=>'color: red;', 'body {'=>'font-weight: bold;');
+        
+        
+        
+        if (!file_exists($file)) exit(print_object("File doesn't exist"));
+        echo "File exists, lets start reading it...<br />";
+
+        if (!$handler = fopen($file, 'r+')) die('Error');
+        $edit_next_line = false;
+        while($data = trim(fgets($handler))) {
+
+            if ($edit_next_line) {
+            var_dump($data);
+                if ($data == 'color: red;') {
+                    // Change the line
+                    
+                }
+
+                $edit_next_line = false;
+            }
+
+            if ($data == 'body {') $edit_next_line = true;
+        }
+ */
 
         if (!$moodle->validate_and_create()) return $this->add_school($moodle);
 
@@ -54,6 +91,8 @@ class moodle_controller extends controller
         $schoolyear = new schoolyear(required_param('moodle', PARAM_RAW));
 
         if (!$schoolyear->validate_and_create()) return $this->add_schoolyear($schoolyear);
+
+        $this->show_schoolyear_created($schoolyear);
     } // function create_schoolyear
 }
 ?>

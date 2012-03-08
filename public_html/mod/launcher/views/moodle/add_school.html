@@ -21,6 +21,7 @@
                 <td colspan='2'><b><?=get_string('settings_site', 'launcher');?></b></td>
             </tr>
             <?php
+//exit(print_object($moodle));
             $arr_fields = array('site_name','site_shortname'); // First set of variables
             foreach($arr_fields as $field) {
                 $this->print_input_field($field, $moodle);

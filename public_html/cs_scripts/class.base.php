@@ -6,7 +6,6 @@ class base {
 
     static $db;
     static $log_file = 'default_log.txt';
-    static $log_echo = false;
     
     public static function init_db($host, $user, $pass, $db) {
         self::$db = new Database_Mysql();
@@ -20,12 +19,10 @@ class base {
     }
     
     public static function log($message) {
+        // error_reporting(0);
         $fp = fopen(static::$log_file, 'a');
         fputs($fp, date("Y-m-d H:i:s") . " " . $message . "\n");
         fclose($fp);
-        if (static::$log_echo) {
-            echo " log: " . $message . "<br />\n";
-        }
     }
 
     

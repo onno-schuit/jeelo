@@ -46,10 +46,9 @@ $string['admin_email'] = 'Email address *';
 $string['upload_users'] = 'Upload users';
 $string['upload_groups'] = 'Upload groups';
 $string['settings_content'] = 'Content to be uploaded';
-$string['error_users_without_groups'] = 'If you\'re trying to upload users the groups are required.';
-$string['error_groups_without_users'] = 'If you\'re trying to upload groups the users are required.';
 $string['error_file_extension'] = 'You can only upload csv files.';
 $string['error_email'] = 'You have to fill out a correct email address.';
+$string['error_already_busy'] = 'This environment is already set for an update. Please wait until it has finished.';
 
 $string['no_moodles'] = 'There are no registered moodle environments yet.<br />Please create a school before you add a school year.';
 

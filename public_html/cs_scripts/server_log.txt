@@ -72,3 +72,710 @@ SELECT * FROM {client_moodles} WHERE is_for_client='client' AND status='new'2012
 2012-03-01 14:39:51 127.0.0.1: request=set_status&id=1&status=being_processed&exit_code=0&for=client&hash=285f54b49c471e7726f7823e1fd41cac
 2012-03-01 14:39:51 127.0.0.1: request=get_database&id=1&for=client&hash=8b650cc568b9a1f301325b4eafbe1fcd
 2012-03-01 14:39:52 127.0.0.1: request=get_codebase&id=1&for=client&hash=f74d6d6da7bf5c7a552bab3d971411ec
+2012-03-06 14:48:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 14:48:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 14:52:00 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 14:52:00 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 14:52:33 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 14:52:33 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 14:52:33 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 14:52:33 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 14:59:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 14:59:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 14:59:17 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 14:59:17 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:00:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:00:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:00:13 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:00:13 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:03:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:03:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:03:24 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:03:24 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:03:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:03:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:03:58 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:03:58 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:16:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:16:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:16:55 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:16:55 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:16:55 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:16:55 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:17:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:17:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:17:38 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:17:38 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:37:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:37:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:37:30 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:37:30 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 15:53:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:53:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:53:20 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 15:56:18 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:56:18 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:57:22 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:57:22 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:58:49 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:58:49 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:59:03 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 15:59:03 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 15:59:03 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:03:52 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:04:07 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:04:16 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:07:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 16:07:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 16:07:59 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-06 16:07:59 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:07:59 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 16:11:48 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 16:11:48 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 16:13:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-06 16:13:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-06 16:13:28 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-06 16:13:28 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:13:28 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-06 16:14:20 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:16:05 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:18:51 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:19:34 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-06 16:28:14 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 11:46:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 11:46:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 11:53:11 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 11:53:11 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 11:53:11 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 11:53:11 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 11:53:11 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 11:57:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 11:57:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 11:57:34 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 11:57:34 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 11:57:34 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 11:59:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 11:59:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 11:59:06 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 11:59:06 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 11:59:06 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:01:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:01:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:01:37 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:01:37 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:01:37 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:05:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:05:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:05:20 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:05:20 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:05:20 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:15:46 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:15:46 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:15:46 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:15:46 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:15:46 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:16:53 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:16:53 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:16:53 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:16:53 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:17:08 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:26:33 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:26:33 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:26:33 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:26:33 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:26:49 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:30:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:30:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:30:31 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:33:36 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:33:36 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:35:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:35:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:35:24 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:35:24 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 12:35:41 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 12:39:21 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:39:21 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:39:21 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:40:44 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:40:44 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:40:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:40:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:40:59 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:41:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:41:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:41:42 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:43:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:43:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:43:27 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:44:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:44:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:44:13 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 12:44:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:44:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:45:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:45:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:46:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:46:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:48:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:48:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:49:19 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:49:19 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 12:57:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 12:57:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:04:03 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:04:03 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:05:53 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:05:53 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:05:53 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 13:07:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:07:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:07:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:07:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:07:23 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 13:09:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:09:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:09:32 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 13:09:32 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 13:09:47 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 13:11:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 13:11:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 13:11:20 127.0.0.1: request=set_status&id=31&status=being_processed&exit_code=0&for=client&hash=aff83d9fe81ab159be894c234be2b8ba
+2012-03-07 13:11:20 127.0.0.1: request=get_database&id=31&for=client&hash=9a9c5491b2ab45bb368ee073d4fb64dc
+2012-03-07 13:11:35 127.0.0.1: request=get_codebase&id=31&for=client&hash=8bbdfda1e26d5ca8935d51df0f69388a
+2012-03-07 17:30:56 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:30:56 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:31:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:31:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:31:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:31:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:31:51 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:31:51 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:31:56 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:31:56 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:32:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:32:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:32:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:32:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:32:47 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:32:47 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:35:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:35:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:39:35 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:39:35 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:39:35 127.0.0.1: request=set_status&id=&status=&exit_code=&for=client&hash=ba0da389d82dc5cd39c507f9e7262ff8
+2012-03-07 17:40:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:40:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:40:05 127.0.0.1: request=set_status&id=&status=&exit_code=&for=client&hash=ba0da389d82dc5cd39c507f9e7262ff8
+2012-03-07 17:44:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:44:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:47:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:47:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:54:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:54:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:55:48 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:55:48 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:56:02 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:56:02 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:58:10 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:58:10 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:58:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:58:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:16 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:16 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:22 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:22 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 17:59:29 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 17:59:29 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:00:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:00:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:01:39 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:01:39 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:53:11 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:53:11 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:53:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:53:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:53:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:53:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:53:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:53:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:54:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:54:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:54:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:54:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:55:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:55:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:55:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:55:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:58:16 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:58:16 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:58:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:58:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:58:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:58:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:58:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:58:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:58:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:58:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 18:59:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 18:59:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:01:07 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:01:07 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:01:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:01:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:02:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:02:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:02:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:02:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:05:36 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:05:36 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:06:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:06:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:06:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:06:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:06:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:06:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:06:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:06:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:06:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:06:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:10:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:10:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:10:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:10:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:11:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:11:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:11:36 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:11:36 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:12:15 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:12:15 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:13:29 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:13:29 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:17:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:17:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:17:49 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:17:49 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:19:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:19:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:19:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:19:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:21:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:21:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:22:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:22:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:26:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:26:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:26:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:26:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:27:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:27:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:27:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:27:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:31:43 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:31:43 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:31:51 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:31:51 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:34:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:34:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:34:56 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:34:56 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:36:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:36:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:37:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:37:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:38:35 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:38:35 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:38:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:38:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:42:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:42:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:42:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:42:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:52:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:52:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:55:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:55:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-07 19:55:48 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-07 19:55:48 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:01:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:01:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:03:19 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:03:19 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:03:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:03:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:03:44 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:03:44 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:03:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:03:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:04:04 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:04:04 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:04:50 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:04:50 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:05:00 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:05:00 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:05:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:05:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:05:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:05:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:05:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:05:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:09:11 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:09:11 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:11:10 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:11:10 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:15:21 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:15:21 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:35 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:35 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:25:55 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:25:55 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:26:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:26:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:27:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:27:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:27:15 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:27:15 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:27:19 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:27:19 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:27:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:27:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:28:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:28:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:29 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:29 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:32:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:32:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:33:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:33:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:34:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:34:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:35:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:35:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:40:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:40:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:41:49 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:41:49 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:42:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:42:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:47:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:47:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:48:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:48:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 11:48:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 11:48:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:34:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:34:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:35:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:35:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:35:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:35:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:35:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:35:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:35:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:35:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:36:22 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:36:22 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:37:03 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:37:03 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:38:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:38:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:41:39 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:41:39 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:41:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:41:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:42:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:42:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:43:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:43:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:43:18 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:43:18 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:52:46 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:52:46 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:53:10 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:53:10 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:53:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:53:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:53:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:53:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:54:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:54:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:54:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:54:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:55:35 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:55:35 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:56:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:56:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:56:29 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:56:29 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:57:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:57:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 12:58:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 12:58:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:00:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:00:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:01:00 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:01:00 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:36:50 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:36:50 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:45:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:45:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:49:21 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:49:21 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:49:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:49:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:49:56 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:49:56 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:50:00 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:50:00 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:50:16 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:50:16 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:50:38 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:50:38 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:51:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:51:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:52:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:52:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:52:53 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:52:53 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:53:22 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:53:22 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:54:19 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:54:19 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 13:55:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 13:55:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:01:39 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:01:39 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:02:02 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:02:02 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:02:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:02:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:03:03 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:03:03 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:12:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:12:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:13:26 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:13:26 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:13:36 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:13:36 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:14:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:14:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:14:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:14:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:15:04 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:15:04 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:15:26 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:15:26 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:15:45 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:15:45 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:16:49 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:16:49 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:17:32 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:17:32 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:33:10 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:33:10 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:33:55 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:33:55 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:34:16 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:34:16 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:34:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:34:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:36:02 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:36:02 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:36:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:36:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:36:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:36:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:37:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:37:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:37:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:37:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:38:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:38:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:38:16 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:38:16 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:38:22 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:38:22 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:39:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:39:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:40:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:40:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:40:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:40:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:40:44 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:40:44 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:41:51 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:41:51 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 14:43:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 14:43:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:09:05 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:09:05 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:09:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:09:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:00 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:00 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:15 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:15 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:48 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:48 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:10:59 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:10:59 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:11:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:11:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:11:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:11:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:11:48 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:11:48 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:11:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:11:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:12:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:12:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:13:31 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:13:31 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:13:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:13:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:14:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:14:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:14:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:14:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:14:21 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:14:21 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:14:54 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:14:54 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:15:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:15:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:15:51 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:15:51 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:15:53 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:15:53 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:15:53 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:15:53 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:16:01 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:16:01 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:16:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:16:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:17:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:17:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:17:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:17:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:17:55 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:17:55 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 15:58:37 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 15:58:37 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:38:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:38:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:38:30 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:38:30 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:39:52 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:39:52 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:40:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:40:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:40:24 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:40:24 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:40:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:40:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:40:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:40:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:41:12 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:41:12 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:41:13 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:41:13 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:41:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:41:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:41:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:41:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:41:49 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:41:49 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:42:18 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:42:18 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:43:50 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:43:50 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:43:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:43:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:44:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:44:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:44:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:44:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:44:39 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:44:39 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:45:28 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:45:28 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:46:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:46:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:51:06 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:51:06 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:51:20 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:51:20 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:56:17 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:56:17 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:39 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:39 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:40 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:40 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:58:41 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:58:41 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 16:59:23 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 16:59:23 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:00:57 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:00:57 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:01:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:01:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:06:08 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:06:08 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:06:27 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:06:27 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:07:10 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:07:10 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:07:34 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:07:34 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:08:58 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:08:58 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:09:14 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:09:14 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:11:25 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:11:25 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
+2012-03-08 17:25:09 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-08 17:25:09 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND (status='new' OR status='update')
