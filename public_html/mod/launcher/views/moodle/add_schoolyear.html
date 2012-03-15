@@ -74,7 +74,7 @@ $this->get_moodle_environments();
             </tr>
         </table>
         <!-- Sending hidden field, avoiding having to call it from the database again -->
-        <input type="hidden" name="<?=$this->model_name?>[site_shortname]" value="<?=(isset($schoolyear->environment->shortname)) ? $schoolyear->environment->shortname : ''?>" />
+        <input type="hidden" name="<?=$this->model_name?>[site_shortname]" value="<?=(isset($schoolyear->jeelo_buffer->short_code)) ? $schoolyear->jeelo_buffer->short_code : ''?>" />
 
     </div> <!-- End container right -->
 </div> <!-- End container -->

@@ -6,7 +6,7 @@ class moodle_controller extends controller
         $this->has_access_rights();
         
         $this->add_school();
-	} // function index
+	}
 
 
     function add_school($moodle = false) {
@@ -15,7 +15,7 @@ class moodle_controller extends controller
         $this->has_access_rights();
 
         $this->get_view(array('moodle'=>$moodle), 'add_school');
-    } // function add_school
+    }
 
 
     function add_schoolyear($schoolyear = false) {
@@ -24,7 +24,7 @@ class moodle_controller extends controller
         $this->has_access_rights();
 
         $this->get_view(array('schoolyear'=>$schoolyear), 'add_schoolyear');
-    } // function add_schoolyear
+    }
 
 
     function show_school_created($moodle) {
@@ -34,7 +34,7 @@ class moodle_controller extends controller
         if (!$moodle->send_feedback_mails()) $this->create_messages(array('no_feedback_send'=>get_string('no_feedbackmail_send', 'launcher')));
         
         $this->get_view(array('moodle'=>$moodle), 'show_school_created');
-    } // function show
+    }
 
 
     function show_schoolyear_created($moodle) {
@@ -43,7 +43,7 @@ class moodle_controller extends controller
         if (!$moodle) error(launcher_helper::print_error("1000"));
 
         $this->get_view(array('moodle'=>$moodle), 'show_schoolyear_created');
-    } // function show_schoolyear_created
+    }
 
 
     function create_school($moodle = false) {
@@ -78,10 +78,12 @@ class moodle_controller extends controller
         }
  */
 
+        require_once('models/moodle.php');
+        $moodle = new moodle(required_param('moodle', PARAM_RAW));
         if (!$moodle->validate_and_create()) return $this->add_school($moodle);
 
         $this->show_school_created($moodle);
-    } // function create
+    }
 
 
     function create_schoolyear($schoolyear = false) { // Create schoolyear
@@ -93,6 +95,6 @@ class moodle_controller extends controller
         if (!$schoolyear->validate_and_create()) return $this->add_schoolyear($schoolyear);
 
         $this->show_schoolyear_created($schoolyear);
-    } // function create_schoolyear
+    }
 }
 ?>

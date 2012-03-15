@@ -40,13 +40,12 @@ class backup_course {
     } // function backup
 
 
-    function create_backup_folder($backups_root) {
+    function create_backup_folder() {
         global $CFG;
 
-        // return true;
-        if (is_dir($this->child_dataroot.'/'.$this->backup_folder)) return true;
-        return (mkdir($target));
-        
+        $target = $this->child_dataroot.'/'.$this->backup_folder;
+
+        return (!is_dir($target)) ? mkdir($target) : true;
     } // function create_backup_folder
 }
 

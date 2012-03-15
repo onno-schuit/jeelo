@@ -51,13 +51,14 @@ class server extends base {
 
         // run the query
         $rows = $db->fetch_rows($query); 
-        // output all rows as csv
+
         foreach ($rows as $row) {
             foreach($row as $key=>$column){
                 echo ($key != 'timemodified') ? "$column;" : $column;
             }
             echo "\n";
         }
+
         // halt
         die();
     }

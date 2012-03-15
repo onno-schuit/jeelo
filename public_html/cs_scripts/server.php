@@ -23,6 +23,9 @@ switch($_REQUEST['request']) {
     case 'get_codebase':
         server::handle_request_get_codebase($query_string);
         break;
+    case 'get_csv_file':
+        server::handle_request_get_csv_file($query_string);
+        break;
 }
 
 

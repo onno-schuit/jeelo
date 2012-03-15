@@ -9,12 +9,12 @@ class moodle extends user {
         global $CFG, $launcher;
         $this->launcher_id = $launcher->id;
 
-        if (!$this->validate()) return false; // Validate form
+        // if (!$this->validate()) return false; // Validate form
         if (!$this->set_defaults()) return false; // set all default variables
         if (!$this->create_moodle()) return false; // Start the create moodle processes
 
         return true;
-    } // function insert
+    }
 
 
     function set_defaults() {
@@ -51,9 +51,11 @@ class moodle extends user {
         $this->dumps_location    = '/etc/moodle_clients';
         $this->sql_filename      = "{$this->server->domain}_sql_".date("Ymd");
         $this->codebase_filename = "{$this->server->domain}_codebase_".date("Ymd");
+        $this->csv_filename      = "{$this->server->domain}_csv_".date("Ymd");
+        $this->courses_filename  = "{$this->server->domain}_courses_".date("Ymd");
 
         return true;
-    } // function set_defaults
+    }
 
 
     function define_validation_rules() {
@@ -81,44 +83,48 @@ class moodle extends user {
             return ( strlen($shortname_stripped) <= 16 );
         });
         $this->add_rule('site_shortname', get_string('unique', 'launcher', $obj), function($shortname_stripped) {
-            return ( !get_record('launcher_moodles', 'shortname', $shortname_stripped) );
+            return ( !get_record_sql("SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '$shortname_stripped'")); // 'launcher_moodles', 'shortname', $shortname_stripped) );
         });
-    } // function define_validation_rules
+    }
 
 
     function create_moodle() {
         global $CFG;
         
-        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        //if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
-        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+        //if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
-        if (!$this->set_up_database()) launcher_helper::print_error('2001');
- 
+        //if (!$this->set_up_database()) launcher_helper::print_error('2001');
+
+        // Make sure a bufferdb record exists before the courses are created, we need to log the courses
+        //if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
+
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
+
+        exit("Done?");
         
-        // Store key variables in the mother database
-        if (!$this->save_child_in_mother_database()) launcher_helper::print_error('2004');
         
         // Finally prepair for transfer to the client
-        if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
+        // if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
 
         return true;
-    } // function create_moodle
+    }
 
 
     function prepair_transfer_to_client() {
         
         if (!$this->copy_codebase_and_database()) return false;
         if (!$this->remove_unneccesary_db_and_codebase()) return false;
-        if (!$this->save_client_in_buffer_db()) return false;
+        if (!$this->update_buffer_db()) return false;
 
         return true;
-    } // function prepair_transfer_to_client
+    }
 
 
     function copy_codebase_and_database() {
         global $CFG;
+
         // Dump and zip database
         shell_exec("mysqldump -Qu {$CFG->dbuser} -p{$CFG->dbpass} --add-drop-table --no-create-db {$this->db->name} > {$this->dumps_location}/db/{$this->sql_filename}.sql");
         shell_exec("gzip {$this->dumps_location}/db/{$this->sql_filename}.sql -c > {$this->dumps_location}/db/{$this->sql_filename}.gz");
@@ -130,7 +136,7 @@ class moodle extends user {
         shell_exec("tar -cz -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
 
         return true;
-    } // function copy_codebase_and_database
+    }
 
 
     function remove_unneccesary_db_and_codebase() {
@@ -147,33 +153,41 @@ class moodle extends user {
         shell_exec("rm /var/www/{$this->get_site_real_name()}");
 
         return true;
-    } // function remove_unneccesary_db_and_codebase
+    }
 
 
-    /* Save client in buffer db
-     * This function will save the client variables
-     * in jeelo_buffer. Once its set there the cliet
-     * will know an environment is ready for copy.*/
-    function save_client_in_buffer_db() {
+    /* Update the buffer db
+     * This function will update the status of
+     * the client buffer db, setting it to new*/
+    function update_buffer_db() {
+        $query = "
+            UPDATE jeelo_buffer.client_moodles SET
+            status = 'new',
+            codebase_filename = '{$this->dumps_location}/code/{$this->codebase_filename}.tgz',
+            sql_filename = '{$this->dumps_location}/db/{$this->sql_filename}.gz',
+            timemodified = '".time()."'
+            WHERE id = '{$this->buffer_client_id}'";
+        return (execute_sql($query, false));
+    }
+
+
+    function insert_client_in_buffer_db() {
         global $CFG;
+
         $query = "INSERT INTO jeelo_buffer.client_moodles (
-            timecreated, domain, short_code, sql_filename, codebase_filename, is_for_client, status, exit_code, timemodified ) VALUES (
+            timecreated, domain, short_code, name, is_for_client, status, exit_code, timemodified ) VALUES (
                 '".date('Y-m-d H:i:s')."',
                 '{$this->domain}',
                 '{$this->site->shortname}',
-                '{$this->dumps_location}/db/{$this->sql_filename}.gz',
-                '{$this->dumps_location}/code/{$this->codebase_filename}.tgz',
+                '{$this->site->name}',
                 'client',
-                'new',
+                'creating',
                 '0',
-                '".time()."');";
+                '".time()."')";
 
-        if (!$con = mysql_connect("{$CFG->dbhost}", "{$CFG->dbuser}", "{$CFG->dbpass}")) die(mysql_error());
-        if (!mysql_query($query)) die(mysql_error());
-        mysql_close($con);
-        
-        return true;
-    } // function save_database_in_buffer_db
+        execute_sql($query, false);
+        return (get_record_sql("SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '{$this->site->shortname}'")->id);
+    }
 
 
     function create_codebase() {
@@ -189,7 +203,7 @@ class moodle extends user {
         if (!$this->create_config()) return false;
 
         return true;
-    } // function create_codebase
+    }
 
 
     function set_up_database() {
@@ -200,14 +214,14 @@ class moodle extends user {
         if (!$this->create_site_admin()) return false;
 
         return true;
-    } // function set_up_database
+    }
 
 
     function create_database() {
         $query = "CREATE DATABASE {$this->db->name}";
 
         return execute_sql($query, false);
-    } // function create_database
+    }
 
 
     function insert_database() {
@@ -219,7 +233,7 @@ class moodle extends user {
         $result = launcher_helper::remote_execute($this, $query);
 
         return (mysql_num_rows($result) > 0) ? true : false;  
-    } // function insert_database
+    }
 
 
     function insert_child_content() {
@@ -228,6 +242,13 @@ class moodle extends user {
 
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
+
+        return ($this->update_sitewide_course);
+    }
+
+
+    function update_sitewide_course() {
+        global $CFG;
 
         $this->site->shortname   = $this->site_shortname;
         $this->site->name        = $this->site_name;
@@ -239,14 +260,14 @@ class moodle extends user {
                   WHERE category = 0";
 
         return (launcher_helper::remote_execute($this, $query));
-    } // function insert_child_content
+    }
 
 
     function set_up_website_link() {
 
         passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
         return ($this->website_is_linked());
-    } // function set_up_website
+    }
 
 
     function website_is_linked() {
@@ -261,7 +282,7 @@ return ($result === 0);*/
         foreach($_FILES as $key=>$file) {
             $this->$key = $file;
         }
-    } // function FunctionName
+    }
 
 
     function validate_files_received() {
@@ -274,14 +295,14 @@ return ($result === 0);*/
         }
 
         return true;
-    } // function validate_files
+    }
 
 
     function get_site_real_name() {
 
         if (!isset($this->site_shortname)) return false;
         return strtolower(preg_replace("/[^a-z_0-9]+/i", "", $this->site_shortname));
-    } // function get_stripped_shortname
+    }
 
 
     function get_global_root() { 
@@ -290,9 +311,10 @@ return ($result === 0);*/
 		$new_dirroot = '/home/menno/php_projects/jeelos';
 
         return $new_dirroot;
-    } // function get_dirroot_stripped
+    }
 
 
+    /* We're using the jeelo_buffer db for this now
     function save_child_in_mother_database() {
         global $CFG, $id;
 
@@ -306,7 +328,8 @@ return ($result === 0);*/
         $child_site->launcher_id   = $id;
 
         return (insert_record('launcher_moodles', $child_site));
-    } // function save_child_in_mother_database
+    }
+     */
 
     
     function create_db_user() {
@@ -327,7 +350,7 @@ return ($result === 0);*/
         if (!execute_sql($query, false)) return false;
 
         return true;
-    } // function create_db_user
+    }
 
 
     function create_site_admin() {
@@ -344,7 +367,7 @@ return ($result === 0);*/
             WHERE username = 'admin'";
 
         return (launcher_helper::remote_execute($this, $query));
-    } // function create_site_admin
+    }
 
 
     function create_config() {
@@ -383,7 +406,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
         if (!fclose($config)) return false;
 
         return true;
-    } // function create_config
+    }
 
 /*    function get_page_time() {
 
@@ -392,7 +415,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
         $starttime = $startarray[1] + $startarray[0];
 
         return $starttime;
-    } // function start_page_timer
+    }
  */
 
     function recursive_copy($source, $dest, $diffDir, $folder = false){
@@ -440,7 +463,7 @@ require_once("$CFG->dirroot/lib/setup.php");';
         $subject = get_string('mail_feedback_subject', 'launcher');
 
         return (email_to_user($email_to, $CFG->noreplyaddress, $subject, $body, $body));
-    } // function sendmails
+    }
     
     
     function get_feedback_body() {
@@ -477,6 +500,6 @@ require_once("$CFG->dirroot/lib/setup.php");';
         
         // exit(print_object($body));
         return $body;
-    } // function get_feedback_body
+    }
 }
 ?>

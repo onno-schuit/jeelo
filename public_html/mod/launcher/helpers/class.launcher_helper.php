@@ -1,6 +1,16 @@
 <?php
 class launcher_helper extends helper {
 
+    // Second database connection
+    public static function set_source_db() {
+        global $BUFFER_DB, $DB, $CFG;
+
+        $db_class = get_class($DB);
+        $BUFFER_DB = new $db_class();
+        $BUFFER_DB->connect($CFG->jeelo_buffer_dbhost, $CFG->jeelo_buffer_dbuser, $CFG->jeelo_buffer_dbpass, $CFG->jeelo_buffer_dbname, false);
+    }
+
+
 
     /* Executes query against the remote database */
     static function remote_execute($moodle, $query, $return_id = false) {
@@ -14,7 +24,7 @@ class launcher_helper extends helper {
         mysql_close($con);
 
         return ($return_id) ? $id : $result;
-    } // function 
+    }
 
 
     /* Menno de Ridder, 06-02-2012
@@ -57,14 +67,14 @@ class launcher_helper extends helper {
         if (!isset($errors[$code])) return "Error code '$code' could not be found.";
         
         error("Error $code: {$errors[$code]}");
-    } // function print_error
+    }
 
 
     function print_menu() {
         global $id;
         echo "<a href='index.php?id=$id&controller=moodle&action=add_school'>Create a new school</a><br />";
         echo "<a href='index.php?id=$id&controller=moodle&action=add_schoolyear'>Add a new school year</a>";
-    } // function print_menu
+    }
 
 
     function print_moodles_dropdown($schoolyear) {
@@ -79,14 +89,15 @@ class launcher_helper extends helper {
 
         }
         echo "</select>";
-    } // function print_moodles_dropdown
+    }
 
 
     function get_moodle_environments() {
         global $CFG;
-        if (!$moodle_environments = get_records('launcher_moodles')) error(get_string('no_moodles', 'launcher'));
+        $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE status = 'processed'";
+        if (!$moodle_environments = get_records_sql($query)) error(get_string('no_moodles', 'launcher'));
         return $moodle_environments;
-    } // function get_moodle_environments
+    }
 
 
     function print_input_field($field, $moodle) {
@@ -103,7 +114,7 @@ class launcher_helper extends helper {
             <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";
         }
         echo "</tr>";
-    } // function print_input_field
+    }
 
 
     function print_textarea_field($field, $moodle) {
@@ -114,7 +125,7 @@ class launcher_helper extends helper {
             <td>".get_string($field, 'launcher')."</td>
             <td><textarea name='{$this->model_name}[$field]'>$preset_value</textarea></td>
         </tr>";
-    } // function print_textarea_box
+    }
 
 
     function print_upload_field($field, $moodle) {
@@ -130,7 +141,7 @@ class launcher_helper extends helper {
         }
         echo "</tr>";
         
-    } // function print_upload_field
+    }
 
 
     function get_average_loadtime() {
@@ -145,7 +156,7 @@ class launcher_helper extends helper {
         $average_load_time = get_record_sql($sql);
 
         return round($average_load_time->loadtime);
-    } // function get_average_loadtime
+    }
 
 
     function store_load_time($start_time) {
@@ -157,7 +168,7 @@ class launcher_helper extends helper {
         $obj->installed = $oldtime->installed + 1;
 
         return (update_record('launcher', $obj));
-    } // function store_load_time
+    }
 
 
     static function error($msg, $arr_columns = false) {
@@ -167,7 +178,7 @@ class launcher_helper extends helper {
             $str .= "$arr_column<br />";
         }
         error($msg.$str);
-    } // function error
+    }
 
 
 	function print_categories_checkboxes($categories_preset = null)
@@ -181,7 +192,7 @@ class launcher_helper extends helper {
 			$this->print_categories_checkbox($category, $categories_preset);
 		}
 		echo "</table>";
-	} // function print_courses_checkboxes
+	}
 
 
 	function print_categories_checkbox($category, $categories_preset)
@@ -196,7 +207,7 @@ class launcher_helper extends helper {
         echo '<tr>';
 		echo "<td><input type='checkbox' name='{$this->model_name}[categories][{$category['id']}]' value='{$category['id']}' id='{$this->model_name}_categories' $checked>{$category['name']}</td>";
         echo '</tr>';
-	} // function print_course_checkbox
+	}
 
     
 }

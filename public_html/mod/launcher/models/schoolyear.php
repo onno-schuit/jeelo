@@ -11,9 +11,10 @@ class schoolyear extends moodle {
 
     function validate_environment_and_set_errors() {
 
-        if ($environment = get_record('launcher_moodles', 'id', $this->environment_id)) return $environment;
+        $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE id = '{$this->environment_id}'";
+        if ($environment = get_records_sql($query)) return $environment;
 
-        // The following only happens when someone selected the 'select' option, or if someone's screwing with my POST variables
+        // The following only happens when someone selected the 'select' option, or if someone's screwing with my POST variables (:@)
         foreach($this as $key=>$property) {
             if ($key != 'validation_rules') {
                 unset($this->$key);
@@ -24,30 +25,27 @@ class schoolyear extends moodle {
         }
 
         return false;
+    }
 
-    } // function validate_environment_and_set_errors
 
     function set_environment_details() {
-
         // Prevents executing further code if the environment is not set
-        if (!$environment = $this->validate_environment_and_set_errors()) return true;
+        if (!$this->jeelo_buffer = $this->validate_environment_and_set_errors()) return true;
         
-        // Set the right properties
-        $this->environment = $environment;
+        $this->site_name            = $this->jeelo_buffer->name;
+        $this->site_description     = $this->jeelo_buffer->description;
+        $this->admin_email          = $this->jeelo_buffer->admin_email;
 
-        $this->site_name            = $this->environment->name;
-        $this->site_description     = $this->environment->description;
-        $this->admin_email          = $this->environment->admin_email;
-
-        $this->server->server_name  = $this->environment->server_name;
-        $this->server->domain       = $this->environment->domain;
+        $this->server->server_name  = $this->jeelo_buffer->server_name;
+        $this->server->domain       = $this->jeelo_buffer->domain;
         
         $this->dumps_location       = '/etc/moodle_clients';
         $this->csv_filename         = "{$this->server->domain}_csv_".date("Ymd");
+        $this->courses_filename     = "{$this->server->domain}_course_imports_".date("Ymd");
 
         unset($this->environment_id);
         return true;
-    } // function set_environment_details
+    }
 
 
     function validate_and_create() {
@@ -57,9 +55,10 @@ class schoolyear extends moodle {
         if (count($this->validation_rules) <= 1) return false; // Don't go further if there's no validation yet
 
         if (!$this->ready_schoolyear_for_child()) launcher_helper::print_error('4000');
+        exit(print_object($this->environment_id));
 
         return true;
-    } // function insert
+    }
 
 
     function define_validation_rules() {
@@ -92,17 +91,20 @@ class schoolyear extends moodle {
         if (!$this->copy_csv_files_to_child()) $error = true;
         if (!$this->create_course_backups()) $error = true;
 
-        if (!$this->update_launcher_moodles()) $error = true;
+        // if (!$this->update_launcher_moodles()) $error = true;
         if (!$this->update_jeelo_buffer()) $error = true;
         
         return (!$error);
-    } // function ready_update_for_child
+    }
 
 
     function create_course_backups() {
         global $CFG;
 
         foreach($this->categories as $category) {
+            // Save category in buffer db, will be used to recover categories in child
+            $this->save_category_in_buffer_db($category);
+
             $courses = get_records('course', 'category', $category);
             // Loop through all courses in the specified category
             foreach($courses as $course) {
@@ -110,12 +112,56 @@ class schoolyear extends moodle {
 
                 $backup_restore = new backup_course('/etc/moodle_clients');
 
-                if (!$backup_restore->course_backup($category, $course)) return false;
+                if (!$backup_name = $backup_restore->course_backup($category, $course)) return false;
+                if (!$this->save_course_in_buffer_db($moodle, $course)) error("Failed to add course to jeelo buffer database");
             }
         }
+        // Tar the files
+        shell_exec("tar -cz -f {$this->dumps_location}/csv/{$this->csv_filename}.tgz users.csv groups.csv");
+        // Remove files
+        shell_exec("rm *.zip");
 
         return true;
-    } // function create_course_backups
+    }
+
+
+    function save_course_in_buffer_db($backup_name, $course) {
+        $query = "
+            INSERT INTO jeelo_buffer.client_courses (
+                backup_name, course_fullname, course_shortname, course_groupyear, client_moodle_id
+            ) VALUES (
+                '$backup_name',
+                '{$course->fullname}',
+                '{$course->shortname}',
+                '{$course->groupyear}',
+                '{$this->jeelo_buffer->id}'
+            )";
+        return (execute_sql($query));
+    }
+
+
+    function save_category_in_buffer_db($category_id) {
+        $category = get_record('course_category', 'id', $category_id);
+
+        $query = "
+            INSERT INTO jeelo_buffer.client_categories (
+                name, description, parent, sortorder, coursecount, visible, timemodified, depth, path, theme, moodle_client_id
+            ) VALUES (
+                '{$category->fullname}',
+                '{$category->description}',
+                '{$category->parent}',
+                '{$category->sortorder}',
+                '{$category->coursecount}',
+                '1',
+                '".time()."',
+                '{$category->depth}',
+                '{$category->path}',
+                '{$category->theme}',
+                '{$this->jeelo_buffer->id}'
+            )";
+        return (execute_sql($query));
+    }
+
 
 
     /* copy_csv_files_to_child
@@ -139,9 +185,10 @@ class schoolyear extends moodle {
         unlink("{$this->dumps_location}/csv/groups.csv");
         
         return (!$error);
-    } // function copy_csv_files_to_child
+    }
 
 
+    /*
     function update_launcher_moodles() {
         global $CFG;
 
@@ -151,27 +198,26 @@ class schoolyear extends moodle {
         $environment->admin_email = $this->admin_email;
 
         return (update_record('launcher_moodles', $environment));
-    } // function update_launcher_moodles
+    }*/
 
 
     function update_jeelo_buffer() {
+        $jeelo_buffer = new stdClass();
 
-        // Get ID
-        $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '{$this->site_shortname}'";
-        $environment = get_record_sql($query);
-        $environment->csv_filename = "{$this->dumps_location}/csv/{$this->csv_filename}.tgz";
-        $environment->status = "update";
-        $environment->timemodified = time();
+        $jeelo_buffer->csv_filename = "{$this->dumps_location}/csv/{$this->csv_filename}.tgz";
+        $jeelo_buffer->courses_filename = "{$this->dumps_location}/course_imports/{$this->courses_filename}.tgz";
+        $jeelo_buffer->status = "update";
+        $jeelo_buffer->timemodified = time();
 
         $query = "UPDATE jeelo_buffer.client_moodles SET ";
         foreach($environment as $key=>$property) {
             if ($property == 'id') continue;
             $query .= "$key = '$property', ";
         }
-        $query = substr(trim($query), 0, -1)." WHERE id='{$environment->id}'";
+        $query = substr(trim($query), 0, -1)." WHERE id='{$this->jeelo_buffer->id}'";
         
         return (mysql_query($query));
-    } // function update_jeelo_buffer
+    }
 }
 
 ?>
