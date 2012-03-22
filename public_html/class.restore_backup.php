@@ -19,9 +19,9 @@ require_once ($CFG->libdir . '/moodlelib.php');
 
 class restore_backup {
 
-    private $backup_folder = 'course_imports';
-
-    function course_restore($backup_name, $course, $group_name) {
+	private $backup_folder = 'temp/updater/courses';
+	
+	function course_restore($backup_name, $course, $group_name) {
         global $SESSION, $CFG;
 
         if (isset ($SESSION->course_header)) {
@@ -39,9 +39,9 @@ class restore_backup {
 
         $error_output = '';
         $file = "{$this->backup_folder}/$backup_name";
-        define('RESTORE_SILENTLY', true);
+        define('RESTORE_SILENTLY', false);
 
-        $backup_unique_code = @restore_precheck($course->id, $file, $error_output, true);
+        $backup_unique_code = restore_precheck($course->id, $file, $error_output, true);
 
         // Build up the restore object
         $course_header = $SESSION->course_header;
@@ -96,8 +96,8 @@ class restore_backup {
 
         $restore->deleting = true; //There is nothing to delete when we restore to a new course
 
-        $course_header->course_shortname = "{$course->shortname} - $group_name";
-        $course_header->course_fullname = "{$course->fullname} - $group_name";
+        $course_header->course_shortname = "{$course->shortname} - $group_name - ".date('m-Y');
+        $course_header->course_fullname = "{$course->fullname} - $group_name - ".date('m-Y');
 
         if (!@restore_execute($restore, $info, $course_header, $errorstr)) return false;
         if (!@$this->delete_backup_file($restore->file)) return false;
@@ -109,7 +109,7 @@ class restore_backup {
 
 
     function get_last_restored_course_id($course, $group_name) {
-        if (!$new_course = get_record('course', 'shortname', $course->shortname.' - '.$group_name)) return false;
+        if (!$new_course = get_record('course', 'shortname', $course->shortname . ' - ' . $group_name . ' - '.date('m-Y'))) return false;
         return $new_course->id;
     } // function get_last_restored_course_id
 
@@ -118,7 +118,6 @@ class restore_backup {
         return (unlink($backup_name)) ? true : false;
     } // function delete_backup_file
 }
-
 
 //Increase timelimit and memory limit for this script.
 set_time_limit(0);
@@ -131,6 +130,7 @@ foreach($_POST['course'] as $key => $property) {
     $course->$key = $property;
 }
 $backup_name = $_POST['backup_name'];
+
 $group_name = $_POST['group_name'];
 
 // Running script
@@ -138,4 +138,5 @@ $restore_backup = new restore_backup();
 if (!$course_id = $restore_backup->course_restore($backup_name, $course, $group_name)) $error = true;
 echo ($error) ? 'false' : $course_id; // Return course id
 unset($restore_backup);
+
 ?>

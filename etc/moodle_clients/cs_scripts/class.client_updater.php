@@ -42,23 +42,30 @@ class client_updater extends client {
          */
 
         // Update course 1
-        // self::update_sitewide_course();
+        self::update_sitewide_course();
 
         // Update all course categories
-        // $this->set_existing_categories_invisible();
+        $this->set_existing_categories_invisible();
         // Extract all files to be used
-        // $this->extract_files();
+        $this->extract_files();
 
         // Update users
-        // $this->update_all_users();
-        $this->create_categories();
-        exit('Done?');
+        $this->update_all_users();
+
+        /* Create the projects
+         * - categories
+         * - courses
+         * - groups
+         * - enrollments
+         */
+        $this->create_projects();
+
         // Finally, add the side-wide enrollments (for admin users)
-        // if (!$this->add_sidewide_enrollment()) error("Failed to create side-wide roles");
+        $this->add_sidewide_enrollment();
     }
 
 
-    function create_categories() {
+    function create_projects() {
         global $CFG;
         
         /* Extract courses              ***DONE***
@@ -83,8 +90,9 @@ class client_updater extends client {
 
         while($category = $csv->nextline()) { // Loop through categories
 
-            // $child_category_id = $this->create_category($category);
-            $child_category_id = 2; // For test purposes
+            $child_category_id = $this->create_category($category);
+            echo "Created category $child_category_id<br />";
+            // $child_category_id = 2; // For test purposes
             $this->create_courses_and_groups($category->id, $child_category_id);
 
             break; // For testing, don't wanne wait all the time
@@ -128,8 +136,8 @@ class client_updater extends client {
                 )";
         
         self::log("Creating course category and context");
-        // $category_id = self::remote_execute($this->csv_line, $query, true);
-        $category_id = 2;
+        $category_id = self::remote_execute($this->csv_line, $query, true);
+        //$category_id = 2;
 
         $context_id = $this->get_or_create_context(40, $category_id); // Creates the context
 
@@ -138,6 +146,23 @@ class client_updater extends client {
 
 
     function get_or_create_context($context_level, $instance_id) {
+        $file = self::$client_url . '/' . $this->csv_line->domain . '/get_or_create_context.php';
+        ini_set('allow_url_fopen', 'On');
+
+        $data = array('context_level'=>$context_level, 'instance_id'=>$instance_id);
+
+        $curl = curl_init($file);
+        curl_setopt($curl,CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+        if (!$context_id = curl_exec($curl)) die(curl_error($curl));
+        curl_close($curl);
+
+        if ($context_id == 'false') die('Failed to get or create context.<br />');
+
+        return $context_id;
+
+        /*
         $target = self::$target_folder . $this->csv_line->domain;
 
         $data = array('context_level'=>$context_level, 'instance_id'=>$instance_id);
@@ -151,7 +176,7 @@ class client_updater extends client {
 
         if ($context_id == 'false') die('Failed to create context for context level ' . $context_level . ' and instance id ' . $instance_id);
 
-        return $context_id;
+        return $context_id;*/
     }
 
 
@@ -175,10 +200,15 @@ class client_updater extends client {
 
                 // Restore earlier backuped course
                 $child_course_id = $this->restore_course($child_category_id, $child_group, $parent_course);
+                echo "Restored course $child_course_id<br />";
+                // $child_course_id = 13;
                 // Create group
                 $child_group_id = $this->create_group($child_course_id, $child_group);
+                echo "Created group $child_group_id<br />";
+                // $child_group_id = 9;
                 // Add users to groups
                 $this->add_group_members($child_course_id, $child_group_id, $child_group->name);
+                echo "Added group members<br />";
             }
 
 
@@ -271,7 +301,7 @@ class client_updater extends client {
 
     function add_group_members($course_id, $group_id, $group_name) {
         
-        $handler = fopen("{$this->tmp_csv_folder}/users.csv", 'r');
+        $handler = fopen("{$this->tmp_updater_folder}/csv/users.csv", 'r');
         $line = 0;
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
@@ -282,7 +312,8 @@ class client_updater extends client {
             $csv_user = $this->assign_column_names($data, 'fields_users');
 
             // Assign userid to csv user record
-            $csv_user->userid = get_record('user', 'username', $csv_user->email)->id;
+            $db_user = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."user WHERE username = '{$csv_user->email}'");
+            $csv_user->userid = mysql_result($db_user, 0, 0);
             $csv_user->groups = array($csv_user->group1, $csv_user->group2, $csv_user->group3);
             
             // If user is not in the same group AND doesn't need to be
@@ -304,7 +335,7 @@ class client_updater extends client {
 
     function add_sidewide_enrollment() {
         
-        $handler = fopen("{$this->tmp_csv_folder}/users.csv", 'r');
+        $handler = fopen("{$this->tmp_updater_folder}/csv/users.csv", 'r');
         $line = 0;
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
@@ -316,14 +347,20 @@ class client_updater extends client {
             
             if ($csv_user->rol1 != 'beheerder') continue; // If not admin, continue
 
-            $role_assignment = new stdClass();
-            $role_assignment->userid = get_record('user', 'username', $csv_user->email)->id;
-            $role_assignment->roleid = get_record('role', 'shortname', 'admin')->id;
-            $role_assignment->contextid = get_context_instance(CONTEXT_SYSTEM, 1)->id; // Get course context id
-            $role_assignment->timemodified = time();
-            $role_assignment->courseid = 1;
+            // Assign values
+            $user = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."user WHERE username = '{$csv_user->email}'");
+            $userid = mysql_result($user, 0, 0);
+            $role = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."role WHERE shortname = 'admin'");
+            $roleid = mysql_result($user, 0, 0);
+            $contextid = $this->get_or_create_context(10, 1);
 
-            if (!insert_record('role_assignments', $role_assignment)) return false;
+            // Execute query
+            $query = "INSERT INTO ".self::$prefix."role_assignments (
+                            userid, roleid, contextid, timemodified, enrol
+                        ) VALUES (
+                            '$userid', '$roleid', '$contextid', '".time()."', 'manual'
+                        )";
+            if (!self::remote_execute($this->csv_line, $query)) return false;
         }
         return true;
     }
@@ -349,32 +386,37 @@ class client_updater extends client {
                 return true; // Return if role is something else, shouldn't happen though...
                 break;
         }
-        $role_assignment = new stdClass();
-        $role_assignment->roleid = get_record('role', 'shortname', $role_shortname)->id;
-        $role_assignment->contextid = get_context_instance(CONTEXT_COURSE, $course_id)->id; // Get course context id
-        $role_assignment->userid = $user->userid;
-        $role_assignment->timemodified = time();
-        echo "<br />Created role assignment user {$user->userid} {$course_id}<br />";
+        $context_id = $this->get_or_create_context(50, $course_id); // Creates the context
 
-        return (insert_record('role_assignments', $role_assignment));
+        $role = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."role WHERE shortname = '$role_shortname'");
+
+
+        $query = "INSERT INTO ".self::$prefix."role_assignments (
+                    roleid, contextid, userid, timemodified, enrol
+                ) VALUES (
+                    '".mysql_result($role, 0, 0)."',
+                    '$context_id',
+                    '{$user->userid}',
+                    '".time()."',
+                    'manual'
+                )";
+
+        return (self::remote_execute($this->csv_line, $query));
     }
 
 
     function add_group_member($user, $group_id) {
-        $group_member = new stdClass();
-        $group_member->groupid = $group_id;
-        $group_member->timeadded = time();
-        $group_member->userid = $user->userid;
-
-        $error = false;
-        if (!insert_record('groups_members', $group_member)) $error = true;
-        echo "<br />Added group member user {$group_member->userid} to group {$group_member->groupid}<br />";
-        return (!$error);
+        $query = "INSERT INTO ".self::$prefix."groups_members (
+                        groupid, userid, timeadded
+                    ) VALUES (
+                        '$group_id', '{$user->userid}', '".time()."'
+                    )";
+        return (self::remote_execute($this->csv_line, $query));
     }
 
     function create_group($course_id, $group) {
-        $group->courseid = $course_id;
-        return (@insert_record('groups', $group));
+        $query = "INSERT INTO ".self::$prefix."groups ( courseid, name ) VALUES ( '$course_id', '{$group->name}')";
+        return (self::remote_execute($this->csv_line, $query, true));
     }
 
 
@@ -382,63 +424,52 @@ class client_updater extends client {
 
         $new_course = new stdClass();
         $new_course->category = $category_id;
-        $new_course->shortname = $course->shortname;
-        $new_course->fullname = $course->fullname;
+        $new_course->shortname = $course->course_shortname;
+        $new_course->fullname = $course->course_fullname;
 
 
         $data_string = "backup_name=$course->backup_name&group_name={$group->name}&";
-        foreach($course_new as $key=>$value) {
+        foreach($new_course as $key=>$value) {
             $data_string .= "course[$key]=$value&";
         }
         rtrim($data_string,'&');
         unset($course_new);
-        exit(var_dump($data_string));
 
         return $data_string;
     } // assemble_data_string_for_restore
 
 
-    function execute_course_restore($moodle, $data_string) {
-        
-        $curl = curl_init($moodle->cfg->wwwroot.'/class.restore_backup.php');
+    function execute_course_restore($data_string) {
+        $file = self::$client_url . '/' . $this->csv_line->domain . '/class.restore_backup.php';
+        ini_set('allow_url_fopen', 'On');
 
+        $curl = curl_init($file);
         curl_setopt($curl,CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        $result = curl_exec($curl);
-        curl_close ($curl);
+        if (!$course_id = curl_exec($curl)) die(curl_error($curl));
+        curl_close($curl);
 
-        return ($result == 'false') ? false : $result;
+        if ($course_id == 'false') die('Failed to restore course:<br />'.$data_string);
+
+        return $course_id;
     }
 
 
     function restore_course($category_id, $child_group, $parent_course) {
-        $target = self::$target_folder . $this->csv_line->domain;
 
         $data_string = $this->assemble_data_string_for_restore($parent_course, $child_group, $category_id);
-        if (!$new_course_id = trim($this->execute_course_restore($moodle, $data_string))) error("Failed to execute course restore for parent course {$course->id}");
-
-        $data = array('parent_course'=>$parent_course, 'category_id'=>$category_id, 'group_name'=>$child_group->name);
-        $curl = curl_init($target . '/public_html/class.restore_backup.php');
-        exit(var_dump($data));
-
-        curl_setopt($curl,CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        $course_id = curl_exec($curl);
-        curl_close ($curl);
-
-        if ($context_id == 'false') die('Failed to create context for context level ' . $context_level . ' and instance id ' . $instance_id);
-        exit(var_dump($course_id));
-
-        // return $context_id;
-        /*
-        $restore_course = new restore_backup();
-        if (!$course_id = $restore_course->course_restore($parent_course, $child_group->name, $category_id)) return false;
-        unset($restore_course);
-         */
+        echo "Course data string: $data_string<br />";
+        if (!$course_id = trim($this->execute_course_restore($data_string))) die("Failed to execute course restore for parent course {$parent_course->id}");
+        // $this->remove_course_from_buffer($course_id);
 
         return $course_id;
+    }
+
+
+    function remove_course_from_buffer($course_id) {
+        $query = "DELETE FROM jeelo_buffer.client_courses WHERE id = $course_id";
+        return (self::remote_execute($this->csv_line, $query));
     }
 
 
@@ -481,11 +512,11 @@ class client_updater extends client {
     function set_existing_categories_invisible() {
         $error = false;
 
-        $query = "UPDATE ".self::$prefix."course_categories SET visible='0'";
+        $query = "UPDATE ".self::$prefix."course_categories SET visible='0' WHERE id != '1'";
         self::log($query);
         if (!self::remote_execute($this->csv_line, $query)) $error = true;
 
-        $query = "UPDATE ".self::$prefix."course SET visible='0' WHERE category != '0'";
+        $query = "UPDATE ".self::$prefix."course SET visible='0' WHERE category != '1'";
         self::log($query);
         if (!self::remote_execute($this->csv_line, $query)) $error = true;
 
@@ -594,7 +625,7 @@ class client_updater extends client {
         $query = "
             UPDATE ".self::$prefix."course SET
                 fullname = '{$this->csv_line->name}',
-                description = '{$this->csv_line->description}'
+                summary = '{$this->csv_line->description}'
             WHERE id = {$site_wide_course_id}";
 
         self::log("Update side-wide course.");

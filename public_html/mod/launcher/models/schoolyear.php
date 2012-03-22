@@ -113,17 +113,17 @@ class schoolyear extends moodle {
 
         foreach($this->categories as $category) {
             // Save category in buffer db, will be used to recover categories in child
-            $this->save_category_in_buffer_db($category);
+            $new_category_id = $this->save_category_in_buffer_db($category);
 
             $courses = get_records('course', 'category', $category);
             // Loop through all courses in the specified category
             foreach($courses as $course) {
                 require_once("{$CFG->dirroot}/mod/launcher/class.backup_course.php");
 
-                $backup_restore = new backup_course('/etc/moodle_clients');
+                $backup_restore = new backup_course('/etc/moodle_clients', 'course_imports');
 
                 if (!$backup_name = $backup_restore->course_backup($category, $course)) return false;
-                if (!$this->save_course_in_buffer_db($backup_name, $course)) error("Failed to add course to jeelo buffer database");
+                if (!$this->save_course_in_buffer_db($backup_name, $course, $new_category_id)) error("Failed to add course to jeelo buffer database");
             }
         }
         // Compress them into 1 file
@@ -137,16 +137,17 @@ class schoolyear extends moodle {
     }
 
 
-    function save_course_in_buffer_db($backup_name, $course) {
+    function save_course_in_buffer_db($backup_name, $course, $category_id) {
         $query = "
             INSERT INTO jeelo_buffer.client_courses (
-                backup_name, course_fullname, course_shortname, course_groupyear, client_moodle_id
+                backup_name, course_fullname, course_shortname, course_groupyear, client_moodle_id, parent_category_id
             ) VALUES (
                 '$backup_name',
                 '{$course->fullname}',
                 '{$course->shortname}',
                 '{$course->groupyear}',
-                '{$this->jeelo_buffer_id}'
+                '{$this->jeelo_buffer_id}',
+                '{$category_id}'
             )";
         return (execute_sql($query, false));
     }
@@ -171,7 +172,14 @@ class schoolyear extends moodle {
                 '{$category->theme}',
                 '{$this->jeelo_buffer_id}'
             )";
-        return (execute_sql($query, false));
+        if (!execute_sql($query, false)) return false;
+
+        // Get last inserted id
+        $query = "SELECT * FROM jeelo_buffer.client_categories
+                  WHERE name = '{$category->name}'
+                  AND client_moodle_id = '{$this->jeelo_buffer_id}'";
+        if (!$new_category = get_record_sql($query)) return false;
+        return ($new_category->id);
     }
 
 

@@ -9,6 +9,7 @@ class client extends base {
     static $client_name = 'client';
     static $prefix = 'mdl_';
     static $server_url = 'http://127.0.0.1/jeelo19/cs_scripts/server.php';
+    static $client_url = "http://localhost";
     static $target_folder = '/home/jeelos/';
     static $log_file = './client_log.txt';
     static $log_echo = true;
@@ -141,7 +142,7 @@ class client extends base {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
         
         // Update status FIRST
-        // self::update_server_status($csv_line->id, 'being_processed');
+        self::update_server_status($csv_line->id, 'being_processed');
 
         switch($csv_line->status) {
             case 'new':
@@ -152,7 +153,7 @@ class client extends base {
                 break;
         }
 
-        // self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
+        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
     }
 
 
@@ -173,10 +174,8 @@ class client extends base {
 
 
     public static function process_update_client($csv_line) {
-		
-		// self::get_config_file($csv_line->domain);
-		
         include("class.client_updater.php");
+
         $client_updater = new client_updater($csv_line);
         $client_updater->start_updater();
     }
@@ -245,7 +244,7 @@ class client extends base {
             Met vriendelijke groet,<br /><br />
             Jeelo Launcher 1.9";
 
-        return (mail_with_headers($user->email, $body, $subject));
+        return (self::mail_with_headers($user->email, $body, $subject));
     }
 
 
@@ -302,7 +301,6 @@ class client extends base {
         file_put_contents($folder .'/public_html/config_clean.php', $config_clean_contents);
     }
 
-
     function set_config_contents($config_contents, $field, $value) {
 
         $offset = strpos($config_contents, $field); // find the line with CFG->dbpass
@@ -314,6 +312,7 @@ class client extends base {
         
         return $config_contents;
     }
+    
     
     static public function update_server_status($record_id, $status, $exit_code=0) {
         $request = array(

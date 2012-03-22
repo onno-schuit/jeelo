@@ -39,7 +39,7 @@ class content_uploader extends moodle {
         if (!$this->create_users()) launcher_helper::print_error('3002');
         if (!$this->create_child_content()) launcher_helper::print_error('3003');
         if (!$this->create_nonstandard_enrollments()) launcher_helper::print_error('3005');
-        if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
+        // if (!$this->destroy_used_files()) launcher_helper::print_error('3004'); NOT NECCESARY
 
         return true;
     }
@@ -123,7 +123,7 @@ class content_uploader extends moodle {
 
         foreach($this->moodle->categories as $parent_category_id) {
 
-            if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            if (!$child_category_id = $this->create_category($parent_category_id)) error('Failed to create categories.');
             //$child_category_id = 2;
 
             $moodle = $this->moodle;
@@ -291,13 +291,14 @@ class content_uploader extends moodle {
     }
 
 
+    /*
     function destroy_used_files() {
         
         if (file_exists("{$this->moodle->cfg->dirroot}/class.restore_backup.php")) unlink("{$this->moodle->cfg->dirroot}/class.restore_backup.php");
 
         return true;
     }
-
+     */
 
     function create_enrollment($user_id, $course_id, $roles, $multiple_courses = false) {
         global $CFG;
@@ -391,12 +392,12 @@ class content_uploader extends moodle {
     }
 
 
-    function create_category($category_id, $course_count) {
+    function create_category($category_id) {
 
         $category = get_record('course_categories', 'id', $category_id);
         unset($category->id);
         $category->timemodified = time();
-        $category->coursecount = $course_count;
+        $category->coursecount = 0;
         $query = $this->insert_query_join_properties('course_categories', $category);
 
         if (!$new_category_id = launcher_helper::remote_execute($this->moodle, $query, true)) error('Couldn\'t create category');
@@ -449,6 +450,9 @@ class content_uploader extends moodle {
 
     function create_backup($moodle, $category_id, $group, $course) {
         require_once('class.backup_course.php');
+
+        $target = $moodle->cfg->dataroot.'/temp/updater';
+        if (!is_dir($target)) mkdir($target);
 
         $backup_restore = new backup_course($moodle->cfg->dataroot);
         if (!$backup_restore->create_backup_folder()) return false;

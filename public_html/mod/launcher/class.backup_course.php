@@ -17,13 +17,14 @@ require_once ($CFG->libdir . '/moodlelib.php');
 
 class backup_course {
 
-    private $backup_folder = 'course_imports';
+    private $backup_folder = 'temp/updater/courses';
 
-    function __construct($dataroot) {
+    function __construct($dataroot, $course_imports = false) {
 
         $this->child_dataroot = $dataroot;
+        if ($course_imports) $this->backup_folder = $course_imports;
 
-    } // function __construct
+    }
 
 
     function course_backup($category_id, $course) {
@@ -37,16 +38,13 @@ class backup_course {
         $preferences->backup_user_files = 0; // 0=No, 1=Yes
 
         return (@schedule_backup_course_execute($preferences)) ? $preferences->backup_name : false;
-    } // function backup
+    }
 
 
     function create_backup_folder() {
-        global $CFG;
-
         $target = $this->child_dataroot.'/'.$this->backup_folder;
-
         return (!is_dir($target)) ? mkdir($target) : true;
-    } // function create_backup_folder
+    }
 }
 
 
