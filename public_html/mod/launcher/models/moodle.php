@@ -78,12 +78,13 @@ class moodle extends user {
             return ($upload_groups['name'] != '') ? (end(explode(".", $upload_groups['name'])) == 'csv') : true;
         });
 
+        $shortname_stripped = $this->get_site_real_name();
         if (!$obj->msg = $this->get_site_real_name()) return false;
         $this->add_rule('site_shortname', get_string('maxlength', 'launcher', $obj), function($shortname_stripped) {
             return ( strlen($shortname_stripped) <= 16 );
         });
         $this->add_rule('site_shortname', get_string('unique', 'launcher', $obj), function($shortname_stripped) {
-            return ( !get_record_sql("SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '$shortname_stripped'")); // 'launcher_moodles', 'shortname', $shortname_stripped) );
+            return (!get_records_sql("SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '$shortname_stripped'")); // 'launcher_moodles', 'shortname', $shortname_stripped) );
         });
     }
 
@@ -91,22 +92,19 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
         
-        //if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        if (!$this->create_codebase()) launcher_helper::print_error('2000');
         
-        //if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
-        //if (!$this->set_up_database()) launcher_helper::print_error('2001');
+        if (!$this->set_up_database()) launcher_helper::print_error('2001');
 
         // Make sure a bufferdb record exists before the courses are created, we need to log the courses
-        //if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
+        if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
 
-        exit("Done?");
-        
-        
         // Finally prepair for transfer to the client
-        // if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
+        if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
 
         return true;
     }
@@ -243,7 +241,7 @@ class moodle extends user {
         $content_uploader = new content_uploader($this);
         $content_uploader->upload();
 
-        return ($this->update_sitewide_course);
+        return ($this->update_sitewide_course());
     }
 
 
@@ -374,6 +372,24 @@ return ($result === 0);*/
         global $CFG;
 
         $error = false;
+        // First create config_clean.php
+        if (!$config_clean = fopen("{$this->cfg->dirroot}/config_clean.php", "w")) return false;
+        $config_clean_input = '<?php // Clean Configuration File
+$CFG->dbhost    = "'.$this->db->host.'";
+$CFG->dbname    = "'.$this->db->name.'";
+$CFG->dbuser    = "'.$this->db->username.'";
+$CFG->dbpass    = "'.$this->get_password($this->db->password).'";';
+// Use the password salt for new moodle if it exists
+if (isset($CFG->passwordsaltmain)) {
+    $config_clean_input .= '
+$CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";';
+}
+$config_clean_input .= '
+?>';
+        if (!fwrite($config_clean, trim($config_clean_input))) return false;
+        if (!fclose($config_clean)) return false;
+
+        // Now create config.php
         if (!$config = fopen("{$this->cfg->dirroot}/config.php", "w")) return false;
         // Avoiding whitespaces in config file
         $config_input = '<?php // Moodle Configuration File
@@ -382,10 +398,7 @@ unset($CFG);
 
 $CFG = new stdClass();
 $CFG->dbtype    = "mysql";
-$CFG->dbhost    = "'.$this->db->host.'";
-$CFG->dbname    = "'.$this->db->name.'";
-$CFG->dbuser    = "'.$this->db->username.'";
-$CFG->dbpass    = "'.$this->get_password($this->db->password).'";
+require_once("config_clean.php");
 $CFG->dbpersist = false;
 $CFG->prefix    = "'.$CFG->prefix.'";
 
@@ -395,10 +408,6 @@ $CFG->dataroot  = "'.$this->cfg->dataroot.'";
 $CFG->admin     = "admin";
 
 $CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode';
-if (isset($CFG->passwordsaltmain)) {
-    $config_input .= '
-$CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";';
-}
 $config_input .= '
 require_once("$CFG->dirroot/lib/setup.php");';
 

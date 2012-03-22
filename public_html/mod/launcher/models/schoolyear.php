@@ -12,7 +12,7 @@ class schoolyear extends moodle {
     function validate_environment_and_set_errors() {
 
         $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE id = '{$this->environment_id}'";
-        if ($environment = get_records_sql($query)) return $environment;
+        if ($environment = get_record_sql($query)) return $environment;
 
         // The following only happens when someone selected the 'select' option, or if someone's screwing with my POST variables (:@)
         foreach($this as $key=>$property) {
@@ -26,18 +26,29 @@ class schoolyear extends moodle {
 
         return false;
     }
+    
+    
+    function get_site_email() {
+        global $CFG;
+        $query = "SELECT * FROM {$CFG->prefix}user WHERE username = 'admin'";
+        $result = launcher_helper::execute_from_client($this->environment, $query);
+        $user = mysql_fetch_object($result);
+        return $user->email;
+    }
 
 
     function set_environment_details() {
+        global $CFG;
         // Prevents executing further code if the environment is not set
-        if (!$this->jeelo_buffer = $this->validate_environment_and_set_errors()) return true;
+        if (!$this->environment = $this->validate_environment_and_set_errors()) return true;
         
-        $this->site_name            = $this->jeelo_buffer->name;
-        $this->site_description     = $this->jeelo_buffer->description;
-        $this->admin_email          = $this->jeelo_buffer->admin_email;
+        $this->site_name            = $this->environment->name;
+        $this->site_description     = $this->environment->description;
+        $this->environment->admin_email = $this->get_site_email();
+        if (!isset($this->jeelo_buffer_id)) $this->jeelo_buffer_id = $this->environment->id;
 
-        $this->server->server_name  = $this->jeelo_buffer->server_name;
-        $this->server->domain       = $this->jeelo_buffer->domain;
+        $this->server->server_name  = $this->environment->name;
+        $this->server->domain       = $this->environment->domain;
         
         $this->dumps_location       = '/etc/moodle_clients';
         $this->csv_filename         = "{$this->server->domain}_csv_".date("Ymd");
@@ -55,7 +66,6 @@ class schoolyear extends moodle {
         if (count($this->validation_rules) <= 1) return false; // Don't go further if there's no validation yet
 
         if (!$this->ready_schoolyear_for_child()) launcher_helper::print_error('4000');
-        exit(print_object($this->environment_id));
 
         return true;
     }
@@ -113,12 +123,14 @@ class schoolyear extends moodle {
                 $backup_restore = new backup_course('/etc/moodle_clients');
 
                 if (!$backup_name = $backup_restore->course_backup($category, $course)) return false;
-                if (!$this->save_course_in_buffer_db($moodle, $course)) error("Failed to add course to jeelo buffer database");
+                if (!$this->save_course_in_buffer_db($backup_name, $course)) error("Failed to add course to jeelo buffer database");
             }
         }
+        // Compress them into 1 file
+        chdir("{$this->dumps_location}/course_imports");
         // Tar the files
-        shell_exec("tar -cz -f {$this->dumps_location}/csv/{$this->csv_filename}.tgz users.csv groups.csv");
-        // Remove files
+        shell_exec("tar -cz -f {$this->dumps_location}/course_imports/{$this->courses_filename}.tgz *.zip");
+        // Finally delete the created zip files, we now got them compressed anyway
         shell_exec("rm *.zip");
 
         return true;
@@ -134,20 +146,20 @@ class schoolyear extends moodle {
                 '{$course->fullname}',
                 '{$course->shortname}',
                 '{$course->groupyear}',
-                '{$this->jeelo_buffer->id}'
+                '{$this->jeelo_buffer_id}'
             )";
-        return (execute_sql($query));
+        return (execute_sql($query, false));
     }
 
 
     function save_category_in_buffer_db($category_id) {
-        $category = get_record('course_category', 'id', $category_id);
+        $category = get_record('course_categories', 'id', $category_id);
 
         $query = "
             INSERT INTO jeelo_buffer.client_categories (
-                name, description, parent, sortorder, coursecount, visible, timemodified, depth, path, theme, moodle_client_id
+                name, description, parent, sortorder, coursecount, visible, timemodified, depth, path, theme, client_moodle_id
             ) VALUES (
-                '{$category->fullname}',
+                '{$category->name}',
                 '{$category->description}',
                 '{$category->parent}',
                 '{$category->sortorder}',
@@ -157,9 +169,9 @@ class schoolyear extends moodle {
                 '{$category->depth}',
                 '{$category->path}',
                 '{$category->theme}',
-                '{$this->jeelo_buffer->id}'
+                '{$this->jeelo_buffer_id}'
             )";
-        return (execute_sql($query));
+        return (execute_sql($query, false));
     }
 
 
@@ -204,19 +216,19 @@ class schoolyear extends moodle {
     function update_jeelo_buffer() {
         $jeelo_buffer = new stdClass();
 
-        $jeelo_buffer->csv_filename = "{$this->dumps_location}/csv/{$this->csv_filename}.tgz";
-        $jeelo_buffer->courses_filename = "{$this->dumps_location}/course_imports/{$this->courses_filename}.tgz";
-        $jeelo_buffer->status = "update";
-        $jeelo_buffer->timemodified = time();
+        $csv_filename = "{$this->dumps_location}/csv/{$this->csv_filename}.tgz";
+        $courses_filename = "{$this->dumps_location}/course_imports/{$this->courses_filename}.tgz";
 
-        $query = "UPDATE jeelo_buffer.client_moodles SET ";
-        foreach($environment as $key=>$property) {
-            if ($property == 'id') continue;
-            $query .= "$key = '$property', ";
-        }
-        $query = substr(trim($query), 0, -1)." WHERE id='{$this->jeelo_buffer->id}'";
+        $query = "UPDATE jeelo_buffer.client_moodles SET
+            name = '{$this->site_name}',
+            description = '{$this->site_description}',
+            csv_filename = '{$csv_filename}',
+            courses_filename = '{$courses_filename}',
+            status = 'update',
+            timemodified = '".time()."'
+        WHERE id='{$this->jeelo_buffer_id}'";
         
-        return (mysql_query($query));
+        return (execute_sql($query, false));
     }
 }
 

@@ -26,6 +26,12 @@ switch($_REQUEST['request']) {
     case 'get_csv_file':
         server::handle_request_get_csv_file($query_string);
         break;
+    case 'get_categories':
+        server::handle_request_get_categories($query_string);
+        break;
+    case 'get_courses':
+        server::handle_request_get_courses($query_string);
+        break;
 }
 
 

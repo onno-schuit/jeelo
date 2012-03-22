@@ -27,6 +27,29 @@ class launcher_helper extends helper {
     }
 
 
+    static function get_clean_config($domain) {
+        $target = '/home/jeelos/' . $domain;
+        require_once($target . '/public_html/config_clean.php');
+        return $CFG;
+    }
+
+
+    // Same as remote execute, but this checks against existing client environment
+    static function execute_from_client($jeelo_buffer, $query, $return_id = false) {
+        $clean_cfg = launcher_helper::get_clean_config($jeelo_buffer->domain);
+
+        if (!$con = mysql_connect($clean_cfg->dbhost, $clean_cfg->dbuser, $clean_cfg->dbpass)) return false;
+        if (!mysql_select_db($clean_cfg->dbname, $con)) return false;
+
+        if (!$result = mysql_query($query)) return false; // Execute the actual query
+        
+        if ($return_id) $id = mysql_insert_id();
+        mysql_close($con);
+
+        return ($return_id) ? $id : $result;
+    }
+
+
     /* Menno de Ridder, 06-02-2012
      *
      * This function prints errors based on an error code.

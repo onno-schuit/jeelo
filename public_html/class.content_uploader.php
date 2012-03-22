@@ -36,9 +36,8 @@ class content_uploader extends moodle {
     function upload() {
         global $CFG;
         
-        // if (!$this->create_users()) launcher_helper::print_error('3002');
+        if (!$this->create_users()) launcher_helper::print_error('3002');
         if (!$this->create_child_content()) launcher_helper::print_error('3003');
-        exit("Created courses and shit...");
         if (!$this->create_nonstandard_enrollments()) launcher_helper::print_error('3005');
         if (!$this->destroy_used_files()) launcher_helper::print_error('3004');
 
@@ -119,35 +118,13 @@ class content_uploader extends moodle {
     }
 
 
-    function read_and_validate_csv_file($type, $code) {
-
-        $line = 0;
-        $handler = fopen($_FILES["upload_$type"]["tmp_name"], 'r');
-        while($data = fgetcsv($handler, 0, ';')) {
-            $line ++;
-            if ($line == 1) {
-                $fields_type = ($type == 'users') ? 'fields_users' : 'fields_groups';
-                if ($this->validate_columns($data, $this->$fields_type)) continue;
-            } // Check column names
-
-            $child = new stdClass();
-            $child = $this->assign_column_names($data, $child, 'fields_'.$type);
-
-            $code($child);
-
-            unset($child);
-        }
-
-    }
-
-
     function create_child_content() {
         global $CFG;
 
         foreach($this->moodle->categories as $parent_category_id) {
 
-            // if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
-            $child_category_id = 2;
+            if (!$child_category_id = $this->create_category($parent_category_id, count($parent_courses))) error('Failed to create categories.');
+            //$child_category_id = 2;
 
             $moodle = $this->moodle;
 
@@ -177,18 +154,17 @@ class content_uploader extends moodle {
                     // foreach($child_group->year as $child_group_year) {
 
                     // Create course
-                    // if (!$child_course_id = $this->create_course($moodle, $child_category_id, $child_group, $parent_course)) error("Couldn't create course");
-                    $child_course_id = 5;
+                    if (!$child_course_id = $this->create_course($moodle, $child_category_id, $child_group, $parent_course)) error("Couldn't create course");
+                    // $child_course_id = 5;
                     // Create group
-                    // if (!$child_group_id = $this->create_group($moodle, $child_course_id, $child_group)) error("Couldn't create group.");
-                    $child_group_id = 1;
+                    if (!$child_group_id = $this->create_group($moodle, $child_course_id, $child_group)) error("Couldn't create group.");
+                    // $child_group_id = 1;
                     // Add users to groups
                     if (!$this->add_group_members($moodle, $child_course_id, $child_group, $child_group_id)) error("Couldn't add group members.");
 
                         // Everything went well, break to avoid copying the course another time
                      //   break;
                     // }
-                    exit("Done?");
                 }
 
 
@@ -223,7 +199,6 @@ class content_uploader extends moodle {
             }
 //            }
         }
-        exit("Done?");
         return true;
     }
 
@@ -306,25 +281,19 @@ class content_uploader extends moodle {
     function add_group_member($moodle, $csv_user, $child_db_user_id, $course_id, $group_id) {
         global $CFG;
 
-        foreach($csv_user->groups as $user_group) {
-            $group_id = $group_id;
+        $group_member = new stdClass();
+        $group_member->userid = $child_db_user_id;
+        $group_member->groupid = $group_id;
+        $group_member->timeadded = time();
+        $query = $this->insert_query_join_properties('groups_members', $group_member);
 
-            $group_member = new stdClass();
-            $group_member->userid = $user_id;
-            $group_member->groupid = $group_id;
-            $group_member->timeadded = time();
-            $query = $this->insert_query_join_properties('groups_members', $group_member);
-
-            if (!launcher_helper::remote_execute($this->moodle, $query)) return false;
-        }
-        return true;
+        return (launcher_helper::remote_execute($this->moodle, $query));
     }
 
 
     function destroy_used_files() {
         
-        if (!unlink("{$this->moodle->cfg->dirroot}/class.restore_backup.php")) error('Didn\'t unlink');
-        if (!unlink("{$this->moodle->cfg->dirroot}/get_or_create_context.php")) error('Didn\'t unlink');
+        if (file_exists("{$this->moodle->cfg->dirroot}/class.restore_backup.php")) unlink("{$this->moodle->cfg->dirroot}/class.restore_backup.php");
 
         return true;
     }

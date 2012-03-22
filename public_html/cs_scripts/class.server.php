@@ -5,6 +5,7 @@ require_once("class.base.php");
 class server extends base {
 
     static $log_file = './server_log.txt';
+    static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
 
     /**
      * Checks if the request is valid by comparing the hash with our calculated hash; dies with error if 
@@ -148,6 +149,96 @@ class server extends base {
             
         die(); // no further output
     }
+
+
+    function handle_request_get_courses($query_string) {
+
+        extract(self::_export_query_string($query_string, 'for,groupyear,client_moodle_id')); // puts query string into separate variables
+        
+        $courses_to_call = array();
+        $groupyears = explode('/', $groupyear);
+        unset($groupyear);
+        
+        // Get all the groups in an array for a join
+        foreach($groupyears as $groupyear) {
+            foreach(self::$possible_groups as $key=>$possible_group) {
+                if (in_array($groupyear, $possible_group)) $courses_to_call[$key] = join('/', $possible_group);
+            }
+        }
+
+        $sql_extra = '';
+        $count = 0;
+        foreach($courses_to_call as $key => $course_to_call) {
+            $count ++;
+            $sql_extra .= "'$course_to_call'";
+            if ($count != count($courses_to_call)) $sql_extra .= ','; // Make sure we wont have a comma at the end
+        }
+
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
+
+        // use sprintf to replace variables
+        $query = "SELECT * FROM client_courses
+            WHERE course_groupyear IN ($sql_extra)
+            AND client_moodle_id = '$client_moodle_id'
+            AND parent_category_id = '$category_id'";
+        //exit($query);
+        self::log($query);
+        
+        // run the query
+        $rows = $db->fetch_rows($query); 
+
+        foreach ($rows as $row) {
+            foreach($row as $key=>$column){
+                echo ($key != 'parent_category_id') ? "$column;" : $column;
+            }
+            echo "\n";
+        }
+        // halt
+        die();
+    }
+
+    /* get courses by groupyear
+     *
+     * This function will build a query according to what groupyears
+     * are given. It will execute the query and return only the courses
+     * that are actually important, rather than checking later if we have
+     * to skip certain courses... */
+    function get_courses_by_groupyear($category_id, $groupyears) {
+        global $CFG;
+        
+
+        return (get_records_sql($query));
+    }
+
+
+    function handle_request_get_categories($query_string) {
+
+        // create vars: $request,$for,$hash from query_string
+        //server.php?request=get_available_clients&for=client
+        extract(self::_export_query_string($query_string, 'for,client_moodle_id')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
+
+        // use sprintf to replace variables
+        $query = sprintf("SELECT * FROM {client_categories} WHERE client_moodle_id = '%s'", $client_moodle_id);
+        self::log($query);
+
+        // run the query
+        $rows = $db->fetch_rows($query); 
+
+        foreach ($rows as $row) {
+            foreach($row as $key=>$column){
+                echo ($key != 'client_moodle_id') ? "$column;" : $column;
+            }
+            echo "\n";
+        }
+
+        // halt
+        die();
+    }
+
 
     /**
      * Updates status and exit code of a record if criteria are met; otherwise prints error

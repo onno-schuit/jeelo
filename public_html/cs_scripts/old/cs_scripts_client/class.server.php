@@ -71,6 +71,7 @@ class server extends base {
         die();
     }
 
+
     /**
      * Sends file back if criteria are met; otherwise prints error
      * 

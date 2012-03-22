@@ -22,9 +22,7 @@ $string['unique'] = 'The (generated) database name \"$a->msg\" is already in use
 $string['msg_success'] = 'Worked like a charm!';
 
 $string['categories'] = 'Projects';
-$string['moodle_succesfull_set_up'] = 'The moodle environment has been succesfully set up.<br />
-                                    All the important information is shown below. It has also been send to the specified email address.<br /><br />
-                                    Please do <b>not</b> lose this information.';
+$string['prepaired_for_installation'] = 'Prepaired for installation';
 $string['groupyear'] = 'Group year';
 
 $string['settings_site'] = 'Site settings';
