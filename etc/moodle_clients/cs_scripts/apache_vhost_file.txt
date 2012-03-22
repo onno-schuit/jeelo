@@ -1,4 +1,4 @@
-<VirtualHost *:80>
+<VirtualHost 178.77.98.31:80>
         DocumentRoot /home/jeelos/{domain}/public_html
         ServerName {domain}
         ServerAlias {short_code}.jeelo.nl
