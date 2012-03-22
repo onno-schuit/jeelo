@@ -15,6 +15,34 @@ class client extends base {
     static $log_echo = true;
     
  
+    /**
+     * Reads variable apache conf file, replaces vars and writes to /apache/conf/domain.conf
+     * /apache/conf path is set in config.php in $cs_apache_config_dir
+     * 
+     * @param mixed $csv_line
+     * @return void
+     */
+    public static function add_to_apache($csv_line) {
+        global $cs_apache_conf_dir;
+        $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $csv_line->domain);
+        $filename = str_replace('.', '_', $filename);
+        $destination = $cs_apache_conf_dir . '/' . $filename;
+        self::log("Creating file $destination");
+
+        $contents = file_get_contents(dirname(__FILE__) . '/apache_vhost_file.txt');
+        $contents = str_replace('{domain}', $csv_line->domain, $contents);
+        $contents = str_replace('{short_code}', $csv_line->short_code, $contents);
+
+        global $cs_apache_conf_dir;
+
+        file_put_contents($destination, $contents);  
+        self::log("File $destination created");
+        
+        self::log("Restarting apache");
+        exec('apache2ctl graceful');
+        self::log("Apache restarted");
+    }
+ 
     public static function create_database($csv_line) {
         $sql = "CREATE DATABASE `{$csv_line->short_code}`";
         self::log($sql);
@@ -191,6 +219,8 @@ class client extends base {
         self::get_codebase_from_server($csv_line);
 
         self::update_moodle_config($csv_line, $user_and_pass);
+        
+        self::add_to_apache($csv_line);
 
         self::email_school_created($csv_line, $user_and_pass);
     }

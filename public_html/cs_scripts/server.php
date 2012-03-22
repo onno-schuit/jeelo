@@ -1,8 +1,9 @@
 <?php
 
+require_once("config.php");
 require_once("class.server.php");
 
-server::init_db('localhost', 'root', 'menno', 'jeelo_buffer');
+server::init_db($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname); // from config.php
 
 $query_string = $_SERVER['QUERY_STRING'];
 
