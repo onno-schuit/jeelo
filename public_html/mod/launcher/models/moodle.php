@@ -48,6 +48,9 @@ class moodle extends user {
         $this->server->server    = $this->server_name;
         $this->server->domain    = $this->domain;
 
+        $this->layout->navbar    = $this->navbar;
+        $this->layout->logo      = $this->logo;
+
         $this->dumps_location    = '/etc/moodle_clients';
         $this->sql_filename      = "{$this->server->domain}_sql_".date("Ymd");
         $this->codebase_filename = "{$this->server->domain}_codebase_".date("Ymd");
@@ -91,9 +94,10 @@ class moodle extends user {
 
     function create_moodle() {
         global $CFG;
-        
+
+        /*
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
-        
+
         if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
@@ -102,13 +106,43 @@ class moodle extends user {
         if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
-
+         */
+        if (!$this->set_layout_functions()) launcher_helper::print_error('2010');
+/*
         // Finally prepair for transfer to the client
         if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
-
+ */
         return true;
     }
 
+    function set_layout_functions() {
+
+        // if (!empty($this->layout->navbar)) $this->set_navbar_color();
+        if (!empty($this->layout->logo)) $this->set_logo();
+        exit("Processed...");
+    }
+
+    function set_logo() {
+        $file = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html/theme/children-education/pix/banner.jpg";
+        if (file_exists($file)) unlink($file);
+
+        return (move_uploaded_file($this->layout->logo['tmp_name'], $file));
+    }
+
+    function set_navbar_color() {
+        $file = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html/theme/children-education/styles_layout.css";
+        $handler = file($file);
+
+        $str_search = "background:url(pix/navbar.png) top repeat-x;";
+        $str_replace = "  background-color: {$this->layout->navbar};\n";
+
+        foreach($handler as $key=>$data) {
+        
+            if (trim($data) == $str_search) $handler[$key] = $str_replace;
+        }
+
+        return (file_put_contents($file, $handler));
+    }
 
     function prepair_transfer_to_client() {
         

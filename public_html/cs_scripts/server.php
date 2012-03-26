@@ -1,9 +1,12 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 
-require_once("config.php");
+
+require_once("../config.php");
 require_once("class.server.php");
 
-server::init_db($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname); // from config.php
+server::init_db($buffer_dbhost, $buffer_dbuser, $buffer_dbpass, $buffer_dbname); // from config.php
 
 $query_string = $_SERVER['QUERY_STRING'];
 
@@ -32,6 +35,9 @@ switch($_REQUEST['request']) {
         break;
     case 'get_courses':
         server::handle_request_get_courses($query_string);
+        break;
+    case 'clean_buffer_db':
+        server::handle_request_clean_buffer_db($query_string);
         break;
 }
 

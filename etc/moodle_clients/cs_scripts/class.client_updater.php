@@ -31,51 +31,23 @@ class client_updater extends client {
 
     function start_updater() {
         
-        /* include config.php
-         * update course 1                                      ***DONE***
-         * update all course categories, set them invisible     ***DONE***
-         * extract csv tar                                      ***DONE***
-         * insert / update / delete users                       ***DONE***
-         * insert categories                                    ***DONE***
-         * insert new courses & groups
-         * Create enrollments
-         */
-
-        // Update course 1
         self::update_sitewide_course();
 
-        // Update all course categories
         $this->set_existing_categories_invisible();
-        // Extract all files to be used
         $this->extract_files();
-
-        // Update users
         $this->update_all_users();
 
-        /* Create the projects
-         * - categories
-         * - courses
-         * - groups
-         * - enrollments
-         */
         $this->create_projects();
 
-        // Finally, add the side-wide enrollments (for admin users)
         $this->add_sidewide_enrollment();
+
+        $this->email_schoolyear_created();
     }
 
 
     function create_projects() {
         global $CFG;
         
-        /* Extract courses              ***DONE***
-         * Create categories            ***DONE***
-         * Create courses               ***DONE***
-         * Create groups                ***DONE***
-         * Create course enrollments    ***DONE***
-         * Create side-wide enrollments
-         */
-
         // Been there, done that...
         // $this->extract_course_files(); // Before we go through any loop we'll want to extract backup files
 
@@ -91,30 +63,46 @@ class client_updater extends client {
         while($category = $csv->nextline()) { // Loop through categories
 
             $child_category_id = $this->create_category($category);
-            echo "Created category $child_category_id<br />";
-            // $child_category_id = 2; // For test purposes
             $this->create_courses_and_groups($category->id, $child_category_id);
+        }
+        
+        $this->clean_buffer_db();
 
-            break; // For testing, don't wanne wait all the time
+        return true;
+    }
+
+    function clean_buffer_db() {
+        $request = array(
+            'request' => 'clean_buffer_db',
+            'id' => $this->csv_line->id
+        );
+        
+        $response = self::get_server_response($request);
+        // check if we have file contents or maybe an error
+        if (strstr($response, 'error')) {
+            self::log($response);
+            die();
         }
 
         return true;
     }
 
+    function email_schoolyear_created() {
+        $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
+        $result = self::remote_execute($this->csv_line, $query);
+        $user = mysql_fetch_object($result);
 
-    /* We probably wont need this script anymore
-    function get_dir_contents($folder) {
-        $files = array();
-        $folder_handler = opendir($folder);
+        $subject = "Jeelo Schoolyear created";
+        $body = "
+            Hallo {$user->username},<br /><br />
+            Een nieuw schooljaar is zojuist succesvol aangemaakt. De gebruikers die in het aangeleverde gebruikersbestand staan zullen vanaf nu
+            toegang hebben tot de nieuwe projecten.
+            <br /><br />
+            Met vriendelijke groet,<br /><br />
+            Jeelo Launcher 1.9";
 
-        while($file = readdir($folder_handler)) {
-            $files[] = $file;
-        }
-
-        return $files;
+        return (self::mail_with_headers($user->email, $body, $subject));
     }
-     */
-
 
     function create_category($category) {
 
@@ -161,22 +149,6 @@ class client_updater extends client {
         if ($context_id == 'false') die('Failed to get or create context.<br />');
 
         return $context_id;
-
-        /*
-        $target = self::$target_folder . $this->csv_line->domain;
-
-        $data = array('context_level'=>$context_level, 'instance_id'=>$instance_id);
-        $curl = curl_init($target . '/public_html/get_or_create_context.php');
-
-        curl_setopt($curl,CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        $context_id = curl_exec($curl);
-        curl_close ($curl);
-
-        if ($context_id == 'false') die('Failed to create context for context level ' . $context_level . ' and instance id ' . $instance_id);
-
-        return $context_id;*/
     }
 
 
@@ -200,50 +172,11 @@ class client_updater extends client {
 
                 // Restore earlier backuped course
                 $child_course_id = $this->restore_course($child_category_id, $child_group, $parent_course);
-                echo "Restored course $child_course_id<br />";
-                // $child_course_id = 13;
                 // Create group
                 $child_group_id = $this->create_group($child_course_id, $child_group);
-                echo "Created group $child_group_id<br />";
-                // $child_group_id = 9;
                 // Add users to groups
                 $this->add_group_members($child_course_id, $child_group_id, $child_group->name);
-                echo "Added group members<br />";
             }
-
-
-
-            /*
-
-                // If not set yet: create array from parent groupyears
-                if (!is_array($parent_course->groupyear)) $parent_course->groupyear = $this->groupyears_to_array($parent_course->groupyear);
-
-                // Possible groups: 1/2, 3/4, 5/6, 7/8
-                foreach($this->possible_groups as $possible_group) {
-
-                    // Possibly there are more years assigned to 1 group
-                    foreach($child_group->year as $child_group_year) {
-                        if (!in_array($child_group_year, $possible_group)) continue;
-                        if (!in_array($child_group_year, $parent_course->groupyear)) continue;
-
-                        // Restore earlier backuped course
-                        if (!$child_course_id = $this->restore_course($category_id, $child_group, $parent_course)) error("Couldn't create course");
-                        echo "<br />Restored course id $child_course_id<br />";
-                        // $child_course_id = 12;
-                        // Create group
-                        if (!$child_group_id = $this->create_group($child_course_id, $child_group)) error("Couldn't create group.");
-                        echo "<br />Created group id $child_group_id<br />";
-                        // $child_group_id = 9;
-                        // Add users to groups
-                        if (!$this->add_group_members($child_course_id, $child_group_id, $child_group->name)) error("Couldn't add group members.");
-
-                        // Everything went well, break to avoid copying the course another time
-                        break;
-                    }
-                }
-            */
-
-
         }
         return true;
     }
@@ -459,17 +392,9 @@ class client_updater extends client {
     function restore_course($category_id, $child_group, $parent_course) {
 
         $data_string = $this->assemble_data_string_for_restore($parent_course, $child_group, $category_id);
-        echo "Course data string: $data_string<br />";
         if (!$course_id = trim($this->execute_course_restore($data_string))) die("Failed to execute course restore for parent course {$parent_course->id}");
-        // $this->remove_course_from_buffer($course_id);
 
         return $course_id;
-    }
-
-
-    function remove_course_from_buffer($course_id) {
-        $query = "DELETE FROM jeelo_buffer.client_courses WHERE id = $course_id";
-        return (self::remote_execute($this->csv_line, $query));
     }
 
 

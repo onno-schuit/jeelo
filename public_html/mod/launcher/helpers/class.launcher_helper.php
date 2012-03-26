@@ -77,6 +77,7 @@ class launcher_helper extends helper {
             '2007'=>'Failed to save the child in the mother database.',
             '2008'=>'Failed to save the child in the mother database.',
             '2009'=>'Failed to create zip file from codebase and database.',
+            '2010'=>'Failed to edit layout settings for the child moodle.',
 
             '3000'=>'Failed to identify the csv files.',
             '3001'=>'Failed to create context files.',

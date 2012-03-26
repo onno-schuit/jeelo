@@ -94,13 +94,13 @@ class restore_backup {
         $SESSION->restore->restore_course_files = $restore->course_files;
         $SESSION->restore->restore_site_files   = $restore->site_files;
 
-        $restore->deleting = true; //There is nothing to delete when we restore to a new course
+        $restore->deleting = false; //There is nothing to delete when we restore to a new course
 
         $course_header->course_shortname = "{$course->shortname} - $group_name - ".date('m-Y');
         $course_header->course_fullname = "{$course->fullname} - $group_name - ".date('m-Y');
 
         if (!@restore_execute($restore, $info, $course_header, $errorstr)) return false;
-        if (!@$this->delete_backup_file($restore->file)) return false;
+        // if (!@$this->delete_backup_file($restore->file)) return false;
         unset($restore);
 
         return ($new_course_id = @$this->get_last_restored_course_id($course, $group_name)) ? $new_course_id : false;

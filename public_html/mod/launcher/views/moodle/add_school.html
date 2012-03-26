@@ -36,10 +36,8 @@
                 <td colspan='2'><b><?=get_string('settings_admin', 'launcher');?></b></td>
             </tr>
             <?php
-            $arr_fields = array('admin_email'); // Second set of variables
-            foreach($arr_fields as $field) {
-                $this->print_input_field($field, $moodle);
-            }
+            //$arr_fields = array('admin_email'); // Second set of variables
+            $this->print_input_field('admin_email', $moodle);
             ?>
             </tr>
             <tr><td colspan='2'><hr /></td></tr>
@@ -52,6 +50,15 @@
                 $this->print_input_field($field, $moodle);
             }
             ?>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
+            </tr>
+            <?php
+            $this->print_input_field('navbar', $moodle);
+            $this->print_upload_field('logo', $moodle);
+            ?>
+            
 
             <tr><td colspan='2'><hr /></td></tr>
             <tr>

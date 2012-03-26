@@ -31,7 +31,7 @@ class moodle_controller extends controller
         $this->has_access_rights();
         
         if (!$moodle) error(launcher_helper::print_error("1000"));
-        if (!$moodle->send_feedback_mails()) $this->create_messages(array('no_feedback_send'=>get_string('no_feedbackmail_send', 'launcher')));
+        // if (!$moodle->send_feedback_mails()) $this->create_messages(array('no_feedback_send'=>get_string('no_feedbackmail_send', 'launcher')));
         
         $this->get_view(array('moodle'=>$moodle), 'show_school_created');
     }
@@ -49,34 +49,6 @@ class moodle_controller extends controller
     function create_school($moodle = false) {
         $this->has_access_rights();
 
-
-/*        global $CFG;
-        $file = "{$CFG->dirroot}/theme/test/style.css";
-        // Array ( full tag => value to be changed )
-        $fields_to_change = array('body {'=>'color: red;', 'body {'=>'font-weight: bold;');
-        
-        
-        
-        if (!file_exists($file)) exit(print_object("File doesn't exist"));
-        echo "File exists, lets start reading it...<br />";
-
-        if (!$handler = fopen($file, 'r+')) die('Error');
-        $edit_next_line = false;
-        while($data = trim(fgets($handler))) {
-
-            if ($edit_next_line) {
-            var_dump($data);
-                if ($data == 'color: red;') {
-                    // Change the line
-                    
-                }
-
-                $edit_next_line = false;
-            }
-
-            if ($data == 'body {') $edit_next_line = true;
-        }
- */
 
         require_once('models/moodle.php');
         $moodle = new moodle(required_param('moodle', PARAM_RAW));

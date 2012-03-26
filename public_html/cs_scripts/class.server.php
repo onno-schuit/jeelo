@@ -31,6 +31,25 @@ class server extends base {
         }
         return true;
     }
+
+
+    /* Deletes courses and categories from database
+     * To be called after an update has been succesfull */
+    public static function handle_request_clean_buffer_db($query_string) {
+
+        extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
+
+        $query = "DELETE FROM jeelo_buffer.client_courses WHERE client_moodle_id = '$id'";
+        $db->query($query);
+        $query = "DELETE FROM jeelo_buffer.client_categories WHERE client_moodle_id = '$id'";
+        $db->query($query);
+
+        return true;
+    }
+
     
     /**
      * Echos csv of all available records
@@ -47,7 +66,7 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT * FROM {client_moodles} WHERE is_for_client='%s' AND (status='new' OR status='update')", $for);
+        $query = sprintf("SELECT * FROM client_moodles WHERE is_for_client='%s' AND (status='new' OR status='update')", $for);
         self::log($query);
 
         // run the query

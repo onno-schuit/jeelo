@@ -74,11 +74,11 @@ class schoolyear extends moodle {
     function define_validation_rules() {
         global $CFG;
 
-        $this->add_rule('site_name', get_string('error_already_busy', 'launcher'), function($site_name) {
+/*        $this->add_rule('site_name', get_string('error_already_busy', 'launcher'), function($site_name) {
             $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '{$site_name}' AND status = 'processed'";
             return($environment = get_record_sql($query));
         });
-
+ */
         if (empty($this->site_shortname)) return false;
 
         $this->add_uploaded_files();
