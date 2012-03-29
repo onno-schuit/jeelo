@@ -95,7 +95,6 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
 
-        /*
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
 
         if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
@@ -106,20 +105,21 @@ class moodle extends user {
         if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
-         */
+
         if (!$this->set_layout_functions()) launcher_helper::print_error('2010');
-/*
+
         // Finally prepair for transfer to the client
         if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
- */
+ 
         return true;
     }
 
     function set_layout_functions() {
 
-        // if (!empty($this->layout->navbar)) $this->set_navbar_color();
+        if (!empty($this->layout->navbar)) $this->set_navbar_color();
         if (!empty($this->layout->logo)) $this->set_logo();
-        exit("Processed...");
+
+        return true;
     }
 
     function set_logo() {
@@ -130,6 +130,7 @@ class moodle extends user {
     }
 
     function set_navbar_color() {
+
         $file = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html/theme/children-education/styles_layout.css";
         $handler = file($file);
 
@@ -137,7 +138,6 @@ class moodle extends user {
         $str_replace = "  background-color: {$this->layout->navbar};\n";
 
         foreach($handler as $key=>$data) {
-        
             if (trim($data) == $str_search) $handler[$key] = $str_replace;
         }
 
@@ -165,7 +165,7 @@ class moodle extends user {
 
         // Zip codebase
         chdir("{$this->get_global_root()}/{$this->site->shortname}");
-        shell_exec("tar -cz -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
+        shell_exec("tar -czv --exclude=backupdata/* -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
 
         return true;
     }
@@ -297,15 +297,15 @@ class moodle extends user {
 
     function set_up_website_link() {
 
-        passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
+        symlink($this->cfg->dirroot, "/var/www/{$this->get_site_real_name()}");
+        // passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
         return ($this->website_is_linked());
     }
 
 
     function website_is_linked() {
-/*        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
-return ($result === 0);*/
-        return true;
+        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
+        return ($result === 0);
     }
 
 

@@ -1,0 +1,7 @@
+<VirtualHost 178.77.98.31:80>
+        DocumentRoot /home/jeelos/{domain}/public_html
+        ServerName {domain}
+        ServerAlias {short_code}.jeelo.nl
+        CustomLog /var/log/apache/{domain}-access.log common
+        ErrorLog /var/log/apache/{domain}-error.log
+</VirtualHost>

@@ -133,6 +133,7 @@ class server extends base {
      * @return void
      */
     public static function handle_request_get_codebase($query_string) {
+
         // create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'for,id')); // puts query string into separate variables
         
@@ -153,7 +154,7 @@ class server extends base {
         if (!file_exists($row['codebase_filename'])) {
             die('error: codebase file not found');
         }
-        
+
         // headers from php.net manual (readfile)
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream'); // or application/x-gzip or application/zip
@@ -165,7 +166,7 @@ class server extends base {
         header('Content-Length: ' . filesize($row['codebase_filename']));
         
         readfile($row['codebase_filename']);
-            
+    
         die(); // no further output
     }
 

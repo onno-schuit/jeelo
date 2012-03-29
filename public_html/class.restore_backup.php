@@ -24,6 +24,8 @@ class restore_backup {
 	function course_restore($backup_name, $course, $group_name) {
         global $SESSION, $CFG;
 
+        ob_start();
+
         if (isset ($SESSION->course_header)) {
             unset ($SESSION->course_header);
         }
@@ -103,8 +105,9 @@ class restore_backup {
         // if (!@$this->delete_backup_file($restore->file)) return false;
         unset($restore);
 
+        ob_end_clean(); // Clean any possible errors that might show up
+        
         return ($new_course_id = @$this->get_last_restored_course_id($course, $group_name)) ? $new_course_id : false;
-
     } // function restore
 
 
@@ -120,8 +123,8 @@ class restore_backup {
 }
 
 //Increase timelimit and memory limit for this script.
-set_time_limit(0);
-raise_memory_limit('512M');
+@ini_set('max_execution_time', 300); // 5 minutes should be enough
+@ini_set("memory_limit","1024M");
 
 $error = false;
 // Fetching variables

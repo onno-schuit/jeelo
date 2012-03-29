@@ -14,6 +14,9 @@ require_once ($CFG->libdir . '/adminlib.php');
 require_once ($CFG->libdir . '/dmllib.php');
 require_once ($CFG->libdir . '/moodlelib.php');
         
+//Increase timelimit and memory limit for this script.
+@ini_set('max_execution_time', 300); // 5 minutes should be enough
+@ini_set("memory_limit","1024M");
 
 class backup_course {
 
@@ -30,14 +33,20 @@ class backup_course {
     function course_backup($category_id, $course) {
         global $CFG;
 
-        $preferences = schedule_backup_course_configure($course);
+        ob_start();
+
+        $preferences = @schedule_backup_course_configure($course);
         
         $preferences->backup_destination = $this->child_dataroot.'/'.$this->backup_folder;
         $preferences->backup_users = 2; // 0=All, 1=Course, 2=None
         $preferences->backup_logs = 0; //0=No, 1=Yes
         $preferences->backup_user_files = 0; // 0=No, 1=Yes
 
-        return (@schedule_backup_course_execute($preferences)) ? $preferences->backup_name : false;
+        if (!schedule_backup_course_execute($preferences)) return false;
+
+        ob_end_clean(); // Clean any possible errors that might show up
+        
+        return $preferences->backup_name;
     }
 
 
