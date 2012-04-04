@@ -12,7 +12,7 @@ $string['pluginadministration'] = 'launcher administration';
 $string['pluginname'] = 'launcher';
 $string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'You are about to add a new school. This action will create an entirely new moodle environment.<br />
-                                Please enter the information below.';
+                                Please enter the information below. Note: This process is <b>irreversible</b>.';
 $string['add_schoolyear_header'] = 'Time to start the new school year? Fill out the information below.<br />
                                 Submitting this form will create a new school year for the moodle environment.';
 

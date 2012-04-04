@@ -32,7 +32,7 @@ class moodle extends user {
         $this->db->password      = $this->create_password();
         
         // Config variables
-        $this->cfg->wwwroot      = "http://localhost/{$this->get_site_real_name()}";
+        $this->cfg->wwwroot      = "http://{$this->domain}";
         $this->cfg->dirroot      = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html";
         $this->cfg->dataroot     = "{$this->get_global_root()}/{$this->get_site_real_name()}/moodle_data";
 
@@ -97,15 +97,16 @@ class moodle extends user {
 
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
 
-        if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
+        // if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
  
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
 
         // Make sure a bufferdb record exists before the courses are created, we need to log the courses
         if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
+		//$this->buffer_client_id = 3;
 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
-
+		//exit("Processing...");
         if (!$this->set_layout_functions()) launcher_helper::print_error('2010');
 
         // Finally prepair for transfer to the client
@@ -259,7 +260,7 @@ class moodle extends user {
     function insert_database() {
         global $CFG;
         // Inserting database using sudo command
-        passthru("mysql -u root -pmenno {$this->db->name} < {$CFG->dataroot}/moodle.sql");
+        shell_exec("mysql -u{$CFG->dbuser} -p{$CFG->dbpass} {$this->db->name} < {$CFG->dataroot}/moodle.sql");
 
         $query = "SHOW TABLES";
         $result = launcher_helper::remote_execute($this, $query);
@@ -297,8 +298,8 @@ class moodle extends user {
 
     function set_up_website_link() {
 
-        symlink($this->cfg->dirroot, "/var/www/{$this->get_site_real_name()}");
-        // passthru("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
+		symlink($this->cfg->dirroot, "/var/www/{$this->get_site_real_name()}");
+        // shell_exec("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
         return ($this->website_is_linked());
     }
 
@@ -340,7 +341,7 @@ class moodle extends user {
     function get_global_root() { 
         global $CFG;
 
-		$new_dirroot = '/home/menno/php_projects/jeelos';
+		$new_dirroot = '/home/jeelos';
 
         return $new_dirroot;
     }
