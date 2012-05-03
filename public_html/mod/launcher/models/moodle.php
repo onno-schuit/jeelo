@@ -8,8 +8,8 @@ class moodle extends user {
     function validate_and_create() {
         global $CFG, $launcher;
         $this->launcher_id = $launcher->id;
-
-        // if (!$this->validate()) return false; // Validate form
+	
+        if (!$this->validate()) return false; // Validate form
         if (!$this->set_defaults()) return false; // set all default variables
         if (!$this->create_moodle()) return false; // Start the create moodle processes
 
@@ -23,7 +23,6 @@ class moodle extends user {
         // Site variables
         $this->site->shortname   = $this->site_shortname;
         $this->site->name        = $this->site_name;
-        $this->site->description = $this->site_description;
 
         // DB variables
         $this->db->host          = $CFG->dbhost;
@@ -70,7 +69,11 @@ class moodle extends user {
         $this->add_rule('admin_email', get_string('error_email', 'launcher'), function($admin_email) { return (validate_email($admin_email)); });
         $this->add_rule('server_name', get_string('required'), function($server_name) { return ( trim($server_name) != '' ); });
         $this->add_rule('domain', get_string('required'), function($domain) { return ( trim($domain) != '' ); });
- 
+
+        $this->add_rule('logo', get_string('error_jpg_extension', 'launcher'), function($logo) {
+            return ($logo['name'] != '') ? (end(explode(".", $logo['name'])) == 'jpg') : true;
+        });
+
         $this->validate_files_received();
         //if (!$this->validate_files_received()) soda_error::add_error($this, 'upload_users', get_string('required'));
 
@@ -97,16 +100,13 @@ class moodle extends user {
 
         if (!$this->create_codebase()) launcher_helper::print_error('2000');
 
-        // if (!$this->set_up_website_link()) launcher_helper::print_error('2003');
- 
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
 
         // Make sure a bufferdb record exists before the courses are created, we need to log the courses
         if (!$this->buffer_client_id = $this->insert_client_in_buffer_db()) error("Can't save in buffer db");
-		//$this->buffer_client_id = 3;
 
         if (!$this->insert_child_content()) launcher_helper::print_error('2002');
-		//exit("Processing...");
+
         if (!$this->set_layout_functions()) launcher_helper::print_error('2010');
 
         // Finally prepair for transfer to the client
@@ -135,8 +135,8 @@ class moodle extends user {
         $file = "{$this->get_global_root()}/{$this->get_site_real_name()}/public_html/theme/children-education/styles_layout.css";
         $handler = file($file);
 
-        $str_search = "background:url(pix/navbar.png) top repeat-x;";
-        $str_replace = "  background-color: {$this->layout->navbar};\n";
+        $str_search = "background:url(pix/navbar_bg.jpg) top right no-repeat;";
+        $str_replace = "  background-color: #{$this->layout->navbar};\n";
 
         foreach($handler as $key=>$data) {
             if (trim($data) == $str_search) $handler[$key] = $str_replace;
@@ -147,9 +147,9 @@ class moodle extends user {
 
     function prepair_transfer_to_client() {
         
-        if (!$this->copy_codebase_and_database()) return false;
-        if (!$this->remove_unneccesary_db_and_codebase()) return false;
-        if (!$this->update_buffer_db()) return false;
+        if (!$this->copy_codebase_and_database()) error("Failed process at copy_codebase_and_database");
+        if (!$this->remove_unneccesary_db_and_codebase()) error("Failed process at remove_unneccesary_db_and_codebase");
+        if (!$this->update_buffer_db()) error("Failed process at update_buffer_db");
 
         return true;
     }
@@ -226,10 +226,17 @@ class moodle extends user {
     function create_codebase() {
         global $CFG;
 
+        /* For now don't use this code. I don't want the moodle data directory copied
+        // Create moodle_data
+        //if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
+        */
+        //if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}")) return false;
+
         // Create public_html
         if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name(), 'public_html')) return false;
-        // Create moodle_data
-        if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
+        
+        // Create moodle data folder
+        if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/moodle_data")) return false;
         // Create log folder
         if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/logs")) return false;
         // if (!$this->recursive_copy("{$this->get_global_root()}/jeelo19}", $this->get_global_root(), $this->get_site_real_name())) return false;
@@ -241,10 +248,10 @@ class moodle extends user {
 
     function set_up_database() {
 
-        if (!$this->create_database()) return false;
-        if (!$this->create_db_user()) return false;
-        if (!$this->insert_database()) return false;
-        if (!$this->create_site_admin()) return false;
+        if (!$this->create_database()) error("Operation cancelled at create database");
+        if (!$this->create_db_user()) error("Operation cancelled at create_db_user");
+        if (!$this->insert_database()) error("Operation cancelled at insert_database");
+        if (!$this->create_site_admin()) error("Operation cancelled at create_site_admin");
 
         return true;
     }
@@ -260,7 +267,8 @@ class moodle extends user {
     function insert_database() {
         global $CFG;
         // Inserting database using sudo command
-        shell_exec("mysql -u{$CFG->dbuser} -p{$CFG->dbpass} {$this->db->name} < {$CFG->dataroot}/moodle.sql");
+        $cmd = "mysql -u{$CFG->dbuser} -p{$CFG->dbpass} {$this->db->name} < {$CFG->dataroot}/moodle.sql";
+        shell_exec($cmd);
 
         $query = "SHOW TABLES";
         $result = launcher_helper::remote_execute($this, $query);
@@ -285,11 +293,9 @@ class moodle extends user {
 
         $this->site->shortname   = $this->site_shortname;
         $this->site->name        = $this->site_name;
-        $this->site->description = $this->site_description;
         $query = "UPDATE {$CFG->prefix}course SET
                     fullname = '{$this->site->name}',
-                    shortname = '{$this->site->shortname}',
-                    summary = '{$this->site->description}'
+                    shortname = '{$this->site->shortname}'
                   WHERE category = 0";
 
         return (launcher_helper::remote_execute($this, $query));
@@ -347,24 +353,6 @@ class moodle extends user {
     }
 
 
-    /* We're using the jeelo_buffer db for this now
-    function save_child_in_mother_database() {
-        global $CFG, $id;
-
-        $child_site = new stdClass();
-        $child_site->name          = $this->site->name;
-        $child_site->shortname     = $this->site->shortname;
-        $child_site->admin_email   = $this->admin_email;
-        $child_site->server_name   = $this->server_name;
-        $child_site->domain        = $this->domain;
-        $child_site->description   = (isset($this->site->description)) ? $this->site->description : '';
-        $child_site->launcher_id   = $id;
-
-        return (insert_record('launcher_moodles', $child_site));
-    }
-     */
-
-    
     function create_db_user() {
         global $CFG;
         
@@ -478,10 +466,11 @@ require_once("$CFG->dirroot/lib/setup.php");';
         while($resource = readdir($sourceHandle)){
 
             if (is_dir($source . '/' . $resource) && ($resource == 'launcher' || $resource == 'soda')) continue;
+            if ($source == 'phpymadmin' || $resource == 'phpmyadmin') continue;
 
             if($resource == '.' || $resource == '..'
                 || $source . '/' . $resource == "{$CFG->dirroot}/config.php"
-                || $resource == 'moodle.sql') continue;
+                || $source == "{$CFG->dataroot}") continue;
            
             if(is_dir($source . '/' . $resource)){
                 $this->recursive_copy($source . '/' . $resource, $dest, $diffDir . '/' . $resource);

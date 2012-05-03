@@ -2,6 +2,7 @@
 
 error_reporting(E_ALL);
 ini_set('display_errors','On');
+set_time_limit(0);
 
 class client_updater extends client {
 
@@ -44,11 +45,45 @@ class client_updater extends client {
 		// Add the new schoolyear
         $this->create_projects();
         $this->add_sidewide_enrollment();
+        
+        // Update logo and navbar
+        $this->add_layout();
 
 		// Finally, we finish with confirming the schoolyear has been created by sending an email
         
         $this->email_schoolyear_created();
     }
+    
+    
+    function add_layout() {
+		if (!empty($this->layout->navbar)) $this->set_navbar_color();
+        if (!empty($this->layout->logo)) $this->set_logo();
+        
+	}
+	
+	
+	function set_logo() {
+        $file = "{$this->target_folder}/{$this->csv_line->domain}/public_html/theme/children-education/pix/banner.jpg";
+        if (file_exists($file)) unlink($file);
+
+        return (cp($this->logo_filename, $file));
+	}
+	
+	
+	function set_navbar_color() {
+
+        $file = "{$this->target_folder}/{$this->csv_line->domain}/public_html/theme/children-education/styles_layout.css";
+        $handler = file($file);
+
+        $str_search = "background:url(pix/navbar.png) top repeat-x;";
+        $str_replace = "  background-color: {$this->navbar};\n";
+
+        foreach($handler as $key=>$data) {
+            if (trim($data) == $str_search) $handler[$key] = $str_replace;
+        }
+
+        return (file_put_contents($file, $handler));
+	}
     
     
     /* Before we do anything we'll want to backup
@@ -177,7 +212,10 @@ class client_updater extends client {
 		$cmd = "php -f $get_or_create_context $context_settings_file";
 
 		self::log($cmd);
-		if (!$context_id = shell_exec($cmd)) die("Failed to create context lvl $context_level for instance $instance_id");
+		if (!$context_id = shell_exec($cmd)) {
+			self::log("Failed to create context lvl $context_level for instance $instance_id");
+			die("Failed to create context lvl $context_level for instance $instance_id");
+		}
 		unlink($context_settings_file);
 		
         return ($context_id == 'false') ? false : $context_id;
@@ -400,11 +438,12 @@ class client_updater extends client {
 		$target_restore_file	= self::$target_folder . "{$this->csv_line->domain}/public_html/class.restore_backup.php";
 		$target_backup_file		= self::$target_folder . "{$this->csv_line->domain}/moodle_data/$backup_filename";
 
-		if (!$course_id = shell_exec("php -f $target_restore_file $target_backup_file")) die("Failed to restore course");
+		$cmd = "php -f $target_restore_file $target_backup_file";
+		self::log($cmd);
+		if (!$course_id = shell_exec($cmd)) die("Failed to restore course");
 		unlink($target_backup_file);
 		
 		self::log("Return of restore script: $course_id");
-		
 		
         return ($course_id == 'false') ? false : $course_id;
     }
@@ -583,8 +622,7 @@ class client_updater extends client {
 
         $query = "
             UPDATE ".self::$prefix."course SET
-                fullname = '{$this->csv_line->name}',
-                summary = '{$this->csv_line->description}'
+                fullname = '{$this->csv_line->name}'
             WHERE id = {$site_wide_course_id}";
 
         self::log("Update side-wide course.");

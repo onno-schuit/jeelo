@@ -2,7 +2,6 @@
 
 //Increase timelimit and memory limit for this script.
 set_time_limit(0);
-raise_memory_limit('512M');
 
 class content_uploader extends moodle {
 
@@ -141,8 +140,8 @@ class content_uploader extends moodle {
                 $child_group->year = $this->groupyears_to_array($child_group->year);
 
                 // Get courses with the same groupyear
-                $parent_courses = $this->get_courses_by_groupyear($parent_category_id, $child_group->year);
-
+                if (!$parent_courses = $this->get_courses_by_groupyear($parent_category_id, $child_group->year)) continue;
+				
                 // Loop over courses
                 foreach($parent_courses as $parent_course) {
 

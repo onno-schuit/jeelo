@@ -338,9 +338,12 @@
         }
         exit;
 
-    } else if (!empty($hide) and confirm_sesskey()) {
+    } 
+	else if (!empty($hide) and confirm_sesskey()) 
+	{
 
-        if (! $cm = get_record("course_modules", "id", $hide)) {
+        if (! $cm = get_record("course_modules", "id", $hide)) 
+		{
             error("This course module doesn't exist");
         }
 
@@ -352,14 +355,18 @@
 
         rebuild_course_cache($cm->course);
 
-        if (SITEID == $cm->course) {
+        if (SITEID == $cm->course) 
+		{
             redirect($CFG->wwwroot);
-        } else {
+        } 
+		else 
+		{
             redirect("view.php?id=$cm->course#section-$sectionreturn");
         }
         exit;
 
-    } else if (!empty($show) and confirm_sesskey()) {
+	} 
+	else if (!empty($show) and confirm_sesskey()) {
 
         if (! $cm = get_record("course_modules", "id", $show)) {
             error("This course module doesn't exist");

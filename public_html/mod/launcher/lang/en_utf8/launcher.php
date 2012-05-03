@@ -48,6 +48,7 @@ $string['settings_layout'] = 'Layout settings';
 $string['navbar'] = 'Navigation bar color';
 $string['logo'] = 'Logo';
 $string['error_file_extension'] = 'You can only upload csv files.';
+$string['error_jpg_extension'] = 'You can only upload jpg files.';
 $string['error_email'] = 'You have to fill out a correct email address.';
 $string['error_already_busy'] = 'This environment is already set for an update. Please wait until it has finished.';
 

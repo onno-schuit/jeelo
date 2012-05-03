@@ -1,4 +1,4 @@
-<?PHP // $Id: view.php,v 1.168.2.31 2010/10/16 17:59:35 skodak Exp $
+<?PHP // $Id: view.php,v 1.168.2.25 2009/03/11 10:34:57 stronk7 Exp $
 
 //  Display profile for a particular user
 
@@ -50,11 +50,7 @@
     if (!empty($CFG->forceloginforprofiles)) {
         require_login();
         if (isguest()) {
-        	$loginurl ="$CFG->wwwroot/login/index.php";
-            if (!empty($CFG->loginhttps)) {
-	            $loginurl = str_replace("http://", "https://", $loginurl);
-	        }
-            redirect($loginurl);
+            redirect("$CFG->wwwroot/login/index.php");
         }
     }
 
@@ -65,13 +61,15 @@
     $fullname = fullname($user, has_capability('moodle/site:viewfullnames', $coursecontext));
 
     $navlinks = array();
-    if (has_capability('moodle/course:viewparticipants', $coursecontext) || has_capability('moodle/site:viewparticipants', $systemcontext)) {
+    if (has_capability('moodle/course:viewparticipants', $coursecontext) || has_capability('moodle/site:viewparticipants', $systemcontext)) 
+	{
         $navlinks[] = array('name' => $strparticipants, 'link' => "index.php?id=$course->id", 'type' => 'misc');
     }
 
 /// If the user being shown is not ourselves, then make sure we are allowed to see them!
 
-    if (!$currentuser) {
+    if (!$currentuser) 
+	{
         if ($course->id == SITEID) {  // Reduce possibility of "browsing" userbase at site level
             if ($CFG->forceloginforprofiles and !isteacherinanycourse()
                     and !isteacherinanycourse($user->id)
@@ -85,20 +83,26 @@
                 print_footer($course);
                 exit;
             }
-        } else {   // Normal course
+        } 
+		else 
+		{   // Normal course
             // check capabilities
-            if (!has_capability('moodle/user:viewdetails', $coursecontext) && 
-                !has_capability('moodle/user:viewdetails', $usercontext)) {
+            if (!has_capability('moodle/user:viewdetails', $coursecontext) && !has_capability('moodle/user:viewdetails', $usercontext)) 
+			{
                 print_error('cannotviewprofile');
             }
 
-            if (!has_capability('moodle/course:view', $coursecontext, $user->id, false)) {
-                if (has_capability('moodle/role:assign', $coursecontext)) {
+            if (!has_capability('moodle/course:view', $coursecontext, $user->id, false)) 
+			{
+                if (has_capability('moodle/course:view', $coursecontext)) 
+				{
                     $navlinks[] = array('name' => $fullname, 'link' => null, 'type' => 'misc');
                     $navigation = build_navigation($navlinks);
                     print_header("$strpersonalprofile: ", "$strpersonalprofile: ", $navigation, "", "", true, "&nbsp;", navmenu($course));
                     print_heading(get_string('notenrolled', '', $fullname));
-                } else {
+                } 
+				else 
+				{
                     $navlinks[] = array('name' => $struser, 'link' => null, 'type' => 'misc');
                     $navigation = build_navigation($navlinks);
                     print_header("$strpersonalprofile: ", "$strpersonalprofile: ", $navigation, "", "", true, "&nbsp;", navmenu($course));
@@ -112,12 +116,14 @@
 
 
         // If groups are in use, make sure we can see that group
-        if (groups_get_course_groupmode($course) == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $coursecontext)) {
+        if (groups_get_course_groupmode($course) == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $coursecontext)) 
+		{
             require_login();
 
             ///this is changed because of mygroupid
             $gtrue = (bool)groups_get_all_groups($course->id, $user->id);
-            if (!$gtrue) {
+            if (!$gtrue) 
+			{
                 $navigation = build_navigation($navlinks);
                 print_header("$strpersonalprofile: ", "$strpersonalprofile: ", $navigation, "", "", true, "&nbsp;", navmenu($course));
                 print_error("groupnotamember", '', "../course/view.php?id=$course->id");
@@ -132,21 +138,24 @@
 
     $navigation = build_navigation($navlinks);
 
-    print_header("$course->fullname: $strpersonalprofile: $fullname", $course->fullname,
-                 $navigation, "", "", true, "&nbsp;", navmenu($course));
+    print_header("$course->fullname: $strpersonalprofile: $fullname", $course->fullname, $navigation, "", "", true, "&nbsp;", navmenu($course));
 
 
-    if (($course->id != SITEID) and ! isguest() ) {   // Need to have access to a course to see that info
-        if (!has_capability('moodle/course:view', $coursecontext, $user->id)) {
+    if (($course->id != SITEID) and ! isguest() ) 
+	{   // Need to have access to a course to see that info
+        if (!has_capability('moodle/course:view', $coursecontext, $user->id)) 
+		{
             print_heading(get_string('notenrolled', '', $fullname));
             print_footer($course);
             die;
         }
     }
 
-    if ($user->deleted) {
+    if ($user->deleted) 
+	{
         print_heading(get_string('userdeleted'));
-        if (!has_capability('moodle/user:update', $coursecontext)) {
+        if (!has_capability('moodle/user:update', $coursecontext)) 
+		{
             print_footer($course);
             die;
         }
@@ -179,7 +188,8 @@
 
     $currenttab = 'profile';
     $showroles = 1;
-    if (!$user->deleted) {
+    if (!$user->deleted) 
+	{
         include('tabs.php');
     }
 
@@ -264,11 +274,11 @@
         $emailswitch = '';
 
         if (has_capability('moodle/course:useremail', $coursecontext) or $currentuser) {   /// Can use the enable/disable email stuff
-            if (!empty($enable) and confirm_sesskey()) {     /// Recieved a parameter to enable the email address
+            if (!empty($enable)) {     /// Recieved a parameter to enable the email address
                 set_field('user', 'emailstop', 0, 'id', $user->id);
                 $user->emailstop = 0;
             }
-            if (!empty($disable) and confirm_sesskey()) {     /// Recieved a parameter to disable the email address
+            if (!empty($disable)) {     /// Recieved a parameter to disable the email address
                 set_field('user', 'emailstop', 1, 'id', $user->id);
                 $user->emailstop = 1;
             }
@@ -287,7 +297,7 @@
                 $switchpix   = 'email.gif';
             }
             $emailswitch = "&nbsp;<a title=\"$switchclick\" ".
-                           "href=\"view.php?id=$user->id&amp;course=$course->id&amp;$switchparam=1&amp;sesskey=".sesskey()."\">".
+                           "href=\"view.php?id=$user->id&amp;course=$course->id&amp;$switchparam=1\">".
                            "<img src=\"$CFG->pixpath/t/$switchpix\" alt=\"$switchclick\" /></a>";
 
         } else if ($currentuser) {         /// Can only re-enable an email this way
@@ -297,7 +307,7 @@
                 $switchclick = get_string('emailenableclick');
 
                 $emailswitch = "&nbsp;(<a title=\"$switchclick\" ".
-                               "href=\"view.php?id=$user->id&amp;course=$course->id&amp;enable=1&amp;sesskey=".sesskey()."\">$switchtitle</a>)";
+                               "href=\"view.php?id=$user->id&amp;course=$course->id&amp;enable=1\">$switchtitle</a>)";
             }
         }
 
@@ -336,7 +346,7 @@
 
 
     if (!isset($hiddenfields['mycourses'])) {
-        if ($mycourses = get_my_courses($user->id, 'visible DESC,sortorder ASC', null, false, 21)) {
+        if ($mycourses = get_my_courses($user->id, null, null, false, 21)) {
             $shown=0;
             $courselisting = '';
             foreach ($mycourses as $mycourse) {
@@ -388,16 +398,15 @@
     }
 
 /// Printing groups
-    if (!isset($hiddenfields['groups'])) {
-        $isseparategroups = ($course->groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $coursecontext));
-        if (!$isseparategroups){
-            if ($usergroups = groups_get_all_groups($course->id, $user->id)){
-                $groupstr = '';
-                foreach ($usergroups as $group){
-                    $groupstr .= ' <a href="'.$CFG->wwwroot.'/user/index.php?id='.$course->id.'&amp;group='.$group->id.'">'.format_string($group->name).'</a>,';
-                }
-                print_row(get_string("group").":", rtrim($groupstr, ', '));
+    $isseparategroups = ($course->groupmode == SEPARATEGROUPS and $course->groupmodeforce and
+                             !has_capability('moodle/site:accessallgroups', $coursecontext));
+    if (!$isseparategroups){
+        if ($usergroups = groups_get_all_groups($course->id, $user->id)){
+            $groupstr = '';
+            foreach ($usergroups as $group){
+                $groupstr .= ' <a href="'.$CFG->wwwroot.'/user/index.php?id='.$course->id.'&amp;group='.$group->id.'">'.format_string($group->name).'</a>,';
             }
+            print_row(get_string("group").":", rtrim($groupstr, ', '));
         }
     }
 /// End of printing groups

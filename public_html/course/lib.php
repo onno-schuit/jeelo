@@ -1,4 +1,4 @@
-<?php  // $Id: lib.php,v 1.538.2.83 2011/07/26 09:23:16 moodlerobot Exp $
+<?php  // $Id: lib.php,v 1.538.2.71 2009/04/06 09:49:41 sam_marshall Exp $
    // Library of useful functions
 
 
@@ -58,12 +58,6 @@ function make_log_url($module, $url) {
             break;
         case 'notes':
             $url = "/notes/$url";
-            break;
-        case 'tag':
-            $url = "/tag/$url";
-            break;
-        case 'role':
-            $url = '/'.$url;
             break;
         default:
             $url = "/mod/$module/$url";
@@ -523,7 +517,7 @@ function print_log_csv($course, $user, $date, $order='l.time DESC', $modname,
     header("Pragma: public");
 
     echo get_string('savedat').userdate(time(), $strftimedatetime)."\n";
-    echo $text."\n";
+    echo $text;
 
     if (empty($logs['logs'])) {
         return true;
@@ -656,7 +650,9 @@ function print_log_xls($course, $user, $date, $order='l.time DESC', $modname,
         }
 
         $myxls->write($row, 0, $courses[$log->course], '');
-        $myxls->write_date($row, 1, $log->time, $formatDate); // write_date() does conversion/timezone support. MDL-14934
+        // Excel counts from 1/1/1900
+        $excelTime=25569+$log->time/(3600*24);
+        $myxls->write($row, 1, $excelTime, $formatDate);
         $myxls->write($row, 2, $log->ip, '');
         $fullname = fullname($log, has_capability('moodle/site:viewfullnames', get_context_instance(CONTEXT_COURSE, $course->id)));
         $myxls->write($row, 3, $fullname, '');
@@ -1187,54 +1183,71 @@ function &get_fast_modinfo(&$course, $userid=0) {
 
     // Ensure cache does not use too much RAM
     if (count($cache) > MAX_MODINFO_CACHE_SIZE) {
-        reset($cache);
-        $key = key($cache);
-        unset($cache[$key]);
+        array_shift($cache);
     }
 
     return $cache[$course->id];
 }
 
 
-function get_all_mods($courseid, &$mods, &$modnames, &$modnamesplural, &$modnamesused) {
+function get_all_mods($courseid, &$mods, &$modnames, &$modnamesplural, &$modnamesused) 
+{
 // Returns a number of useful structures for course displays
 
-    $mods          = array();    // course modules indexed by id
-    $modnames      = array();    // all course module names (except resource!)
-    $modnamesplural= array();    // all course module names (plural form)
-    $modnamesused  = array();    // course module names used
+    $mods          	= array();    // course modules indexed by id
+    $modnames      	= array();    // all course module names (except resource!)
+    $modnamesplural	= array();    // all course module names (plural form)
+    $modnamesused  	= array();    // course module names used
 
-    if ($allmods = get_records("modules")) {
-        foreach ($allmods as $mod) {
-            if ($mod->visible) {
-                $modnames[$mod->name] = get_string("modulename", "$mod->name");
+    if ($allmods = get_records("modules")) 
+	{
+        foreach ($allmods as $mod) 
+		{
+            if ($mod->visible) 
+			{
+                $modnames[$mod->name] 		= get_string("modulename", "$mod->name");
                 $modnamesplural[$mod->name] = get_string("modulenameplural", "$mod->name");
             }
         }
         asort($modnames, SORT_LOCALE_STRING);
-    } else {
+    } 
+	else 
+	{
         error("No modules are installed!");
     }
 
-    if ($rawmods = get_course_mods($courseid)) {
-        foreach($rawmods as $mod) {    // Index the mods
-            if (empty($modnames[$mod->modname])) {
+    if ($rawmods = get_course_mods($courseid)) 
+	{
+		foreach($rawmods as $mod) 
+		{    // Index the mods
+            if (empty($modnames[$mod->modname])) 
+			{
                 continue;
             }
-            $mods[$mod->id] = $mod;
-            $mods[$mod->id]->modfullname = $modnames[$mod->modname];
-            if (!$mod->visible and !has_capability('moodle/course:viewhiddenactivities', get_context_instance(CONTEXT_COURSE, $courseid))) {
+            
+			$mods[$mod->id] = $mod;
+            
+			$mods[$mod->id]->modfullname = $modnames[$mod->modname];
+            
+			if (!$mod->visible and !has_capability('moodle/course:viewhiddenactivities', get_context_instance(CONTEXT_COURSE, $courseid))) 
+			{
                 continue;
             }
-            // Check groupings
-            if (!groups_course_module_visible($mod)) {
+            
+			// Check groupings
+            if (!groups_course_module_visible($mod)) 
+			{
                 continue;
             }
+			
             $modnamesused[$mod->modname] = $modnames[$mod->modname];
         }
-        if ($modnamesused) {
+		
+        if ($modnamesused) 
+		{
             asort($modnamesused, SORT_LOCALE_STRING);
         }
+		
     }
 }
 
@@ -1380,15 +1393,13 @@ function print_section($course, $section, $mods, $modnamesused, $absolute=false,
             }
 
             if ($mod->modname == "label") {
-                echo "<span class=\"";
                 if (!$mod->visible) {
-                    echo 'dimmed_text';
-                } else {
-                    echo 'label';
+                    echo "<div class=\"dimmed_text\">";
                 }
-                echo '">';
                 echo format_text($extra, FORMAT_HTML, $labelformatoptions);
-                echo "</span>";
+                if (!$mod->visible) {
+                    echo "</div>";
+                }
                 if (!empty($CFG->enablegroupings) && !empty($mod->groupingid) && has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $course->id))) {
                     if (!isset($groupings)) {
                         $groupings = groups_get_all_groupings($course->id);
@@ -1587,10 +1598,12 @@ function get_category_or_system_context($categoryid) {
  * @param int $courseid - id of course to rebuil, empty means all
  * @param boolean $clearonly - only clear the modinfo fields, gets rebuild automatically on the fly
  */
-function rebuild_course_cache($courseid=0, $clearonly=false) {
+function rebuild_course_cache($courseid=0, $clearonly=false) 
+{
     global $COURSE;
 
-    if ($clearonly) {
+    if ($clearonly) 
+	{
         $courseselect = empty($courseid) ? "" : "id = $courseid";
         set_field_select('course', 'modinfo', null, $courseselect);
         // update cached global COURSE too ;-)
@@ -1603,21 +1616,28 @@ function rebuild_course_cache($courseid=0, $clearonly=false) {
         return;
     }
 
-    if ($courseid) {
+    if ($courseid) 
+	{
         $select = "id = '$courseid'";
-    } else {
+    } 
+	else 
+	{
         $select = "";
         @set_time_limit(0);  // this could take a while!   MDL-10954
     }
 
-    if ($rs = get_recordset_select("course", $select,'','id,fullname')) {
-        while($course = rs_fetch_next_record($rs)) {
+    if ($rs = get_recordset_select("course", $select,'','id,fullname')) 
+	{
+        while($course = rs_fetch_next_record($rs)) 
+		{
             $modinfo = serialize(get_array_of_activities($course->id));
-            if (!set_field("course", "modinfo", $modinfo, "id", $course->id)) {
+            if (!set_field("course", "modinfo", $modinfo, "id", $course->id)) 
+			{
                 notify("Could not cache module information for course '" . format_string($course->fullname) . "'!");
             }
             // update cached global COURSE too ;-)
-            if ($course->id == $COURSE->id) {
+            if ($course->id == $COURSE->id) 
+			{
                 $COURSE->modinfo = $modinfo;
             }
         }
@@ -1824,12 +1844,7 @@ function print_category_info($category, $depth, $showcourses = false) {
 
     $catlinkcss = $category->visible ? '' : ' class="dimmed" ';
 
-    static $coursecount = null;
-    if (null === $coursecount) {
-        // only need to check this once
-        $coursecount = count_records('course') <= FRONTPAGECOURSELIMIT;
-    }
-
+    $coursecount = count_records('course') <= FRONTPAGECOURSELIMIT;
     if ($showcourses and $coursecount) {
         $catimage = '<img src="'.$CFG->pixpath.'/i/course.gif" alt="" />';
     } else {
@@ -2380,12 +2395,15 @@ function set_coursemodule_groupmembersonly($id, $groupmembersonly) {
 function set_coursemodule_idnumber($id, $idnumber) {
     return set_field("course_modules", "idnumber", $idnumber, "id", $id);
 }
-/**
+
+/*
+*
 * $prevstateoverrides = true will set the visibility of the course module
 * to what is defined in visibleold. This enables us to remember the current
 * visibility when making a whole section hidden, so that when we toggle
 * that section back to visible, we are able to return the visibility of
 * the course module back to what it was originally.
+*
 */
 function set_coursemodule_visible($id, $visible, $prevstateoverrides=false) {
     if (!$cm = get_record('course_modules', 'id', $id)) {
@@ -3146,8 +3164,16 @@ function move_courses ($courseids, $categoryid) {
 
                     $course->category  = $categoryid;
                     $course->sortorder = $sortorder;
+                    $course->fullname = addslashes($course->fullname);
+                    $course->shortname = addslashes($course->shortname);
+                    $course->summary = addslashes($course->summary);
+                    $course->password = addslashes($course->password);
+                    $course->teacher = addslashes($course->teacher);
+                    $course->teachers = addslashes($course->teachers);
+                    $course->student = addslashes($course->student);
+                    $course->students = addslashes($course->students);
 
-                    if (!update_record('course', addslashes_recursive($course))) {
+                    if (!update_record('course', $course)) {
                         notify("An error occurred - course not moved!");
                     }
 
@@ -3209,30 +3235,30 @@ function get_section_name($format) {
 
 /**
  * Can the current user delete this course?
- * Course creators have exception,
- * 1 day after the creation they can sill delete the course.
  * @param int $courseid
  * @return boolean
+ *
+ * Exception here to fix MDL-7796.
+ *
+ * FIXME
+ *   Course creators who can manage activities in the course
+ *   shoule be allowed to delete the course. We do it this
+ *   way because we need a quick fix to bring the functionality
+ *   in line with what we had pre-roles. We can't give the
+ *   default course creator role moodle/course:delete at
+ *   CONTEXT_SYSTEM level because this will allow them to
+ *   delete any course in the site. So we hard code this here
+ *   for now.
+ *
+ * @author vyshane AT gmail.com
  */
 function can_delete_course($courseid) {
-    global $USER;
 
     $context = get_context_instance(CONTEXT_COURSE, $courseid);
 
-    if (has_capability('moodle/course:delete', $context)) {
-        return true;
-    }
-
-    // hack: now try to find out if creator created this course recently (1 day)
-    if (!has_capability('moodle/course:create', $context)) {
-        return false;
-    }
-
-    $since = time() - 60*60*24;
-
-    $select = "module = 'course' AND action = 'new' AND userid = $USER->id AND url='view.php?id=$courseid' AND time > $since";
-
-    return record_exists_select('log', $select);
+    return ( has_capability('moodle/course:delete', $context)
+             || (has_capability('moodle/legacy:coursecreator', $context)
+             && has_capability('moodle/course:manageactivities', $context)) );
 }
 
 /**
@@ -3281,14 +3307,6 @@ function create_course($data) {
     unset($data->allowedmods);
     if ($CFG->restrictmodulesfor == 'all') {
         $data->restrictmodules = 1;
-
-        // if the user is not an admin, get the default allowed modules because
-        // there are no modules passed by the form
-        if(!has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
-            if(!$allowedmods && $CFG->defaultallowedmodules) {
-                $allowedmods = explode(',', $CFG->defaultallowedmodules);
-            }
-        }
     } else {
         $data->restrictmodules = 0;
     }
@@ -3396,5 +3414,8 @@ function update_course($data) {
 
     return false;
 }
+
+// echo "\n".'<!-- course lib.php -->'."\n" ;
+
 
 ?>

@@ -1,5 +1,5 @@
 <?php
-require_once(dirname($_SERVER['PHP_SELF']) . "/config.php");
+require_once(dirname($_SERVER["PHP_SELF"]) . "/config.php");
 
 global $CFG;
 
@@ -22,7 +22,7 @@ class restore_backup {
 	private $backup_folder = 'temp/updater/courses';
 	
 	function course_restore($backup_name, $course, $group_name) {
-        global $SESSION, $CFG;
+        global $SESSION, $CFG, $restore;
 
         ob_start();
 
@@ -102,36 +102,20 @@ class restore_backup {
         $course_header->course_fullname = "{$course->fullname} - $group_name - ".date('m-Y');
 
         if (!@restore_execute($restore, $info, $course_header, $errorstr)) return false;
-        // if (!@$this->delete_backup_file($restore->file)) return false;
-        unset($restore);
 
         ob_end_clean(); // Clean any possible errors that might show up
         
-        return ($new_course_id = @$this->get_last_restored_course_id($course, $group_name)) ? $new_course_id : false;
+        return (isset($restore->course_id) && !empty($restore->course_id)) ? $restore->course_id : false;
     } // function restore
 
-
-    function get_last_restored_course_id($course, $group_name) {
-        if (!$new_course = get_record('course', 'shortname', $course->shortname . ' - ' . $group_name . ' - '.date('m-Y'))) return false;
-        return $new_course->id;
-    } // function get_last_restored_course_id
-
-
-    function delete_backup_file($backup_name) {
-        return (unlink($backup_name)) ? true : false;
-    } // function delete_backup_file
 }
-
 
 $file_contents = file_get_contents($argv[1]);
 $course = unserialize($file_contents);
 $backup_name = $course->backup_name;
 $group_name = $course->group_name;
-unset($course->backup_name);unset($course->group_name);
-
-//Increase timelimit and memory limit for this script.
-@ini_set('max_execution_time', 300); // 5 minutes should be enough
-@ini_set("memory_limit","1024M");
+unset($course->backup_name);
+unset($course->group_name);
 
 $error = false;
 // Running script

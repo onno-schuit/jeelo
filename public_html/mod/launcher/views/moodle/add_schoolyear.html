@@ -31,24 +31,22 @@ $this->get_moodle_environments();
             </tr>
             <?php
             $this->print_input_field('site_name', $schoolyear);
-            $this->print_textarea_field('site_description', $schoolyear);
             ?>
-<!--            <tr>
-                <td><?=get_string('db_username', 'launcher')?></td>
-                <td><input type="text" disabled value="<?=(isset($schoolyear->environment->shortname)) ? $schoolyear->environment->shortname : ''?>" /></td>
-            </tr> -->
-<!--
-            <tr>
-                <td><?=get_string('db_password', 'launcher')?> <label title="<?=get_string('db_password_explentation', 'launcher')?>">(?)</label></td>
-                <td><input type="password" name="<?=$this->model_name?>[db_password]" id="password" value=""/>
-                    <input type="checkbox" name="unmask" onchange="mask_unmask(document.getElementById('password'));">
-                        <?=get_string('unmask', 'launcher')?></td> 
-            </tr>-->
             <tr><td colspan='2'><hr /></td></tr>
             <tr>
                 <td><?=get_string('admin_email', 'launcher')?></td>
                 <td><input type="text" name="<?=$this->model_name?>[admin_email]" value="<?=(isset($schoolyear->environment->admin_email)) ? $schoolyear->environment->admin_email : ''?>" /></td>
             </tr>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
+            </tr>
+            <?php
+            $this->print_input_field('navbar', $schoolyear,  'class="color"');
+            $this->print_upload_field('logo', $schoolyear);
+            ?>
+            
+            <tr><td colspan='2'><hr /></td></tr>
             <tr>
                 <td colspan='2'><b><?=get_string('settings_content', 'launcher');?></b></td>
             </tr>

@@ -1,7 +1,9 @@
-<?php // $Id: index.php,v 1.89.2.13 2009/04/20 05:59:17 tjhunt Exp $
+<?php // $Id: index.php,v 1.89.2.12 2009/01/05 02:18:49 tjhunt Exp $
       // For most people, just lists the course categories
       // Allows the admin to create, delete and rename course categories
 
+echo '<!-- course index.php 5 -->' ;
+	  
     require_once("../config.php");
     require_once("lib.php");
 
@@ -147,7 +149,6 @@
         }
         $tempcat->context = get_context_instance(CONTEXT_COURSECAT, $tempcat->id);
         mark_context_dirty('/'.SYSCONTEXTID);
-        fix_course_sortorder(); // Required to build course_categories.depth and .path.
     }
 
 /// Move a category to a new parent if required

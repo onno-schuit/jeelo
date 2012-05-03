@@ -50,6 +50,7 @@ $string['settings_layout'] = 'Uiterlijk';
 $string['navbar'] = 'Navigatiebalk kleur';
 $string['logo'] = 'Logo';
 $string['error_file_extension'] = 'Alleen .csv bestanden kunnen worden geupload.';
+$string['error_jpg_extension'] = 'Alleen .jpg bestanden kunnen worden geupload.';
 $string['error_email'] = 'Het ingevulde email adres is niet juist.';
 $string['error_already_busy'] = 'Deze moodle omgeving staat al klaar voor een update. Binnen enkele minuten zal de update verwerkt zijn.';
 
