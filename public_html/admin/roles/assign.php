@@ -1,4 +1,4 @@
-<?php // $Id: assign.php,v 1.63.2.18 2011/08/18 00:53:34 moodlerobot Exp $
+<?php // $Id: assign.php,v 1.63.2.16 2009/04/07 23:48:00 arborrow Exp $
       // Script to assign users to contexts
 
     require_once('../../config.php');
@@ -72,7 +72,7 @@
     $straction = get_string('assignroles', 'role');
     $strroletoassign = get_string('roletoassign', 'role');
     $strsearch = get_string('search');
-    $strshowall = get_string('showallusers');
+    $strshowall = get_string('showall');
     $strparticipants = get_string('participants');
     $strsearchresults = get_string('searchresults');
 
@@ -325,7 +325,7 @@
                 if ($validroleids) {
                     $roleids =  '('.implode(',', $validroleids).')';
 
-                    $select = " SELECT DISTINCT u.id, u.firstname, u.lastname, u.email";
+                    $select = " SELECT u.id, u.firstname, u.lastname, u.email";
                     $countselect = "SELECT COUNT(u.id)";
                     $from   = " FROM {$CFG->prefix}user u
                                 INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = u.id

@@ -5,6 +5,8 @@ require_once("class.base.php");
 class server extends base {
 
     static $log_file = './server_log.txt';
+    static $dirroot = '/home/jeelos/moeder/public_html';
+    static $wwwroot = 'http://moeder.srv1a.jeelo.nl';
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
 
     /**
@@ -154,22 +156,30 @@ class server extends base {
         if (!file_exists($row['codebase_filename'])) {
             die('error: codebase file not found');
         }
-
-        // headers from php.net manual (readfile)
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/octet-stream'); // or application/x-gzip or application/zip
-        header('Content-Disposition: attachment; filename='.basename($row['codebase_filename']));
-        header('Content-Transfer-Encoding: binary');
-        header('Expires: 0');
-        header('Cache-Control: must-revalidate');
-        header('Pragma: public');
-        header('Content-Length: ' . filesize($row['codebase_filename']));
-        
-        readfile($row['codebase_filename']);
-    
+		
+		$cmd = "cp " . $row['codebase_filename'] . " " . self::$dirroot . "/site.tgz";
+		self::log($cmd);
+		shell_exec($cmd);
+		
+		if (!file_exists(self::$dirroot . "/site.tgz")) {
+			self::log("Failed to copy codebase.");
+			echo "no_file";
+		} else {
+			echo self::$wwwroot . "/site.tgz";
+		}
+		
         die(); // no further output
     }
+    
+    function handle_request_remove_codebase($query_string) {
+		// create vars: $request,$for,$hash from query_string
+        extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
 
+		shell_exec("rm " . self::$dirroot . "/site.tgz");
+	}
 
     function handle_request_get_courses($query_string) {
 

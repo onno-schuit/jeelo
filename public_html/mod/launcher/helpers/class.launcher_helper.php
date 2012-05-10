@@ -124,22 +124,28 @@ class launcher_helper extends helper {
     }
 
 
-    function print_input_field($field, $moodle) {
+    function print_input_field($field, $moodle, $input_extra = '') {
 
         // Set the preset value if one is already set
         // Set default of the field 'server' to 'localhost'
         $preset_value = (isset($moodle->$field)) ? $moodle->$field : (($field == 'server_name') ? 'localhost' : '');
         echo "
         <tr>
-            <td>".get_string($field, 'launcher')."</td>
-            <td><input type='text' name='{$this->model_name}[$field]' value='$preset_value'></td>";
+            <td>".	get_string($field, 'launcher') . 
+					helpbutton($field, get_string($field, 'launcher'), 'launcher', true, false, '', true) . "</td>
+            <td><input type='text' id='$field' name='{$this->model_name}[$field]' value='$preset_value' $input_extra></td>";
         if ($moodle) {
             echo "
             <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";
         }
         echo "</tr>";
     }
-
+    
+    function print_special_input_field($field, $moodle) {
+		$js = 'onkeyup = \'if (this.value != "") document.getElementById("domain").value=this.value + ".srv1a.jeelo.nl" \'';
+		$this->print_input_field($field, $moodle, $js);
+	}
+    
 
     function print_textarea_field($field, $moodle) {
 
@@ -157,7 +163,8 @@ class launcher_helper extends helper {
         //exit(print_object(soda_error::$validation_errors));
         echo "
         <tr>
-            <td>".get_string($field, 'launcher')."</td>
+            <td>" . get_string($field, 'launcher')
+				  . helpbutton($field, get_string($field, 'launcher'), 'launcher', true, false, '', true) . "</td>
             <td><input type='file' name='$field' /></td>";
         if ($moodle) {
             echo "

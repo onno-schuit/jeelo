@@ -3,6 +3,7 @@ require_once("class.base.php");
 // For debugging:
 error_reporting(E_ALL);
 ini_set('display_errors','On');
+set_time_limit(0);
 
 class client extends base {
     
@@ -38,7 +39,7 @@ class client extends base {
         self::log("File $destination created");
         
         self::log("Restarting apache");
-        exec('apache2ctl graceful');
+        shell_exec('apachectl graceful');
         self::log("Apache restarted");
     }
  
@@ -65,36 +66,80 @@ class client extends base {
     }
     
     public static function create_codebase($csv_line) {
+
+		$tmpfile = self::$target_folder . $csv_line->domain . '/site.tgz';
+		
+		self::create_codebase_folder($csv_line);
+
+		$codebase = self::get_codebase_from_server($csv_line, $tmpfile);
+		
+		self::copy_codebase_to_client($csv_line, $codebase);
+		
+        self::remove_codebase_from_server($tmpfile);
+        
+        self::extract_codebase_contents($tmpfile);
+    }
+    
+    public static function copy_codebase_to_client($csv_line, $codebase) {
+		
+		$cmd = "wget --quiet --directory-prefix=" . self::$target_folder . "/" . $csv_line->domain . " $codebase";
+		self::log($cmd);
+		shell_exec($cmd);
+		
+	}
+    
+    public static function create_codebase_folder($csv_line) {
+		
         $target = self::$target_folder . $csv_line->domain;
         self::log("Creating folder: $target");
         mkdir($target, 0755); // without the public_html folder
-    }
-    
-    public static function get_codebase_from_server($csv_line) {
-        $request = array(
-            'request' => 'get_codebase',
-            'id' => $csv_line->id
-        );
         
-        $response = self::get_server_response($request);
-        // check if we have file contents or maybe an error
-        if (strlen($response) < 100 && strstr($response, 'error')) {
-            self::log($response);
-            die();
-        }
-        
-        // write contents to temp file
-        $tmpfile = self::$target_folder . $csv_line->domain . '/site.tgz';
-        self::log("Creating file " . $tmpfile);
-        file_put_contents($tmpfile, $response);
-        
+	}
+	
+	public static function extract_codebase_contents($tmpfile) {
+		
         // extract contents
         $cmd = sprintf("tar -xz -C %s -f %s", dirname($tmpfile), $tmpfile);
         self::log($cmd);
-        shell_exec($cmd); 
+        shell_exec($cmd);
+        
+        // When done unlink the file
         unlink($tmpfile);
-    }
+	}
 
+	public static function get_codebase_from_server($csv_line, $tmpfile) {
+	
+		$request = array(
+            'request'	=> 'get_codebase',
+            'for'		=> 'client',
+            'id'		=> $csv_line->id
+        );
+        
+		// Response = directory / filename of the codebase
+		$response = self::get_server_response($request);
+		if ($response == 'nofile') {
+			self::log("Failed to retreive codebase from server.");
+			exit();
+		}
+		
+		return $response;
+	}
+	
+	public static function remove_codebase_from_server($tmpfile) {
+		$request = array(
+            'request'	=> 'remove_codebase',
+            'for'		=> 'client'
+        );
+        
+		// Response = directory / filename of the codebase
+		$response = self::get_server_response($request);
+		if ($response == 'faal') {
+			self::log("Failed to retreive codebase from server.");
+			exit();
+		}
+
+	}
+    
     public static function get_db_from_server($csv_line) {
 		self::log("Getting db from server");
         $request = array(
@@ -132,6 +177,14 @@ class client extends base {
     }
  
     public static function get_server_response($request) {
+		
+		$request_url = self::get_request_url($request);
+        $response = file_get_contents($request_url);
+        
+        return $response;
+    }
+    
+	public static function get_request_url($request) {
         if (!is_array($request)) {
             throw new Exception("Parameter should be an associative array");
         }
@@ -150,10 +203,8 @@ class client extends base {
         $request_url = self::$server_url . '?' . $query_string;
         self::log($request_url);
         
-        $response = file_get_contents($request_url);
-        return $response;
-    }
-    
+        return $request_url;
+	}
 
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
@@ -189,6 +240,7 @@ class client extends base {
         if ($return_id) $id = mysql_insert_id();
         mysql_close($con);
 
+
         return ($return_id) ? $id : $result;
     }
 
@@ -202,13 +254,13 @@ class client extends base {
 
 
     public static function process_new_client($csv_line) {
+	self::log("Starting the creation of a new moodle school.");
         
         self::create_database($csv_line);
         $user_and_pass = self::create_database_user($csv_line->short_code);
         self::get_db_from_server($csv_line);
         
         self::create_codebase($csv_line);
-        self::get_codebase_from_server($csv_line);
 
         self::update_moodle_config($csv_line, $user_and_pass);
         
@@ -217,6 +269,7 @@ class client extends base {
         self::add_to_apache($csv_line);
 
         self::email_school_created($csv_line, $user_and_pass);
+        
     }
     
     
@@ -329,6 +382,7 @@ class client extends base {
             $config_contents = self::set_config_contents($config_contents, $field, $value);
         }
         file_put_contents($folder .'/public_html/config.php', $config_contents);
+        //shell_exec("chmod 777 $folder/public_html/config.php");
 
         // Handle config clean contents now
         $config_clean_contents = file_get_contents($folder . '/public_html/config_clean.php');

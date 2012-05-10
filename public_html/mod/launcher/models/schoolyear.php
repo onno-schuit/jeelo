@@ -43,7 +43,6 @@ class schoolyear extends moodle {
         if (!$this->environment = $this->validate_environment_and_set_errors()) return true;
         
         $this->site_name            = $this->environment->name;
-        $this->site_description     = $this->environment->description;
         $this->environment->admin_email = $this->get_site_email();
         if (!isset($this->jeelo_buffer_id)) $this->jeelo_buffer_id = $this->environment->id;
 
@@ -51,8 +50,9 @@ class schoolyear extends moodle {
         $this->server->domain       = $this->environment->domain;
         
         $this->dumps_location       = '/etc/moodle_clients';
-        $this->csv_filename         = "{$this->server->domain}_csv_".date("Ymd");
-        $this->courses_filename     = "{$this->server->domain}_course_imports_".date("Ymd");
+        $this->logo_filename        = "{$this->server->domain}_logo_" . date("Ymd") . "." . end(explode(".", $this->logo['name']));
+        $this->csv_filename         = "{$this->server->domain}_csv_" . date("Ymd");
+        $this->courses_filename     = "{$this->server->domain}_course_imports_" . date("Ymd");
 
         unset($this->environment_id);
         return true;
@@ -84,6 +84,10 @@ class schoolyear extends moodle {
         $this->add_uploaded_files();
         $this->validate_files_received();
 
+        $this->add_rule('logo', get_string('error_jpg_extension', 'launcher'), function($logo) {
+            return ($logo['name'] != '') ? (end(explode(".", $logo['name'])) == 'jpg') : true;
+        });
+
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
         $this->add_rule('admin_email', get_string('error_email', 'launcher'), function($admin_email) { return (validate_email($admin_email)); });
         $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
@@ -98,6 +102,7 @@ class schoolyear extends moodle {
     function ready_schoolyear_for_child() {
         $error = false;
 
+        if (!$this->copy_logo_to_child()) $error = true;
         if (!$this->copy_csv_files_to_child()) $error = true;
         if (!$this->create_course_backups()) $error = true;
 
@@ -106,6 +111,17 @@ class schoolyear extends moodle {
         
         return (!$error);
     }
+    
+    
+    function copy_logo_to_child() {
+		
+		$target = "{$this->dumps_location}/logo";
+		
+		if (file_exists("$target/{$this->logo_filename}")) unlink("$target/{$this->logo_filename}"); // This should never happen...
+		move_uploaded_file($this->logo['tmp_name'], "{$this->dumps_location}/logo/{$this->logo_filename}"); // Not gonne end the script on a failed copy of a logo...
+		
+		return true;
+	}
 
 
     function create_course_backups() {
@@ -158,10 +174,9 @@ class schoolyear extends moodle {
 
         $query = "
             INSERT INTO jeelo_buffer.client_categories (
-                name, description, parent, sortorder, coursecount, visible, timemodified, depth, path, theme, client_moodle_id
+                name, parent, sortorder, coursecount, visible, timemodified, depth, path, theme, client_moodle_id
             ) VALUES (
                 '{$category->name}',
-                '{$category->description}',
                 '{$category->parent}',
                 '{$category->sortorder}',
                 '{$category->coursecount}',
@@ -208,30 +223,19 @@ class schoolyear extends moodle {
     }
 
 
-    /*
-    function update_launcher_moodles() {
-        global $CFG;
-
-        $query = "SELECT * FROM {$CFG->prefix}launcher_moodles WHERE shortname = '{$this->site_shortname}'";
-        $environment = get_record_sql($query);
-        $environment->name = $this->site_name;
-        $environment->admin_email = $this->admin_email;
-
-        return (update_record('launcher_moodles', $environment));
-    }*/
-
-
     function update_jeelo_buffer() {
         $jeelo_buffer = new stdClass();
 
         $csv_filename = "{$this->dumps_location}/csv/{$this->csv_filename}.tgz";
         $courses_filename = "{$this->dumps_location}/course_imports/{$this->courses_filename}.tgz";
+        $logo_filename = "{$this->dumps_location}/logo/{$this->logo_filename}";
 
         $query = "UPDATE jeelo_buffer.client_moodles SET
             name = '{$this->site_name}',
-            description = '{$this->site_description}',
             csv_filename = '{$csv_filename}',
             courses_filename = '{$courses_filename}',
+            logo_filename = '{$logo_filename}',
+            navbar_color = '{$this->navbar}',
             status = 'update',
             timemodified = '".time()."'
         WHERE id='{$this->jeelo_buffer_id}'";

@@ -1,4 +1,4 @@
-<?php // $Id: tabs.php,v 1.27.2.8 2009/11/20 01:42:11 andyjdavis Exp $
+<?php // $Id: tabs.php,v 1.27.2.6 2009/01/01 14:29:37 skodak Exp $
 
 // Handles headers and tabs for the roles control at any level apart from SYSTEM level
 // We also assume that $currenttab, $assignableroles and $overridableroles are defined
@@ -8,7 +8,8 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 $navlinks = array();
-if ($currenttab != 'update') {
+if ($currenttab != 'update') 
+{
     switch ($context->contextlevel) {
 
         case CONTEXT_SYSTEM:
@@ -35,9 +36,6 @@ if ($currenttab != 'update') {
             $navlinks[] = array('name' => $category->name,
                                 'link' => "$CFG->wwwroot/course/category.php?id=$category->id",
                                 'type' => 'misc');
-            $navlinks[] = array('name' => get_string("roles"),
-                                'link' => null,
-                                'type' => 'misc');
             $navigation = build_navigation($navlinks);
 
             print_header("$SITE->shortname: $category->name", "$SITE->fullname: $strcourses", $navigation, "", "", true);
@@ -56,6 +54,9 @@ if ($currenttab != 'update') {
                 $navigation = build_navigation($navlinks);
                 print_header($streditcoursesettings, $course->fullname, $navigation);
             }
+            break;
+
+        case CONTEXT_GROUP:
             break;
 
         case CONTEXT_MODULE:
@@ -168,9 +169,11 @@ $inactive = array();
 $activetwo = array();
 
 
-if ($context->contextlevel != CONTEXT_SYSTEM) {    // Print tabs for anything except SYSTEM context
+if ($context->contextlevel != CONTEXT_SYSTEM) 
+{    // Print tabs for anything except SYSTEM context
 
-    if ($context->contextlevel == CONTEXT_MODULE) {  // Only show update button if module
+    if ($context->contextlevel == CONTEXT_MODULE) 
+	{  // Only show update button if module
 
         $toprow[] = new tabobject('update', $CFG->wwwroot.'/course/mod.php?update='.
                         $context->instanceid.'&amp;return=true&amp;sesskey='.sesskey(), get_string('settings'));
@@ -191,8 +194,23 @@ if ($context->contextlevel != CONTEXT_SYSTEM) {    // Print tabs for anything ex
                         get_string('overridepermissions', 'role'),
                         get_string('showallroles', 'role'),
                         true);
-    }
+    }	
 
+	/*
+	|
+	|  geen leerling mag dit zien
+	|
+	*/
+	//-----
+    if ( ra($USER->id, $CFG->prefix) > '0' ) 
+	{
+        $toprow[] = new tabobject('Groepsrechten',
+                        $CFG->wwwroot.'/user/index.php?contextid='.$context->id,
+                        'Groepsrechten',
+                        get_string('showallroles', 'role'),
+                        true);
+    }
+	//-----
 }
 
 /// Here other core tabs should go (always calling tabs.php files)
@@ -202,12 +220,15 @@ if ($context->contextlevel != CONTEXT_SYSTEM) {    // Print tabs for anything ex
 
 /// Finally, we support adding some 'on-the-fly' tabs here
 /// All the logic to decide what to show must be self-cointained in the tabs file
-    if (isset($CFG->extratabs) && !empty($CFG->extratabs)) {
-        if ($extratabs = explode(',', $CFG->extratabs)) {
+    if (isset($CFG->extratabs) && !empty($CFG->extratabs)) 
+	{
+        if ($extratabs = explode(',', $CFG->extratabs)) 
+		{
             asort($extratabs);
             foreach($extratabs as $extratab) {
             /// Each extra tab must be one $CFG->dirroot relative file
-                if (file_exists($CFG->dirroot . '/' . $extratab)) {
+                if (file_exists($CFG->dirroot . '/' . $extratab)) 
+				{
                     include_once($CFG->dirroot . '/' . $extratab);
                 }
             }
@@ -226,4 +247,35 @@ if ($context->contextlevel != CONTEXT_SYSTEM) {    // Print tabs for anything ex
     print_tabs($tabs, $currenttab, $inactive, $activetwo);
 
 
+	/*
+	|
+	| function ra	=>	$id $prefix 
+	| role_id 	role_assignments	
+	|
+	*/	
+	//-----
+	function ra($id, $prefix) 
+	{
+		$vraag_ra = "select distinct userid, roleid from ".$prefix."role_assignments 
+						where userid = '".$id."'
+						and roleid != '5'
+						limit 1 ; " ; 
+			    // echo $vraag_ra ;
+		$resultaat_ra = get_records_sql($vraag_ra, $limitfrom='', $limitnum='')  ;		
+		
+		if ( $resultaat_ra )
+		{
+			foreach ( $resultaat_ra as $item_ra) 
+			{
+				return $item_ra->roleid ;				
+			}
+		}
+		else
+		{
+			return '0' ;
+		}
+	}
+	//-----/ra
+	
+	
 ?>

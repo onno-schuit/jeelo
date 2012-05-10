@@ -4,3 +4,4 @@ default_log.txt
 config.php
 *.swp
 *.swo
+moodle_data

@@ -17,17 +17,14 @@
         <form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create_school";?>"
             onsubmit="return show_average_loadtime()" enctype="multipart/form-data">
         <table border-collapse="collapse">
+        
             <tr>
                 <td colspan='2'><b><?=get_string('settings_site', 'launcher');?></b></td>
             </tr>
             <?php
-//exit(print_object($moodle));
-            $arr_fields = array('site_name','site_shortname'); // First set of variables
-            foreach($arr_fields as $field) {
-                $this->print_input_field($field, $moodle);
-            }
+			$this->print_input_field('site_name', $moodle);
+			$this->print_special_input_field('site_shortname', $moodle);
 
-            $this->print_textarea_field('site_description', $moodle);
             ?>
             
 
@@ -55,7 +52,7 @@
                 <td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
             </tr>
             <?php
-            $this->print_input_field('navbar', $moodle);
+            $this->print_input_field('navbar', $moodle, 'class="color"');
             $this->print_upload_field('logo', $moodle);
             ?>
             

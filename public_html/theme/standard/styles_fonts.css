@@ -296,11 +296,11 @@ body#admin-index .copyright {
     font-style: normal;
 }
 
-.plugincompattable {
+.plugincompattable { 
     text-align: left;
 }
 
-.plugincheckwrapper {
+.plugincheckwrapper { 
     text-align: center;
 }
 
@@ -784,9 +784,6 @@ body#grade-index .grades .header {
   font-size: 0.9em;
 }
 
-.tag_cloud .s0 {
-  font-size: 0.8em;
-}
 
 /***
  *** User
@@ -1067,4 +1064,24 @@ body#mod-forum-index .generalbox .cell {
 
 .sideblock .content h3.eventskey {
     font-size:0.8em;
+}
+td.tdvwc {
+  font-family:Arial, Verdana, Helvetica, sans-serif;
+  font-size:12px;
+}
+input.itvwc {
+  font-family:Arial, Verdana, Helvetica, sans-serif;
+  font-size:11px;
+}
+.kolomkleur0{
+	background-color: #FFFFFF;
+}
+.kolomkleur1{
+	background-color: #EFEFEF;
+}
+.kolomkleur2{
+	background-color: #DFDFDF;
+}
+.kolomkleur3{
+	background-color: #FFFFFF;
 }

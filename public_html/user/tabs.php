@@ -2,6 +2,8 @@
 /// This file to be included so we can assume config.php has already been included.
 /// We also assume that $user, $course, $currenttab have been set
 
+
+	
     if (!isset($filtertype)) {
         $filtertype = '';
     }
@@ -9,10 +11,15 @@
         $filterselect = '';
     }
 
+	
     //make sure everything is cleaned properly
     $filtertype   = clean_param($filtertype, PARAM_ALPHA);
     $filterselect = clean_param($filterselect, PARAM_INT);
 
+	
+	// echo 'ft => '.$filtertype.'<br />';
+	// echo 'fs => '.$filterselect.'<br />'; 
+	
     if (empty($currenttab) or empty($user) or empty($course)) {
         //error('You cannot call this script in that way');
     }
@@ -28,7 +35,8 @@
     /**************************************
      * Site Level participation or Blogs  *
      **************************************/
-    if ($filtertype == 'site') {
+    if ($filtertype == 'site') 
+	{
 
         $site = get_site();
         print_heading(format_string($site->fullname));
@@ -46,27 +54,32 @@
     /**************************************
      * Course Level participation or Blogs  *
      **************************************/
-    } else if ($filtertype == 'course' && $filterselect) {
+    } 
+	else if ($filtertype == 'course' && $filterselect) 
+	{
 
         $course = get_record('course','id',$filterselect);
         $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
         print_heading(format_string($course->fullname));
 
-        $toprow[] = new tabobject('participants', $CFG->wwwroot.'/user/index.php?id='.$filterselect,
-            get_string('participants'));
+        $toprow[] = new tabobject('participants', $CFG->wwwroot.'/user/index.php?id='.$filterselect,get_string('participants'));
 
         if ($CFG->bloglevel >= 3) {
             $toprow[] = new tabobject('blogs', $CFG->wwwroot.'/blog/index.php?filtertype=course&amp;filterselect='.$filterselect, get_string('blogs','blog'));
         }
 
-        if (!empty($CFG->enablenotes) and (has_capability('moodle/notes:manage', $coursecontext) || has_capability('moodle/notes:view', $coursecontext))) {
+        if (!empty($CFG->enablenotes) and (has_capability('moodle/notes:manage', $coursecontext) || has_capability('moodle/notes:view', $coursecontext))) 
+		{
             $toprow[] = new tabobject('notes', $CFG->wwwroot.'/notes/index.php?filtertype=course&amp;filterselect=' . $filterselect, get_string('notes', 'notes'));
         }
+
 
     /**************************************
      * Group Level participation or Blogs  *
      **************************************/
-    } else if ($filtertype == 'group' && $filterselect) {
+    } 
+	else if ($filtertype == 'group' && $filterselect) 
+	{
 
         $group_name = groups_get_group_name($filterselect);
         print_heading($group_name);
@@ -83,7 +96,9 @@
     /**************************************
      * User Level participation or Blogs  *
      **************************************/
-    } else {
+    } 
+	else 
+	{
         if (isset($userid)) {
             $user = get_record('user','id', $userid);
         }
@@ -139,7 +154,7 @@
         }
 
     /// Everyone can see posts for this user
-
+	
     /// add logic to see course read posts permission
         if (has_capability('moodle/user:readuserposts', $personalcontext) || has_capability('mod/forum:viewdiscussion', get_context_instance(CONTEXT_COURSE, $course->id))) {
             $toprow[] = new tabobject('forumposts', $CFG->wwwroot.'/mod/forum/user.php?id='.$user->id.'&amp;course='.$course->id,
@@ -242,20 +257,23 @@
                 $activetwo = array('reports');
                 $secondrow = $reportsecondrow;
             }
-        }
+        }	
     }    //close last bracket (individual tags)
 
 
     /// this needs permission checkings
 
 
-    if (!empty($showroles) and !empty($user)) { // this variable controls whether this roles is showed, or not, so only user/view page should set this flag
+    if (!empty($showroles) and !empty($user)) 
+	{ // this variable controls whether this roles is showed, or not, so only user/view page should set this flag
         $usercontext = get_context_instance(CONTEXT_USER, $user->id);
-        if (has_capability('moodle/role:assign',$usercontext)) {
+        if (has_capability('moodle/role:assign',$usercontext)) 
+		{
             $toprow[] = new tabobject('roles', $CFG->wwwroot.'/'.$CFG->admin.'/roles/assign.php?contextid='.$usercontext->id.'&amp;userid='.$user->id.'&amp;courseid='.$course->id
                                   ,get_string('roles'));
 
-            if (in_array($currenttab, array('assign', 'override'))) {
+            if (in_array($currenttab, array('assign', 'override'))) 
+			{
                 $inactive = array('roles');
                 $activetwo = array('roles');
 
@@ -270,9 +288,23 @@
     }
 /// Add second row to display if there is one
 
-    if (!empty($secondrow)) {
+	/*============================================
+	|
+	| aanvulling vwc
+	|
+	=============================================*/
+	if ( ra($USER->id, $CFG->prefix) > '0' ) 
+	{
+		$toprow[] = new tabobject('groepsrechten', $CFG->wwwroot.'/user/groepsrechten.php?id='.$course->id,'Groepsrechten');		
+	}	
+		
+		
+    if (!empty($secondrow)) 
+	{
         $tabs = array($toprow, $secondrow);
-    } else {
+    } 
+	else 
+	{
         $tabs = array($toprow);
     }
 
@@ -284,4 +316,36 @@
       print_tabs($tabs, $currenttab, $inactive, $activetwo);
     }
 
+	
+	/*
+	|
+	| function ra	=>	$id $prefix 
+	| role_id 	role_assignments	
+	|
+	*/	
+	//-----
+	function ra($id, $prefix) 
+	{
+		$vraag_ra = "select distinct userid, roleid from ".$prefix."role_assignments 
+						where userid = '".$id."'
+						and roleid != '5'
+						limit 1 ; " ; 
+			    // echo $vraag_ra ;
+		$resultaat_ra = get_records_sql($vraag_ra, $limitfrom='', $limitnum='')  ;		
+		
+		if ( $resultaat_ra )
+		{
+			foreach ( $resultaat_ra as $item_ra) 
+			{
+				return $item_ra->roleid ;				
+			}
+		}
+		else
+		{
+			return '0' ;
+		}
+	}
+	//-----/ra
+	
+	
 ?>
