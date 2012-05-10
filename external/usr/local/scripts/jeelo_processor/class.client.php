@@ -16,7 +16,7 @@ class client extends base {
     static $client_url = '';
  
  
-     static public function run() {
+    static public function run() {
         require_once("class.csv.php");
         
         self::log("Checking for available clients.");
@@ -40,7 +40,7 @@ class client extends base {
 			
             self::process_client_from_csv($moodle_clients_line);
         }
-    }
+    } // function run() 
 
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");

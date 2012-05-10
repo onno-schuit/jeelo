@@ -5,3 +5,23 @@ public_html/launcher_scripts
 public_html/cs_scripts
 external
 launcher_external_files
+
+
+GENERAL fLOW
+
+* Mod launcher puts most data in "buffer" DB, which acts as a storage for meta 
+  data. Each request for a new Moodle client is stored in buffer DB.
+
+* Cron job starts with external/usr/local/scripts/jeelo_processor/client.php,
+  which executes client::run. This script makes a request to the mother server
+  to send back data from the buffer DB.
+
+  The response is processed as a csv file, where each line contains the 
+  information for exactly one Moodle client installation.
+
+  Depending on the status as reported by the similarly named field in the csv 
+  line, either client::process_new_client or client::process_update_client is
+  called.
+
+  The static function client::process_update_client instantiates class 
+  client_updater and calls client_updater#start_updater.
