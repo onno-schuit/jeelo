@@ -1,0 +1,7 @@
+Locations:
+
+public_html/mod/launcher
+public_html/launcher_scripts
+public_html/cs_scripts
+external
+launcher_external_files
