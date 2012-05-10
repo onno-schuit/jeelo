@@ -6,11 +6,10 @@ class moodle extends user {
 
 
     function validate_and_create() {
-        global $CFG, $launcher;
-        $this->launcher_id = $launcher->id;
+        global $CFG;
 	
-        if (!$this->validate()) return false; // Validate form
-        if (!$this->set_defaults()) return false; // set all default variables
+        //if (!$this->validate()) return false; // Validate form
+        if (!$this->set_defaults()) return false; // Set all default variables
         if (!$this->create_moodle()) return false; // Start the create moodle processes
 
         return true;
@@ -51,10 +50,11 @@ class moodle extends user {
         $this->layout->logo      = $this->logo;
 
         $this->dumps_location    = '/etc/moodle_clients';
-        $this->sql_filename      = "{$this->server->domain}_sql_".date("Ymd");
-        $this->codebase_filename = "{$this->server->domain}_codebase_".date("Ymd");
-        $this->csv_filename      = "{$this->server->domain}_csv_".date("Ymd");
-        $this->courses_filename  = "{$this->server->domain}_courses_".date("Ymd");
+        $this->sql_filename      = "{$this->server->domain}_sql_" . date("Ymd") . ".tgz";
+        $this->codebase_filename = "{$this->server->domain}_codebase_" . date("Ymd") . ".tgz";
+        $this->csv_filename      = "{$this->server->domain}_csv_" . date("Ymd") . ".tgz";
+        $this->courses_filename  = "{$this->server->domain}_courses_" . date("Ymd") . ".tgz";
+        $this->logo_filename	 = "{$this->server->domain}_logo_" . date("Ymd") . ".tgz";
 
         return true;
     }
@@ -74,8 +74,7 @@ class moodle extends user {
             return ($logo['name'] != '') ? (end(explode(".", $logo['name'])) == 'jpg') : true;
         });
 
-        $this->validate_files_received();
-        //if (!$this->validate_files_received()) soda_error::add_error($this, 'upload_users', get_string('required'));
+        // $this->validate_files_received();
 
         $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
             return ($upload_users['name'] != '') ? (end(explode(".", $upload_users['name'])) == 'csv') : true;
@@ -98,8 +97,25 @@ class moodle extends user {
     function create_moodle() {
         global $CFG;
 
-        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+		if (!$this->prepair_codebase_transfer()) launcher_helper::print_error('2000');
+		if (!$this->prepair_database_transfer()) launcher_helper::print_error('2001');
+		if (!$this->prepair_csv_transfer()) launcher_helper::print_error('2002');
+		if (!$this->prepair_logo_transfer()) launcher_helper::print_error('2003');
+		
+		
+		if (!$buffer_id = $this->insert_client_in_buffer_db()) launcher_helper::print_error('2004');
+		if (!$this->prepair_projects_transfer($buffer_id)) launcher_helper::print_error('2005');
+		if (!$this->compress_and_remove_course_backups()) launcher_helper::print_error('2006');
 
+		// All done? Green light for the cron!
+		if (!$this->update_buffer_status($buffer_id)) launcher_helper::print_error('2007');
+
+        return true;
+
+		/* Old code
+		  * 
+        if (!$this->create_codebase()) launcher_helper::print_error('2000');
+        
         if (!$this->set_up_database()) launcher_helper::print_error('2001');
 
         // Make sure a bufferdb record exists before the courses are created, we need to log the courses
@@ -111,9 +127,272 @@ class moodle extends user {
 
         // Finally prepair for transfer to the client
         if (!$this->prepair_transfer_to_client()) launcher_helper::print_error('2009');
+        */
  
+    }
+
+
+	function prepair_codebase_transfer() {
+		
+        $dir = getcwd();
+        chdir("{$this->get_global_root()}/moeder");
+        shell_exec("tar -czv --exclude=moodle_data/* --exclude=config.php --exclude=launcher/* -f {$this->dumps_location}/code/{$this->codebase_filename} *");
+        chdir($dir);
+        
+        return true;
+	}
+	
+	function prepair_database_transfer() {
+		global $CFG;
+
+		// Make sure we have an actual database dump
+		if (!file_exists($CFG->dataroot . "/moodle.sql.tgz")) error("The database dump on which the client moodle environments will be based could not be found.");
+
+		// Move the database dump
+        copy("{$CFG->dataroot}/moodle.sql.tgz", "{$this->dumps_location}/db/{$this->sql_filename}");
+        
+        return true;
+	}
+
+	function prepair_csv_transfer() {
+
+        // Move uploaded csv files to /etc/moodle_clients
+        if(!move_uploaded_file($this->upload_users['tmp_name'], "{$this->dumps_location}/csv/users.csv")) return false;
+        if(!move_uploaded_file($this->upload_groups['tmp_name'], "{$this->dumps_location}/csv/groups.csv")) return false;
+
+        // Compress them into 1 file
+        $dir = getcwd();
+        chdir("{$this->dumps_location}/csv");
+        shell_exec("tar -cz -f {$this->dumps_location}/csv/{$this->csv_filename} users.csv groups.csv");
+        
+        // Finally delete the created csv files, we now got them compressed anyway
+        unlink("{$this->dumps_location}/csv/users.csv");
+        unlink("{$this->dumps_location}/csv/groups.csv");
+        chdir($dir);
+        
+        return true;
+	}
+
+	function prepair_logo_transfer() {
+		
+        // Move uploaded csv files to /etc/moodle_clients
+        if(!move_uploaded_file($this->logo['tmp_name'], "{$this->dumps_location}/logo/banner.jpg")) return false;
+
+        // Compress them into 1 file
+        $dir = getcwd();
+        chdir("{$this->dumps_location}/logo");
+        shell_exec("tar -cz -f {$this->dumps_location}/logo/{$this->logo_filename} banner.jpg");
+        
+        // Finally delete the created csv files, we now got them compressed anyway
+        unlink("{$this->dumps_location}/logo/banner.jpg");
+        chdir($dir);
+        
+        return true;
+	}
+	
+    function insert_client_in_buffer_db() {
+        global $CFG;
+
+        $query = "INSERT INTO jeelo_buffer.client_moodles (
+            timecreated, domain, short_code, name, sql_filename, codebase_filename, csv_filename, logo_filename, courses_filename, navbar_color, is_for_client, status, exit_code, timemodified ) VALUES (
+                '".date('Y-m-d H:i:s')."',
+                '{$this->domain}',
+                '{$this->site->shortname}',
+                '{$this->site->name}',
+                '{$this->dumps_location}/db/{$this->sql_filename}',
+                '{$this->dumps_location}/code/{$this->codebase_filename}',
+                '{$this->dumps_location}/csv/{$this->csv_filename}',
+                '{$this->dumps_location}/logo/{$this->logo_filename}',
+                '{$this->dumps_location}/course_imports/{$this->courses_filename}',
+                '{$this->layout->navbar}',
+                'client',
+                'creating',
+                '0',
+                '".time()."'
+		)";
+        if (!mysql_query($query)) return false;
+
+        return (mysql_insert_id());
+    }
+    
+    function prepair_projects_transfer($buffer_id) {
+		
+		foreach($this->categories as $category_id) {
+			
+			$category = get_record('course_categories', 'id', $category_id);
+			$buffer_category_id = $this->insert_category_in_buffer($category);
+			
+			if (!$this->prepair_courses_transfer($buffer_id, $category_id, $buffer_category_id)) error("Failed to prepair courses for transfer.");
+		}
+		
+		return true;
+	}
+	
+	function prepair_courses_transfer($buffer_id, $category_id, $buffer_category_id) {
+
+		$courses = get_records('course', 'category', $category_id);
+		foreach($courses as $course) {
+			
+			if (!$backup_name = $this->backup_course($course)) error("Failed to create a backup from course in category id $category_id.");
+			$this->insert_course_in_buffer($course, $backup_name, $buffer_id, $buffer_category_id);
+			
+		}
+		
+		return true;
+	}
+
+	function insert_category_in_buffer($category) {
+		
+		$query = $this->build_insert_query('jeelo_buffer', 'client_categories', $category);
+		if (!mysql_query($query)) return false;
+		
+		return (mysql_insert_id());
+	}
+	
+	function insert_course_in_buffer($course, $backup_name, $buffer_id, $buffer_category_id) {
+		
+		$new_course = new stdClass();
+		$new_course->backup_name = $backup_name;
+		$new_course->course_fullname = $course->fullname;
+		$new_course->course_shortname = $course->shortname;
+		$new_course->course_groupyear = $course->groupyear;
+		$new_course->buffer_id = $buffer_id;
+		$new_course->category_id = $buffer_category_id;
+		
+		$query = $this->build_insert_query('jeelo_buffer', 'client_courses', $new_course);
+		
+		return (mysql_query($query));
+	}
+
+	function backup_course($course) {
+        require_once('class.backup_course.php');
+
+        $backup_course = new backup_course();
+                
+        return ($backup_course->course_backup($this->dumps_location . '/course_imports', $course));
+	}
+
+	function compress_and_remove_course_backups() {
+        $dir = getcwd();
+
+        chdir("{$this->dumps_location}/course_imports");
+        // Tar the files
+        shell_exec("tar -cz -f {$this->dumps_location}/course_imports/{$this->courses_filename}.tgz *.zip");
+        // Finally delete the created zip files, we now got them compressed anyway
+        shell_exec("rm *.zip");
+        chdir($dir);
+        
+        return true;
+	}
+
+	/* This function will return an insert query based on the parameters inside the object
+	 * It will skip over id and any other parameters that aren't actually in the table */
+	function build_insert_query($db = 'jeelo_moeder', $table, $object) {
+		
+		$real_columns = get_records_sql("SHOW COLUMNS FROM $db.$table");
+		$query = "INSERT INTO $db.$table (";
+		$max_params = count(get_object_vars($object));
+		$count = 0;
+		
+		// Prepair column names
+		foreach($object as $column => $value) {
+			$count ++;
+			
+			if ($column == 'id') continue; // Skip primary ids
+			if (!isset($real_columns[$column])) continue; // Skip non-existing columns
+			
+			$query .= ($count != $max_params) ? "$column, " : "$column";
+		}
+		
+		$query .= ") VALUES (";
+		$count = 0;
+		
+		// Prepair column values
+		foreach($object as $column => $value) {
+			$count ++;
+			
+			if ($column == 'id') continue; // Skip primary ids
+			if (!isset($real_columns[$column])) continue; // Skip non-existing columns
+			
+			$query .= ($count != $max_params) ? "'$value', " : "'$value'";
+		}
+		
+		$query .= ")";
+		
+		return $query;
+	}
+	
+    function update_buffer_status($buffer_id) {
+		
+        $query = "
+            UPDATE jeelo_buffer.client_moodles SET
+				status				= 'new'
+            WHERE id = '{$buffer_id}'";
+            
+        return (execute_sql($query, false));
+    }
+
+    function get_site_real_name() {
+
+        if (!isset($this->site_shortname)) return false;
+        return strtolower(preg_replace("/[^a-z_0-9]+/i", "", $this->site_shortname));
+    }
+	
+    function get_global_root() { 
+        global $CFG;
+
+		$new_dirroot = '/home/jeelos';
+
+        return $new_dirroot;
+    }
+	
+    function create_db_user() {
+        global $CFG;
+        
+        $query = "
+        CREATE USER
+            '{$this->db->name}'@'{$this->db->host}'
+            IDENTIFIED BY '".$this->get_password($this->db->password)."'";
+        if (!execute_sql($query, false)) return false;
+
+        $query = "
+        GRANT ALL PRIVILEGES
+            ON {$this->db->name} . *
+            TO '{$this->db->username}'@'{$this->db->host}'
+            IDENTIFIED BY '".$this->get_password($this->db->password)."'
+            WITH GRANT OPTION";
+        if (!execute_sql($query, false)) return false;
+
         return true;
     }
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+/*		BELOW IS OLD		*/
+
+
 
     function set_layout_functions() {
 
@@ -150,6 +429,17 @@ class moodle extends user {
         if (!$this->copy_codebase_and_database()) error("Failed process at copy_codebase_and_database");
         if (!$this->remove_unneccesary_db_and_codebase()) error("Failed process at remove_unneccesary_db_and_codebase");
         if (!$this->update_buffer_db()) error("Failed process at update_buffer_db");
+
+        return true;
+    }
+
+
+    function compress_codebase() {
+        global $CFG;
+
+        // Zip codebase
+        chdir("{$this->get_global_root()}/{$this->site->shortname}");
+        shell_exec("tar -czv --exclude=backupdata/* -f {$this->dumps_location}/code/{$this->codebase_filename}.tgz *");
 
         return true;
     }
@@ -192,7 +482,7 @@ class moodle extends user {
     /* Update the buffer db
      * This function will update the status of
      * the client buffer db, setting it to new*/
-    function update_buffer_db() {
+    function update_buffer_db_OOOOOOOOOOOOOLLLLLLLLLLLDDDDDDDDDD() {
         $query = "
             UPDATE jeelo_buffer.client_moodles SET
             status = 'new',
@@ -204,15 +494,16 @@ class moodle extends user {
     }
 
 
-    function insert_client_in_buffer_db() {
+    function insert_client_in_buffer_db_OLLLLLDDDDDDDD() {
         global $CFG;
 
         $query = "INSERT INTO jeelo_buffer.client_moodles (
-            timecreated, domain, short_code, name, is_for_client, status, exit_code, timemodified ) VALUES (
+            timecreated, domain, short_code, name, sql_filename, codebase_filename, csv_filename, logo_filename, navbar_color, is_for_client, status, exit_code, timemodified ) VALUES (
                 '".date('Y-m-d H:i:s')."',
                 '{$this->domain}',
                 '{$this->site->shortname}',
                 '{$this->site->name}',
+                '{$this->sql_filename}'
                 'client',
                 'creating',
                 '0',
@@ -220,29 +511,6 @@ class moodle extends user {
 
         execute_sql($query, false);
         return (get_record_sql("SELECT * FROM jeelo_buffer.client_moodles WHERE short_code = '{$this->site->shortname}'")->id);
-    }
-
-
-    function create_codebase() {
-        global $CFG;
-
-        /* For now don't use this code. I don't want the moodle data directory copied
-        // Create moodle_data
-        //if (!$this->recursive_copy($CFG->dataroot, $this->get_global_root(), $this->get_site_real_name(), 'moodle_data')) return false;
-        */
-        //if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}")) return false;
-
-        // Create public_html
-        if (!$this->recursive_copy($CFG->dirroot, $this->get_global_root(), $this->get_site_real_name(), 'public_html')) return false;
-        
-        // Create moodle data folder
-        if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/moodle_data")) return false;
-        // Create log folder
-        if (!mkdir("{$this->get_global_root()}/{$this->get_site_real_name()}/logs")) return false;
-        // if (!$this->recursive_copy("{$this->get_global_root()}/jeelo19}", $this->get_global_root(), $this->get_site_real_name())) return false;
-        if (!$this->create_config()) return false;
-
-        return true;
     }
 
 
@@ -302,20 +570,6 @@ class moodle extends user {
     }
 
 
-    function set_up_website_link() {
-
-		symlink($this->cfg->dirroot, "/var/www/{$this->get_site_real_name()}");
-        // shell_exec("ln -s {$this->cfg->dirroot} /var/www/{$this->get_site_real_name()}");
-        return ($this->website_is_linked());
-    }
-
-
-    function website_is_linked() {
-        exec(sprintf('ping -c 1 -W 5 %s', escapeshellarg($this->cfg->wwwroot)), $output, $result);
-        return ($result === 0);
-    }
-
-
     function add_uploaded_files() {
         if (!isset($_FILES)) return true;
         foreach($_FILES as $key=>$file) {
@@ -323,7 +577,8 @@ class moodle extends user {
         }
     }
 
-
+	/*	Not in use anymore. The csv file uploads should be optional.
+	 * 
     function validate_files_received() {
     
         if ((isset($this->upload_users['name']) && $this->upload_users['name']) == '') {
@@ -335,43 +590,9 @@ class moodle extends user {
 
         return true;
     }
+    */
 
 
-    function get_site_real_name() {
-
-        if (!isset($this->site_shortname)) return false;
-        return strtolower(preg_replace("/[^a-z_0-9]+/i", "", $this->site_shortname));
-    }
-
-
-    function get_global_root() { 
-        global $CFG;
-
-		$new_dirroot = '/home/jeelos';
-
-        return $new_dirroot;
-    }
-
-
-    function create_db_user() {
-        global $CFG;
-        
-        $query = "
-        CREATE USER
-            '{$this->db->name}'@'{$this->db->host}'
-            IDENTIFIED BY '".$this->get_password($this->db->password)."'";
-        if (!execute_sql($query, false)) return false;
-
-        $query = "
-        GRANT ALL PRIVILEGES
-            ON {$this->db->name} . *
-            TO '{$this->db->username}'@'{$this->db->host}'
-            IDENTIFIED BY '".$this->get_password($this->db->password)."'
-            WITH GRANT OPTION";
-        if (!execute_sql($query, false)) return false;
-
-        return true;
-    }
 
 
     function create_site_admin() {
@@ -439,16 +660,6 @@ require_once("$CFG->dirroot/lib/setup.php");';
 
         return true;
     }
-
-/*    function get_page_time() {
-
-        $starttime = microtime();
-        $startarray = explode(" ", $starttime);
-        $starttime = $startarray[1] + $startarray[0];
-
-        return $starttime;
-    }
- */
 
     function recursive_copy($source, $dest, $diffDir, $folder = false){
         global $CFG;

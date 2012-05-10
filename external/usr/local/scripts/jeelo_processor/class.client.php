@@ -15,6 +15,79 @@ class client extends base {
     static $log_echo = true;
     static $client_url = '';
  
+ 
+     static public function run() {
+        require_once("class.csv.php");
+        
+        self::log("Checking for available clients.");
+        
+        $request = array(
+            'request' => 'get_available_clients'
+        );
+        $response = self::get_server_response($request);
+        
+        if (!$response) {
+           die(); // no clients available for processing.. do nothing
+        }
+        
+        $csv = new csv();
+        $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
+
+
+        while($moodle_clients_line = $csv->nextline()) {
+			// Usefull variable
+			self::$client_url = $moodle_clients_line->domain;
+			
+            self::process_client_from_csv($moodle_clients_line);
+        }
+    }
+
+    public static function process_client_from_csv($csv_line) {
+        self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
+        
+        // Update status FIRST
+        self::update_server_status($csv_line->id, 'being_processed');
+
+        switch($csv_line->status) {
+            case 'new':
+                self::process_new_client($csv_line);
+                break;
+            case 'update':
+                self::process_update_client($csv_line);
+                break;
+        }
+
+        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
+    }
+
+    public static function process_new_client($csv_line) {
+		self::log("Starting the creation of a new moodle school.");
+        
+        $user_and_pass = self::prepair_database($csv_line);
+        
+        exit("Prepaired database?");
+        
+        self::create_codebase($csv_line);
+
+        self::create_moodle_config($csv_line, $user_and_pass);
+        
+        self::change_site_template($csv_line);
+        
+        self::add_to_apache($csv_line);
+
+        self::email_school_created($csv_line, $user_and_pass);
+        
+    }
+    
+    public static function prepair_database($csv_line) {
+        
+        self::create_database($csv_line);
+        $user_and_pass = self::create_database_user($csv_line->short_code);
+        self::get_db_from_server($csv_line);
+		
+		return $user_and_pass;
+	}
+
     /**
      * Reads variable apache conf file, replaces vars and writes to /apache/conf/domain.conf
      * /apache/conf path is set in config.php in $cs_apache_config_dir
@@ -156,14 +229,19 @@ class client extends base {
         
         // write contents to temp file
         $tmpfile = tempnam('/tmp', 'jmdl'); // prefix jmdl (jeelo moodle)
-        self::log("Creating file " . $tmpfile . '.gz');
-        file_put_contents($tmpfile . '.gz', $response);
+        self::log("Creating file " . $tmpfile . '.tgz');
+        file_put_contents($tmpfile . '.tgz', $response);
         
         unset($response); // clear memory ?
-
-        $cmd = sprintf("gunzip -c %s > %s", $tmpfile . '.gz' , $tmpfile);
+		
+		$dir = getcwd();
+		chdir("/tmp");
+		
+        $cmd = sprintf("tar xvf %s", $tmpfile . '.tgz');
         self::log($cmd);
         $output = shell_exec($cmd);
+        
+        chdir($dir);
 
         // import into mysql
         $dbname = '' . $csv_line->short_code; // no prefix
@@ -176,13 +254,6 @@ class client extends base {
         
     }
  
-    public static function get_server_response($request) {
-		
-		$request_url = self::get_request_url($request);
-        $response = file_get_contents($request_url);
-        
-        return $response;
-    }
     
 	public static function get_request_url($request) {
         if (!is_array($request)) {
@@ -205,24 +276,6 @@ class client extends base {
         
         return $request_url;
 	}
-
-    public static function process_client_from_csv($csv_line) {
-        self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
-        
-        // Update status FIRST
-        self::update_server_status($csv_line->id, 'being_processed');
-
-        switch($csv_line->status) {
-            case 'new':
-                self::process_new_client($csv_line);
-                break;
-            case 'update':
-                self::process_update_client($csv_line);
-                break;
-        }
-
-        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
-    }
 
 
     /* Executes query against the remote database */
@@ -253,26 +306,6 @@ class client extends base {
     }
 
 
-    public static function process_new_client($csv_line) {
-	self::log("Starting the creation of a new moodle school.");
-        
-        self::create_database($csv_line);
-        $user_and_pass = self::create_database_user($csv_line->short_code);
-        self::get_db_from_server($csv_line);
-        
-        self::create_codebase($csv_line);
-
-        self::update_moodle_config($csv_line, $user_and_pass);
-        
-        self::change_site_template($csv_line);
-        
-        self::add_to_apache($csv_line);
-
-        self::email_school_created($csv_line, $user_and_pass);
-        
-    }
-    
-    
     public static function change_site_template($csv_line) {
 		$query = "UPDATE " . self::$prefix . "config SET value = 'children-education' WHERE name = 'theme'";
 		return (self::remote_execute($csv_line, $query));
@@ -343,33 +376,57 @@ class client extends base {
     }
 
 
-    static public function run() {
-        require_once("class.csv.php");
-        
-        self::log("Checking for available clients.");
-        
-        $request = array(
-            'request' => 'get_available_clients'
-        );
-        $response = self::get_server_response($request);
-        
-        if (!$response) {
-           die(); // no clients available for processing.. do nothing
-        }
-        
-        $csv = new csv();
-        $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
+    function create_config() {
+        global $CFG;
 
+        $error = false;
+        // First create config_clean.php
+        if (!$config_clean = fopen("{$this->cfg->dirroot}/config_clean.php", "w")) return false;
+        $config_clean_input = '<?php // Clean Configuration File
+$CFG->dbhost    = "'.$this->db->host.'";
+$CFG->dbname    = "'.$this->db->name.'";
+$CFG->dbuser    = "'.$this->db->username.'";
+$CFG->dbpass    = "'.$this->get_password($this->db->password).'";';
+// Use the password salt for new moodle if it exists
+if (isset($CFG->passwordsaltmain)) {
+    $config_clean_input .= '
+$CFG->passwordsaltmain = "'.$CFG->passwordsaltmain.'";';
+}
+$config_clean_input .= '
+?>';
+        if (!fwrite($config_clean, trim($config_clean_input))) return false;
+        if (!fclose($config_clean)) return false;
 
-        while($moodle_clients_line = $csv->nextline()) {
-			// Usefull variable
-			self::$client_url = $moodle_clients_line->domain;
-			
-            self::process_client_from_csv($moodle_clients_line);
-        }
+        // Now create config.php
+        if (!$config = fopen("{$this->cfg->dirroot}/config.php", "w")) return false;
+        // Avoiding whitespaces in config file
+        $config_input = '<?php // Moodle Configuration File
+
+unset($CFG);
+
+$CFG = new stdClass();
+$CFG->dbtype    = "mysql";
+require_once("config_clean.php");
+$CFG->dbpersist = false;
+$CFG->prefix    = "'.$CFG->prefix.'";
+
+$CFG->wwwroot   = "'.$this->cfg->wwwroot.'";
+$CFG->dirroot   = "'.$this->cfg->dirroot.'";
+$CFG->dataroot  = "'.$this->cfg->dataroot.'";
+$CFG->admin     = "admin";
+
+$CFG->directorypermissions = 00777;  // try 02777 on a server in Safe Mode';
+$config_input .= '
+require_once("$CFG->dirroot/lib/setup.php");';
+
+        if (!fwrite($config, trim($config_input))) return false;
+        if (!fclose($config)) return false;
+
+        return true;
     }
-    
-    static public function update_moodle_config($csv_line, $user_and_pass) {
+
+	/*
+	static public function update_moodle_config($csv_line, $user_and_pass) {
         $folder = self::$target_folder . $csv_line->domain;
 
         $config_contents = file_get_contents($folder . '/public_html/config.php');
@@ -388,7 +445,7 @@ class client extends base {
         $config_clean_contents = file_get_contents($folder . '/public_html/config_clean.php');
         $config_clean_contents = self::set_config_contents($config_clean_contents, '$CFG->dbpass', $user_and_pass['password']);
         file_put_contents($folder .'/public_html/config_clean.php', $config_clean_contents);
-    }
+    }*/
 
 
     function set_config_contents($config_contents, $field, $value) {
@@ -414,5 +471,12 @@ class client extends base {
         self::log("Updated status for record $record_id to $status: $response");
     }
     
+    public static function get_server_response($request) {
+		
+		$request_url = self::get_request_url($request);
+        $response = file_get_contents($request_url);
+        
+        return $response;
+    }
 }
 
