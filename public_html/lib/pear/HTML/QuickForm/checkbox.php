@@ -17,7 +17,7 @@
 // |          Bertrand Mansion <bmansion@mamasam.com>                     |
 // +----------------------------------------------------------------------+
 //
-// $Id: checkbox.php,v 1.1 2006/09/24 17:04:54 jamiesensei Exp $
+// $Id: checkbox.php,v 1.2.6.2 2012/02/13 00:47:50 moodlerobot Exp $
 
 require_once("HTML/QuickForm/input.php");
 
@@ -64,7 +64,6 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
         $this->_text = $text;
         $this->setType('checkbox');
         $this->updateAttributes(array('value'=>1));
-        $this->_generateId();
     } //end constructor
     
     // }}}
@@ -114,6 +113,7 @@ class HTML_QuickForm_checkbox extends HTML_QuickForm_input
      */
     function toHtml()
     {
+        $this->_generateId(); // Seems to be necessary when this is used in a group.
         if (0 == strlen($this->_text)) {
             $label = '';
         } elseif ($this->_flagFrozen) {

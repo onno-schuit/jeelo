@@ -3,7 +3,7 @@
      *	adapter for SimpleTest to use PHPUnit test cases
      *	@package	SimpleTest
      *	@subpackage Extensions
-     *	@version	$Id$
+     *	@version	$Id: phpunit_test_case.php,v 1.4 2010/12/14 17:36:02 moodlerobot Exp $
      */
     
     /**#@+
@@ -26,7 +26,7 @@
          *    @param $label        Test name to display.
          *    @public
          */
-        function TestCase($label) {
+        function TestCase($label = false) {
             $this->SimpleTestCase($label);
         }
         

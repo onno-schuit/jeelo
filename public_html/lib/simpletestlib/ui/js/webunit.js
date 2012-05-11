@@ -6,7 +6,7 @@
 // 
 // SimpleTest - http://simpletest.sf.net/
 // Copyright (c) 2003,2004 Marcus Baker (marcus@lastcraft.com)
-// $Id$
+// $Id: webunit.js,v 1.2 2010/12/14 17:36:01 moodlerobot Exp $
 
 
 // Variables:

@@ -3,7 +3,7 @@
  *	base include file for SimpleTest PUnit reporter
  *	@package	SimpleTest
  *	@subpackage	UnitTester
- *	@version	$Id$
+ *	@version	$Id: webunit_reporter.php,v 1.2 2010/12/14 17:35:48 moodlerobot Exp $
  */
 
 /**

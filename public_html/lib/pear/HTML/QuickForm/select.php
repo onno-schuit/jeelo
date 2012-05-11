@@ -17,7 +17,7 @@
 // |          Bertrand Mansion <bmansion@mamasam.com>                     |
 // +----------------------------------------------------------------------+
 //
-// $Id: select.php,v 1.1 2006/09/24 17:04:55 jamiesensei Exp $
+// $Id: select.php,v 1.3 2010/12/14 17:35:23 moodlerobot Exp $
 
 require_once('HTML/QuickForm/element.php');
 
@@ -105,7 +105,7 @@ class HTML_QuickForm_select extends HTML_QuickForm_element {
     function setSelected($values)
     {
         if (is_string($values) && $this->getMultiple()) {
-            $values = split("[ ]?,[ ]?", $values);
+            $values = preg_split("/[ ]?,[ ]?/", $values);
         }
         if (is_array($values)) {
             $this->_values = array_values($values);

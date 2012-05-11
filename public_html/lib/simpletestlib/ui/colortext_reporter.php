@@ -3,7 +3,7 @@
      *  Base include file for SimpleTest
      *  @package        SimpleTest
      *  @subpackage     UnitTester
-     *  @version        $Id$
+     *  @version        $Id: colortext_reporter.php,v 1.2 2010/12/14 17:35:48 moodlerobot Exp $
      */
 
 /**

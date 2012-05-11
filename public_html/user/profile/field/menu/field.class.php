@@ -1,4 +1,4 @@
-<?php //$Id: field.class.php,v 1.10.2.3 2009/03/15 13:43:28 skodak Exp $
+<?php
 
 class profile_field_menu extends profile_field_base {
     var $options;
@@ -58,7 +58,7 @@ class profile_field_menu extends profile_field_base {
      * @param   integer   the key returned from the select input in the form
      */
     function edit_save_data_preprocess($key) {
-        return isset($this->options[$key]) ? addslashes($this->options[$key]) : NULL;
+        return isset($this->options[$key]) ? $this->options[$key] : NULL;
     }
 
     /**
@@ -86,4 +86,4 @@ class profile_field_menu extends profile_field_base {
     }
 }
 
-?>
+

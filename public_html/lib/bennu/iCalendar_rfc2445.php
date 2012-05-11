@@ -1,4 +1,4 @@
-<?php // $Id: iCalendar_rfc2445.php,v 1.2.10.3 2009/11/19 10:16:53 skodak Exp $
+<?php
 
 /**
  *  BENNU - PHP iCalendar library
@@ -9,7 +9,6 @@
  *  See http://bennu.sourceforge.net/ for more information and downloads.
  *
  * @author Ioannis Papaioannou 
- * @version $Id: iCalendar_rfc2445.php,v 1.2.10.3 2009/11/19 10:16:53 skodak Exp $
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
@@ -26,6 +25,9 @@ define('RFC2445_CRLF',               "\r\n");
 define('RFC2445_WSP',                "\t ");
 define('RFC2445_WEEKDAYS',           'MO,TU,WE,TH,FR,SA,SU');
 define('RFC2445_FOLDED_LINE_LENGTH', 75);
+
+define('RFC2445_PARAMETER_SEPARATOR',	';');
+define('RFC2445_VALUE_SEPARATOR',    	':');
 
 define('RFC2445_REQUIRED', 0x01);
 define('RFC2445_OPTIONAL', 0x02);
@@ -54,7 +56,7 @@ define('RFC2445_TYPE_UTC_OFFSET',  13);
 
 
 function rfc2445_fold($string) {
-    if(mb_strlen($string, 'utf-8') <= RFC2445_FOLDED_LINE_LENGTH) {
+    if(textlib::strlen($string, 'utf-8') <= RFC2445_FOLDED_LINE_LENGTH) {
         return $string;
     }
 
@@ -64,15 +66,15 @@ function rfc2445_fold($string) {
     $len_count=0;
 
     //multi-byte string, get the correct length
-    $section_len = mb_strlen($string, 'utf-8');
+    $section_len = textlib::strlen($string, 'utf-8');
 
     while($len_count<$section_len) {
         
         //get the current portion of the line
-        $section = mb_substr($string, ($i * RFC2445_FOLDED_LINE_LENGTH), (RFC2445_FOLDED_LINE_LENGTH), 'utf-8');
+        $section = textlib::substr($string, ($i * RFC2445_FOLDED_LINE_LENGTH), (RFC2445_FOLDED_LINE_LENGTH), 'utf-8');
 
         //increment the length we've processed by the length of the new portion
-        $len_count += mb_strlen($section, 'utf-8');
+        $len_count += textlib::strlen($section, 'utf-8');
         
         /* Add the portion to the return value, terminating with CRLF.HTAB
            As per RFC 2445, CRLF.HTAB will be replaced by the processor of the 
@@ -139,13 +141,13 @@ function rfc2445_is_valid_value($value, $type) {
             }
         
             if($scheme === 'mailto') {
-                $regexp = '^[a-zA-Z0-9]+[_a-zA-Z0-9\-]*(\.[_a-z0-9\-]+)*@(([0-9a-zA-Z\-]+\.)+[a-zA-Z][0-9a-zA-Z\-]+|([0-9]{1,3}\.){3}[0-9]{1,3})$';
+                $regexp = '#^[a-zA-Z0-9]+[_a-zA-Z0-9\-]*(\.[_a-z0-9\-]+)*@(([0-9a-zA-Z\-]+\.)+[a-zA-Z][0-9a-zA-Z\-]+|([0-9]{1,3}\.){3}[0-9]{1,3})$#';
             }
             else {
-                $regexp = '^//(.+(:.*)?@)?(([0-9a-zA-Z\-]+\.)+[a-zA-Z][0-9a-zA-Z\-]+|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{1,5})?(/.*)?$';
+                $regexp = '#^//(.+(:.*)?@)?(([0-9a-zA-Z\-]+\.)+[a-zA-Z][0-9a-zA-Z\-]+|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{1,5})?(/.*)?$#';
             }
         
-            return ereg($regexp, $remain);
+            return preg_match($regexp, $remain);
         break;
 
         case RFC2445_TYPE_BINARY:
@@ -741,6 +743,7 @@ function rfc2445_is_valid_value($value, $type) {
                 return false;
             }
 
+            $s = 0;
             if(strlen($value) == 7) {
                 $s = intval(substr($value, 5, 2));
                 $value = substr($value, 0, 5);
@@ -796,5 +799,3 @@ function rfc2445_undo_value_formatting($value, $type) {
     }
     return $value;
 }
-
-?>

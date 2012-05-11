@@ -1,4 +1,8 @@
-<?php //$Id: index_field_form.php,v 1.4.4.3 2009/09/26 16:28:24 skodak Exp $
+<?php
+
+if (!defined('MOODLE_INTERNAL')) {
+    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+}
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 
@@ -45,6 +49,10 @@ class field_form extends moodleform {
     function validation($data, $files) {
         return $this->field->define_validate($data, $files);
     }
+
+    function editors() {
+        return $this->field->define_editors();
+    }
 }
 
-?>
+

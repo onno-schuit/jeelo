@@ -17,7 +17,7 @@
 // |          Bertrand Mansion <bmansion@mamasam.com>                     |
 // +----------------------------------------------------------------------+
 //
-// $Id: radio.php,v 1.1 2006/09/24 17:04:55 jamiesensei Exp $
+// $Id: radio.php,v 1.2.6.1 2012/01/05 14:22:37 moodlerobot Exp $
 
 require_once('HTML/QuickForm/input.php');
 
@@ -66,10 +66,24 @@ class HTML_QuickForm_radio extends HTML_QuickForm_input
         $this->_persistantFreeze = true;
         $this->setType('radio');
         $this->_text = $text;
-        $this->_generateId();
     } //end constructor
-    
+
     // }}}
+
+    function _generateId() {
+        // Override the standard implementation, since you can have multiple
+        // check-boxes with the same name on a form. Therefore, add the
+        // (cleaned up) value to the id.
+
+        if ($this->getAttribute('id')) {
+            return;
+        }
+
+        parent::_generateId();
+        $id = $this->getAttribute('id') . '_' . clean_param($this->getValue(), PARAM_ALPHANUMEXT);
+        $this->updateAttributes(array('id' => $id));
+    }
+
     // {{{ setChecked()
 
     /**

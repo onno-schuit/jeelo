@@ -20,6 +20,4 @@ original Earth map from:
 marker.gif
   custom made in Inkscape
 
-Petr Skoda (skodak), January 2008  
-
-$Id: README.txt,v 1.1.20.2 2011/11/18 01:18:50 moodlerobot Exp $
+Petr Skoda (skodak), January 2008

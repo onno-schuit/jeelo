@@ -1,4 +1,4 @@
-<?php  // $Id: access.php,v 1.1.2.2 2008/11/30 15:43:28 skodak Exp $
+<?php
 
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
@@ -23,21 +23,21 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
-$block_online_users_capabilities = array(
+$capabilities = array(
 
     'block/online_users:viewlist' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_BLOCK,
-        'legacy' => array(
+        'archetypes' => array(
             'user' => CAP_ALLOW,
             'guest' => CAP_ALLOW,
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'admin' => CAP_ALLOW
+            'manager' => CAP_ALLOW
         )
     )
 );
 
-?>
+

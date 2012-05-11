@@ -1,4 +1,4 @@
-<?php // $Id: Server.php,v 1.1.2.3 2008/02/27 03:02:05 martinlanghoff Exp $
+<?php // $Id: Server.php,v 1.3 2010/12/14 17:36:02 moodlerobot Exp $
 /*
    +----------------------------------------------------------------------+
    | Copyright (c) 2002-2007 Christian Stocker, Hartmut Holzgraefe        |

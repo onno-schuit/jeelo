@@ -1,6 +1,7 @@
-Description of HTML Purifier v4.2.0 library import into Moodle
+Description of HTML Purifier v4.4.0+ library import into Moodle
+(Includes _blank fix 8c9d461a6259d7b8ac4ae5c9c9e95ab176cfcda3.)
 
 Changes:
- * DefinitionCache/Serializer.php - using our directory permissions
+* added locallib.php with Moodle specific extensions
 
 skodak

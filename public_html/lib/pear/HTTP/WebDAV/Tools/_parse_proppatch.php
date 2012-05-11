@@ -1,4 +1,4 @@
-<?php // $Id: _parse_proppatch.php,v 1.1.2.2 2008/02/27 02:50:22 martinlanghoff Exp $
+<?php // $Id: _parse_proppatch.php,v 1.2 2010/12/14 17:36:02 moodlerobot Exp $
 /*
    +----------------------------------------------------------------------+
    | Copyright (c) 2002-2007 Christian Stocker, Hartmut Holzgraefe        |
