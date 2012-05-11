@@ -3,23 +3,25 @@
 class replicator {
 
     /**
-     * Makes a dump of the current Moodle codebase
+     * Makes a dump of the Moodle codebase, without the config.php file
      *
+     * @param   string  $source     Directory name of the codebase
      * @param   string  $target     Filename of the resulting zip
      * @return  void
      */
-    public static function dump_codebase($target) {
+    public static function dump_codebase($source, $target) {
 
     } // function dump_codebase 
 
 
     /**
-     * Makes a dump of the database of the current Moodle
+     * Makes a dump of a Moodle database 
      *
+     * @param   string  $database   Database to be dumped
      * @param   string  $target     Filename of the resulting zip
      * @return void
      */
-    public static function dump_database($target) {
+    public static function dump_database($database, $target) {
                 
     } // function dump_database
 
@@ -37,24 +39,24 @@ class replicator {
 
 
     /**
-     * Unzips the $source in the $target directory
+     * Unzips the $zip in the $target directory
      *
-     * @param   string     $source  Filename of the zip containing the codebase
+     * @param   string     $zip     Filename of the zip containing the codebase
      * @param   string     $target  Target directory where codebase is unzipped
      * @return  boolean             Returns true if restore succeeded, otherwise false
      */
-    public static function restore_codebase($source, $target) {
+    public static function restore_codebase($zip, $target) {
                 
     } // function restore_codebase
 
 
     /**
-     * Creates a new database filled with contents of database dump in $source.
+     * Creates a new database filled with contents of database dump in $zip.
      *
-     * @param   string     $source  Filename of the zip containing the database dump
-     * @return  boolean             Returns true if restore succeeded, otherwise false
+     * @param   string     $zip  Filename of the zip containing the database dump
+     * @return  boolean          Returns true if restore succeeded, otherwise false
      */
-    public static function restore_database($source) {
+    public static function restore_database($zip) {
                 
     } // function restore_database
 
@@ -62,10 +64,10 @@ class replicator {
     /**
      * Uses standard Moodle restore function to restore a course
      *
-     * @param   string     $source  Filename of the zip containing the backup
-     * @return  boolean             Returns true if restore succeeded, otherwise false
+     * @param   string     $zip  Filename of the zip containing the backup
+     * @return  boolean          Returns true if restore succeeded, otherwise false
      */
-    public static function restore_course($source) {
+    public static function restore_course($zip) {
                 
     } // function restore_course
 
