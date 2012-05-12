@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Class Replicator contains a number of state independent static functions 
+ * for replicating a Moodle codebase, course or database.
+ *
+ * WARNING: most functions do not work if executed through Apache!
+ */
 class replicator {
 
 
@@ -9,14 +15,14 @@ class replicator {
 
     /**
      * Makes a dump of the Moodle codebase (i.e. webroot folder). For security 
-     * reasons, we omit the config.php file
+     * reasons, we omit the config.php file.
      *
      * @param   string  $source     Directory name and path of the codebase
      * @param   string  $target     Filename and path of the resulting zip 
-     * @return  void
+     * @return  string              Returns the output of the tar command
      */
     public static function dump_codebase($source, $target) {
-        return shell_exec("tar -czv --exclude=config.php -f {$target} {$source}");
+        return shell_exec("tar -czp --exclude=tags --exclude=config.php -f {$target} {$source}");
     } // function dump_codebase 
 
 
@@ -24,11 +30,13 @@ class replicator {
      * Makes a dump of a Moodle database 
      *
      * @param   string  $database   Database to be dumped
+     * @param   string  $username   Mysql username
+     * @param   string  $password   Mysql password
      * @param   string  $target     Filename and path of the resulting zip
-     * @return void
+     * @return  string              Returns the output of the mysqldump command
      */
-    public static function dump_database($database, $target) {
-                
+    public static function dump_database($database, $username, $password, $target) {
+         return shell_exec("mysqldump -u{$username} -p{$password} {$database} | gzip > {$target}");
     } // function dump_database
 
 
