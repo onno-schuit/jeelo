@@ -1,0 +1,60 @@
+<link href="style.css" rel="stylesheet" type="text/css">
+<script language="javascript" src="lib.js"></script>
+
+<div class="container">
+    <div class="launcher_header">
+        <?=get_string('launcher_header', 'launcher');?>
+    </div>
+    <div class="container_left">
+        <?php $this->print_menu();?>
+    </div>
+    <div class="container_right">
+
+        <div class="content_header">
+            <?=get_string('prepaired_for_installation', 'launcher');?>
+        </div>
+
+
+        <!--
+        <table border-collapse="collapse">
+
+            <tr><td><b>Database information</b></td></tr>
+
+            <tr>
+                <td>Username</td>
+                <td><?=$moodle->db->username?></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><?=key($moodle->db->password)?></td>
+            </tr>
+            <tr>
+                <td>Database name</td>
+                <td><?=$moodle->db->name?></td>
+            </tr>
+            
+            <tr><td>&nbsp;</td></tr><tr><td><b>Moodle Admin information</b></td></tr>
+
+            <tr>
+                <td>Username</td>
+                <td><?=$moodle->user->username?></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td><?=key($moodle->user->password)?></td>
+            </tr>
+
+            <tr><td>&nbsp;</td></tr><tr><td><b>Website information</b></td></tr>
+
+            <tr>
+                <td>URL</td>
+                <td><?=$moodle->cfg->wwwroot?></td>
+            </tr>
+
+        </table>
+        -->
+
+        </div>
+    </div> <!-- End container right -->
+</div> <!-- End container -->
+<div style="clear: both;"></div>
