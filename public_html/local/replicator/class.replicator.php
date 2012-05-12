@@ -2,15 +2,21 @@
 
 class replicator {
 
+
+    public static function test() {
+        return "This is replicator::test()";
+    } // function test
+
     /**
-     * Makes a dump of the Moodle codebase, without the config.php file
+     * Makes a dump of the Moodle codebase (i.e. webroot folder). For security 
+     * reasons, we omit the config.php file
      *
-     * @param   string  $source     Directory name of the codebase
-     * @param   string  $target     Filename of the resulting zip
+     * @param   string  $source     Directory name and path of the codebase
+     * @param   string  $target     Filename and path of the resulting zip 
      * @return  void
      */
     public static function dump_codebase($source, $target) {
-
+        return shell_exec("tar -czv --exclude=config.php -f {$target} {$source}");
     } // function dump_codebase 
 
 
@@ -18,7 +24,7 @@ class replicator {
      * Makes a dump of a Moodle database 
      *
      * @param   string  $database   Database to be dumped
-     * @param   string  $target     Filename of the resulting zip
+     * @param   string  $target     Filename and path of the resulting zip
      * @return void
      */
     public static function dump_database($database, $target) {
@@ -30,7 +36,7 @@ class replicator {
      * Uses standard Moodle backup function to create a zip of a Moodle course
      *
      * @param   integer     $course_id  Id of the course to be dumped
-     * @param   string      $target     Filename of the resulting zip
+     * @param   string      $target     Filename and path of the resulting zip
      * @return  boolean                 Returns true if dump succeeded, otherwise false
      */
     public static function dump_course($course_id, $target) {
@@ -41,8 +47,8 @@ class replicator {
     /**
      * Unzips the $zip in the $target directory
      *
-     * @param   string     $zip     Filename of the zip containing the codebase
-     * @param   string     $target  Target directory where codebase is unzipped
+     * @param   string     $zip     Filename and path of the zip containing the codebase
+     * @param   string     $target  Target directory and path where codebase is unzipped
      * @return  boolean             Returns true if restore succeeded, otherwise false
      */
     public static function restore_codebase($zip, $target) {
@@ -53,7 +59,7 @@ class replicator {
     /**
      * Creates a new database filled with contents of database dump in $zip.
      *
-     * @param   string     $zip  Filename of the zip containing the database dump
+     * @param   string     $zip  Filename and path of the zip containing the database dump
      * @return  boolean          Returns true if restore succeeded, otherwise false
      */
     public static function restore_database($zip) {
@@ -64,7 +70,7 @@ class replicator {
     /**
      * Uses standard Moodle restore function to restore a course
      *
-     * @param   string     $zip  Filename of the zip containing the backup
+     * @param   string     $zip  Filename and path of the zip containing the backup
      * @return  boolean          Returns true if restore succeeded, otherwise false
      */
     public static function restore_course($zip) {
