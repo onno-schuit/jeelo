@@ -16,11 +16,6 @@ require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
 class replicator {
 
 
-    public static function test() {
-        return "This is replicator::test()";
-    } // function test
-
-
     /**
      * Makes a dump of the Moodle codebase (i.e. webroot folder). For security 
      * reasons, we omit the config.php file.
@@ -162,7 +157,7 @@ class replicator {
     } // function set_enrolment_method
 
 
-    function moodle_restore_course($user_id, $zip, $target_course_id) {
+    private static function moodle_restore_course($user_id, $zip, $target_course_id) {
         // - extract backup from zip to temp dir (using the pathnamehash)
         global $CFG;
 
