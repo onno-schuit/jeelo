@@ -92,12 +92,22 @@ class replicator {
     /**
      * Uses standard Moodle restore function to restore a course
      *
-     * @param   integer    $DB   Moodle database object
-     * @param   string     $zip  Filename and path of the zip containing the backup
-     * @return  boolean          Returns true if restore succeeded, otherwise false
+     * @param   string     $zip         Filename and path of the zip containing the backup
+     * @param   integer    $category_id Id of target category for new course
+     * @return  object                  Returns Moodle database object for new course or false
      */
-    public static function restore_course($DB, $zip) {
-                
+    public static function restore_course($user_id, $zip, $category_id) {
+        global $DB;
+
+        $target_course_id = restore_dbops::create_new_course($fullname = 'temp full', $shortname = 'temp short', $category_id);
+        if (!static::moodle_restore_course($user_id, $zip, $target_course_id) ) {
+            return false;
+        }
+        $new_course = $DB->get_record('course', array('id' => $target_course_id) );
+
+        // Enrolment method is not included in course restores...
+        static::set_enrolment_method($new_course);   
+        return $new_course;
     } // function restore_course
 
 
@@ -126,6 +136,68 @@ class replicator {
         return $results_array['backup_destination'];
     } // function backup_course
 
+
+    /**
+     * Set the enrolment method for a course
+     *
+     * @param   object    $course   Moodle record object for course
+     * @return  boolean             Return true upon success, otherwise false
+     */
+    private static function set_enrolment_method($course) {
+        global $DB;
+
+        if (! $role = $DB->get_record_select('role', "shortname LIKE 'student'")) {
+            return false;
+        } 
+
+        $enrol = new object();
+        $enrol->status = 0;
+        $enrol->courseid = $course->id;
+        $enrol->enrol    = 'manual';
+        $enrol->roleid = $role->id;
+
+        if ($DB->get_record('enrol', (array) $enrol)) return true;
+
+        return $DB->insert_record('enrol', $enrol);
+    } // function set_enrolment_method
+
+
+    function moodle_restore_course($user_id, $zip, $target_course_id) {
+        // - extract backup from zip to temp dir (using the pathnamehash)
+        global $CFG;
+
+        // restore_controller does not work with any other location...
+        $tempdir = "bak_" . time(); //. '/';
+        $dirpath    = $CFG->tempdir . '/backup/' . $tempdir;
+
+        shell_exec("mkdir {$dirpath}");
+        static::unzip($zip, $dirpath);
+        $rc = new restore_controller($tempdir,
+                                     $target_course_id,
+                                     backup::INTERACTIVE_NO,
+                                     backup::MODE_GENERAL,
+                                     $user_id,
+                                     backup::TARGET_NEW_COURSE);
+        $rc->execute_precheck();
+
+        $info =& $rc->get_info();
+        if ( (!isset($info->activities)) || (!count($info->activities)) )  $info->activities = array();
+
+        $rc->execute_plan(); // results in error (restore_not_executable_awaiting_required) if you don't do the precheck first
+        $restore_results = $rc->get_results();
+        $rc->destroy();
+
+        shell_exec("rm -Rf {$dirpath}");
+        return $restore_results;               
+    } // function moodle_restore_course
+
+
+    /**
+     * Unzips $zip in directory $target
+     */
+    private static function unzip($zip, $target) {
+        shell_exec("cd {$target} ; unzip {$zip}");
+    } // function unzip
 
 } // class replicator 
 

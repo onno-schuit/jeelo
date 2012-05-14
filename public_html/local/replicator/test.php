@@ -21,7 +21,7 @@ function test_dump_database() {
 //test_dump_database();
 
 function test_dump_course() {
-    replicator::dump_course($user = 2, $course_id = 2, $target = '/home/onno/temp/course.zip');
+    replicator::dump_course($user_id = 2, $course_id = 2, $target = '/home/onno/temp/course.zip');
 }
 
 
@@ -37,5 +37,19 @@ function test_restore_database() {
         $password = 'paarse',
         $zip = '/home/onno/temp/databasedump.sql.gz');
 } // function test_restore_database
+
+
+function test_restore_course() {
+    global $new_course;
+    $new_course = replicator::restore_course($user_id = 2,
+                                             $zip = '/home/onno/temp/course.zip',
+                                             $category_id = 2);
+} // function test_restore_course
+
+
+function test_delete_course() {
+    global $new_course;
+    delete_course($new_course);
+} // function test_delete_course
 
 ?>
