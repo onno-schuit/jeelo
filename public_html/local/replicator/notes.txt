@@ -1,0 +1,11 @@
+See test.php for standard Moodle delete functions (courses, categories)
+
+TODO: 
+
+1. Create test for upgrading moodle code base: does public_html/admin work 
+   without logging in?
+
+2. What metadata do we need?
+    - categories to replicate
+    - courses within category to multiply
+    - users

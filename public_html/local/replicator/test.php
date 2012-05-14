@@ -50,6 +50,12 @@ function test_restore_course() {
 function test_delete_course() {
     global $new_course;
     delete_course($new_course);
+    fix_course_sortorder(); //update course count in catagories
 } // function test_delete_course
+
+
+function test_delete_category() {
+    category_delete_full($category, $showfeedback=false);
+} // function test_delete_category
 
 ?>
