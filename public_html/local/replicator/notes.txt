@@ -9,3 +9,15 @@ TODO:
     - categories to replicate
     - courses within category to multiply
     - users
+
+3. Establish priorities:
+    - Start from scratch with Moodle 2 install
+    - Get basics working:
+        I   Replicate code base
+        II  Replicate database
+        III Delete irrelevant courses on child moodle
+        IV  Backup relevant course
+        V   Multiply courses for each class / group
+    - Get existing interface working
+
+
