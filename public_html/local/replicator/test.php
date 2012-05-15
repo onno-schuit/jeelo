@@ -60,4 +60,11 @@ function test_delete_category() {
     category_delete_full($category, $showfeedback=false);
 } // function test_delete_category
 
+
+function test_delete_irrelevant_categories() {
+    // Create $categories_csv as in client_updater#create_projects: 
+    // $categories_csv = new csv();
+    replicator::delete_irrelevant_categories($categories_csv);
+} // function test_delete_irrelevant_categories
+
 ?>

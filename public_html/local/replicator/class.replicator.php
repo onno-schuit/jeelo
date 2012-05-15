@@ -133,6 +133,20 @@ class replicator {
     } // function backup_course
 
 
+
+    /**
+     * Delete all $categories and related courses
+     *
+     * @param   array  $categories  Array of categories as Moodle DB objects
+     * @return  void
+     */
+    public static function delete_categories($categories) {
+        foreach($categories as $category) {
+            category_delete_full($category, $showfeedback=false);
+        }
+    } // function delete_categories
+
+
     /**
      * Set the enrolment method for a course
      *
@@ -194,6 +208,32 @@ class replicator {
     private static function unzip($zip, $target) {
         shell_exec("cd {$target} ; unzip {$zip}");
     } // function unzip
+
+
+
+    /**
+     * Delete all categories ('projects') which were not selected.
+     *
+     * Create argument $categories_csv as in client_updater#create_projects: 
+     * 
+     *     $categories_csv = new csv();
+     *
+     * @param   object    $categories_csv Object of class csv containing categories
+     * @return  void
+     */
+    static function delete_irrelevant_categories($categories_csv) {
+        global $DB;
+
+        $category_ids = array();
+        while($category = $categories_csv->nextline()) {
+            $category_ids[] = $category->id;
+        }
+        if (! count($category_ids) ) return;
+        if (!$categories = $DB->get_records_select('course_categories',
+                                                   "id NOT IN (:ids)",
+                                                   array('ids' => join(',', $category_ids)))) return;
+        static::delete_categories($categories);
+    } // function test_delete_irrelevant_categories
 
 } // class replicator 
 
