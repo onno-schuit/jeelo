@@ -223,7 +223,7 @@ class replicator {
      */
     static function delete_irrelevant_categories($categories_csv) {
         global $DB;
-
+		
         $category_ids = array();
         while($category = $categories_csv->nextline()) {
             $category_ids[] = $category->id;
