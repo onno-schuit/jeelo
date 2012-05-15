@@ -43,10 +43,7 @@ function test_restore_course() {
     global $new_course;
     $new_course = replicator::restore_course($user_id = 2,
                                              $zip = '/home/onno/temp/course.zip',
-                                             $category_id = 2);
-    echo "\nAbout to output 'new_course'...\n$new_course";
-    echo "\$new_course->shortname = {$new_course->shortname}";
-    print_r($new_course);
+                                             $category_id = 3);
 } // function test_restore_course
 
 
@@ -58,6 +55,8 @@ function test_delete_course() {
 
 
 function test_delete_category() {
+    global $DB;
+    $category = $DB->get_record('course_categories', array('id' => 3));
     category_delete_full($category, $showfeedback=false);
 } // function test_delete_category
 

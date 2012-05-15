@@ -180,11 +180,11 @@ class replicator {
         if ( (!isset($info->activities)) || (!count($info->activities)) )  $info->activities = array();
 
         $rc->execute_plan(); // results in error (restore_not_executable_awaiting_required) if you don't do the precheck first
-        $restore_results = $rc->get_results();
+        //if (! $restore_results = $rc->get_results() ) echo "No restore results?";
         $rc->destroy();
 
         shell_exec("rm -Rf {$dirpath}");
-        return $restore_results;               
+        return true;
     } // function moodle_restore_course
 
 
