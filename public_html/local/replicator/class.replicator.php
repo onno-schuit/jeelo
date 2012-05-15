@@ -98,8 +98,9 @@ class replicator {
         if (!static::moodle_restore_course($user_id, $zip, $target_course_id) ) {
             return false;
         }
-        $new_course = $DB->get_record('course', array('id' => $target_course_id) );
-
+        if (! $new_course = $DB->get_record('course', array('id' => $target_course_id) )) {
+            echo "Could not find new course...";
+        }
         // Enrolment method is not included in course restores...
         static::set_enrolment_method($new_course);   
         return $new_course;

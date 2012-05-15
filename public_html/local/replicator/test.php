@@ -44,6 +44,9 @@ function test_restore_course() {
     $new_course = replicator::restore_course($user_id = 2,
                                              $zip = '/home/onno/temp/course.zip',
                                              $category_id = 2);
+    echo "\nAbout to output 'new_course'...\n$new_course";
+    echo "\$new_course->shortname = {$new_course->shortname}";
+    print_r($new_course);
 } // function test_restore_course
 
 
