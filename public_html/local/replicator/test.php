@@ -65,6 +65,7 @@ function test_delete_irrelevant_categories() {
     include_once('class.csv.php');
 
     // Create $categories_csv as in client_updater#create_projects 
+
     // WARNING: this object should specify the categories selected by user,
     // NOT the categories to be deleted, but the inverse...
     $categories_csv = new csv();
