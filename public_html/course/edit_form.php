@@ -31,7 +31,6 @@ class course_edit_form extends moodleform {
         }
 
         $courseconfig = get_config('moodlecourse');
-
         $this->course  = $course;
         $this->context = $context;
 
@@ -102,6 +101,9 @@ class course_edit_form extends moodleform {
             $mform->setConstants('idnumber', $course->idnumber);
         }
 
+        $mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100"  size="10"');
+        $mform->addHelpButton('groupyear', 'groupyear', 'launcher');
+        $mform->setType('groupyear', PARAM_RAW);
 
         $mform->addElement('editor','summary_editor', get_string('coursesummary'), null, $editoroptions);
         $mform->addHelpButton('summary_editor', 'coursesummary');

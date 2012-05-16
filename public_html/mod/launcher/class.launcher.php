@@ -1,9 +1,8 @@
 <?php
-// FILENAME: mod/planner/class.planner.php
+// FILENAME: mod/planner/class.launcher.php
 include_once("{$CFG->dirroot}/local/soda/class.soda.php");
 
-classlauncher extends soda {
+class launcher extends soda {
 
-} // class planner 
-
+} // class launcher
 ?>

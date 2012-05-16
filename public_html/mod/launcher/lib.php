@@ -1,7 +1,7 @@
 <?php
 
 // FILENAME: lib.php
-require_once("class.planner.php");
-$planner_instance = new planner();
+require_once("class.launcher.php");
+$launcher_instance = new launcher();
 
 ?>

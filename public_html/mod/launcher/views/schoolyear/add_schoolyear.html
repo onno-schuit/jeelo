@@ -1,0 +1,79 @@
+<?php
+// Will return error if it fails
+$this->get_moodle_environments();
+?>
+<link href="style.css" rel="stylesheet" type="text/css">
+<script language="javascript" src="lib.js"></script>
+
+<div class="container">
+    <div class="launcher_header">
+        <?=get_string('launcher_header', 'launcher');?>
+    </div>
+    <div class="container_left">
+        <?php $this->print_menu();?>
+    </div>
+    <div class="container_right">
+
+        <div class="content_header">
+            <?=get_string('add_schoolyear_header', 'launcher');?>
+        </div>
+
+        <form name="moodle" method="post" action="<?="view.php?id={$_GET['id']}&controller={$this->model_name}&action=create_schoolyear";?>"
+            onsubmit="return show_average_loadtime()" enctype="multipart/form-data">
+        <table border-collapse="collapse">
+            <tr>
+                <td><?=get_string('environment', 'launcher')?></td>
+                <td><?php $this->print_moodles_dropdown($schoolyear);?></td>
+            </tr>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td colspan='2'><b><?=get_string('settings_site', 'launcher');?></b></td>
+            </tr>
+            <?php
+            $this->print_input_field('site_name', $schoolyear);
+            ?>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td><?=get_string('admin_email', 'launcher')?></td>
+                <td><input type="text" name="<?=$this->model_name?>[admin_email]" value="<?=(isset($schoolyear->environment->admin_email)) ? $schoolyear->environment->admin_email : ''?>" /></td>
+            </tr>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
+            </tr>
+            <?php
+            $this->print_input_field('navbar', $schoolyear,  'class="color"');
+            $this->print_upload_field('logo', $schoolyear);
+            ?>
+            
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td colspan='2'><b><?=get_string('settings_content', 'launcher');?></b></td>
+            </tr>
+            <tr>
+                <td><?= get_string('categories', 'launcher')?></td>
+                <td>
+                    <?php
+                    $categories_preset = isset($schoolyear->categories) ? $schoolyear->categories : NULL;
+                    $this->print_categories_checkboxes($categories_preset);
+                    ?>
+                </td>
+            </tr>
+
+            <?php
+            $arr_uploadfields = array('upload_users', 'upload_groups');
+            foreach($arr_uploadfields as $field) {
+                $this->print_upload_field($field, $schoolyear);
+            }
+            ?>
+            <tr><td colspan='2'><hr /></td></tr>
+            <tr>
+                <td><input type="submit" name="create_schoolyear" value="<?= get_string('submit')?>"/></td>
+            </tr>
+        </table>
+        <!-- Sending hidden field, avoiding having to call it from the database again -->
+        <input type="hidden" name="<?=$this->model_name?>[site_shortname]" value="<?=(isset($schoolyear->environment->short_code)) ? $schoolyear->jeelo_buffer->short_code : ''?>" />
+
+    </div> <!-- End container right -->
+</div> <!-- End container -->
+<div style="clear: both;"></div>

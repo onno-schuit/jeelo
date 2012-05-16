@@ -1,0 +1,19 @@
+<link href="public/style.css" rel="stylesheet" type="text/css">
+<script language="javascript" src="public/lib.js"></script>
+
+<div class="container">
+    <div class="launcher_header">
+        <?=get_string('launcher_header', 'launcher');?>
+    </div>
+    <div class="container_left">
+        <?php $this->print_menu();?>
+    </div>
+    <div class="container_right">
+
+        <!-- Content here -->
+        <?php include_once($view_path); ?>
+
+        
+    </div> <!-- End container right -->
+</div> <!-- End container -->
+<div style="clear: both;"></div>
