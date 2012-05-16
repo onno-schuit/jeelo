@@ -85,4 +85,9 @@ function test_backup_client_moodle() {
                                      $username = 'root',
                                      $password = 'paarse'); 
 } // function test_dump_database
+
+
+function test_delete_module() {
+    replicator::delete_module($module_name = 'survey', $homedir = '/home/onno/php/jeelo');
+} // function test_delete_module
 ?>

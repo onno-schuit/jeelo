@@ -2,6 +2,7 @@
 
 define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../config.php');
+require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
@@ -259,12 +260,26 @@ class replicator {
      * @param   string  $password   Mysql password
      * @return  void
      */
-    static function backup_client_moodle($homedir, $database, $username, $password) {
+    public static function backup_client_moodle($homedir, $database, $username, $password) {
         $bak_dir = "bak_" . time();
         shell_exec("cd $homedir ; mkdir {$bak_dir} ; cp public_html/config.php {$bak_dir}/config.php");
         static::dump_moodledata($homedir, "$homedir/$bak_dir/moodledata.tar.gz");
         static::dump_database($database, $username, $password, "$homedir/$bak_dir/database.sql.gz");
     } // function backup_client_moodle
+
+
+    /**
+     * Calls Moodle's uninstall_plugin to remove module from DB and then deletes
+     * module from codebase.
+     *
+     * @param   string  $module_name    Name of the module
+     * @param   string  $homedir        Path to the home directory
+     * @return  void
+     */
+    function delete_module($module_name, $homedir) {
+        uninstall_plugin('mod', $module_name);    
+        shell_exec("rm -Rf $homedir/public_html/mod/$module_name");
+    } // function delete_module
 
 } // class replicator 
 
