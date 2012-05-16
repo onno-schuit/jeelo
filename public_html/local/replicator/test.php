@@ -6,9 +6,13 @@ include_once('class.replicator.php');
 
 
 function test_dump_codebase() {
-    echo replicator::dump_codebase($source = '/home/onno/php/jeelo/public_html', $target = '/home/onno/temp/codebase.tar.gz');
+    echo replicator::dump_codebase($homedir = '/home/onno/php/jeelo', $target = '/home/onno/temp/codebase.tar.gz');
 } // function test_dump_codebase
 
+
+function test_dump_moodledata() {
+    echo replicator::dump_moodledata($homedir = '/home/onno/php/jeelo', $target = '/home/onno/temp/moodledata.tar.gz');
+} // function test_dump_codebase
 
 function test_dump_database() {
     replicator::dump_database($database = 'jeelo22',
@@ -75,4 +79,10 @@ function test_delete_irrelevant_categories() {
     replicator::delete_irrelevant_categories($categories_csv);
 } // function test_delete_irrelevant_categories
 
+function test_backup_client_moodle() {
+    replicator::backup_client_moodle($homedir = '/home/onno/php/jeelo',
+                                     $database = 'jeelo22',
+                                     $username = 'root',
+                                     $password = 'paarse'); 
+} // function test_dump_database
 ?>

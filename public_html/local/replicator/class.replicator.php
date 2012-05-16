@@ -20,12 +20,24 @@ class replicator {
      * Makes a dump of the Moodle codebase (i.e. webroot folder). For security 
      * reasons, we omit the config.php file.
      *
-     * @param   string  $source     Directory name and path of the codebase
+     * @param   string  $homedir    Path to the home directory containing moodledata
      * @param   string  $target     Filename and path of the resulting zip 
      * @return  string              Returns the output of the tar command
      */
-    public static function dump_codebase($source, $target) {
-        return shell_exec("cd {$source} ; cd .. ; tar -czp --exclude='tags' --exclude='public_html/config.php' --exclude='moodledata' -f {$target} *");
+    public static function dump_codebase($homedir, $target) {
+        return shell_exec("cd {$homedir} ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*");
+    } // function dump_codebase 
+
+
+    /**
+     * Makes a dump of the moodledata directory.
+     *
+     * @param   string  $homedir    Path to the home directory containing moodledata
+     * @param   string  $target     Filename and path of the resulting zip 
+     * @return  string              Returns the output of the tar command
+     */
+    public static function dump_moodledata($homedir, $target) {
+        return shell_exec("cd {$homedir} ;  tar -czpf {$target} moodledata/*");
     } // function dump_codebase 
 
 
@@ -61,7 +73,7 @@ class replicator {
      * Unzips the $zip in the $target directory
      *
      * @param   string     $zip     Filename and path of the zip containing the codebase
-     * @param   string     $target  Target directory and path where codebase is unzipped
+     * @param   string     $target  Target directory and path where codebase must be unzipped (usually home directory)
      * @return  string              Returns output of the shell command tar
      */
     public static function restore_codebase($zip, $target) {
@@ -234,6 +246,25 @@ class replicator {
                                                    array('ids' => join(',', $category_ids)))) return;
         static::delete_categories($categories);
     } // function test_delete_irrelevant_categories
+
+
+    /**
+     * Creates a backup of the moodledata directory and the database as well as
+     * the public_html/config.php directory.
+     * All backups are placed in $homedir/bak_[timestamp].
+     *
+     * @param   string  $homedir    Path to the home directory containing moodledata and public_html/config.php
+     * @param   string  $database   Database to be dumped
+     * @param   string  $username   Mysql username
+     * @param   string  $password   Mysql password
+     * @return  void
+     */
+    static function backup_client_moodle($homedir, $database, $username, $password) {
+        $bak_dir = "bak_" . time();
+        shell_exec("cd $homedir ; mkdir {$bak_dir} ; cp public_html/config.php {$bak_dir}/config.php");
+        static::dump_moodledata($homedir, "$homedir/$bak_dir/moodledata.tar.gz");
+        static::dump_database($database, $username, $password, "$homedir/$bak_dir/database.sql.gz");
+    } // function backup_client_moodle
 
 } // class replicator 
 

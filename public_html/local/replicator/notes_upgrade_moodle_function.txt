@@ -30,7 +30,8 @@
 ** Technical Details **
 
 * Mother Moodle
-    1. dump_codebase (previous version should have been backed up)
+    1. replicator::dump_codebase($source, $target)
+       (previous version should have been backed up)
 
 * Buffer DB
     2. set status of all Moodles to "to_be_upgraded"
@@ -47,7 +48,7 @@
 
 * Client Moodle
    5a. Nogo: exit();
-   5b. Go: Make backups
+   5b. Go: Make backups through replicator::backup_client_moodle($homedir, $database, $username, $password)
         - moodledata directory
         - databasedump
         - config.php
