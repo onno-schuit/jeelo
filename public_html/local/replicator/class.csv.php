@@ -68,7 +68,6 @@ class csv {
 			
             // Connect properties to object
             foreach($properties as $key_property=>$property) {
-
                 $column = $columns[$key_property];
                 $this->csv[$line_num]->$column = trim($property);
             }
