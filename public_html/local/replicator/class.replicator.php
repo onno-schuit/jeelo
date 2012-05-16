@@ -226,7 +226,7 @@ class replicator {
 		
         $category_ids = array();
         while($category = $categories_csv->nextline()) {
-            $category_ids[] = $category->id;
+            $category_ids[] = $category->original_id;
         }
         if (! count($category_ids) ) return;
         if (!$categories = $DB->get_records_select('course_categories',

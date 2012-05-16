@@ -62,8 +62,15 @@ function test_delete_category() {
 
 
 function test_delete_irrelevant_categories() {
-    // Create $categories_csv as in client_updater#create_projects: 
-    // $categories_csv = new csv();
+    include_once('class.csv.php');
+
+    // Create $categories_csv as in client_updater#create_projects 
+    // WARNING: this object should specify the categories selected by user,
+    // NOT the categories to be deleted, but the inverse...
+    $categories_csv = new csv();
+    $category_data = "139;P02 Omgaan met elkaar;;0;999;3;1;0;1;/3;;170;1";
+    $categories_csv->build_csv_object($category_data, 'client_categories');
+
     replicator::delete_irrelevant_categories($categories_csv);
 } // function test_delete_irrelevant_categories
 
