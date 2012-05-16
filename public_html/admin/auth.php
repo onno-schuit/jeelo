@@ -39,6 +39,8 @@ if (!confirm_sesskey()) {
     redirect($returnurl);
 }
 
+get_record
+
 switch ($action) {
     case 'disable':
         // remove from enabled list
