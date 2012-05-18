@@ -276,10 +276,38 @@ class replicator {
      * @param   string  $homedir        Path to the home directory
      * @return  void
      */
-    function delete_module($module_name, $homedir) {
+    public static function delete_module($module_name, $homedir) {
         uninstall_plugin('mod', $module_name);    
         shell_exec("rm -Rf $homedir/public_html/mod/$module_name");
     } // function delete_module
+
+
+    /**
+     * Set color or logo for theme. Please note that a logo can really only be just a url, not
+     * an actual image upload.
+     * Note: data is store in table mdl_config_plugins.
+     *
+     * @param   string  $key    Name of the setting (e.g. 'headerbgc')
+     * @param   string  $value  Actual value for the setting (e.g. '#AD0006')
+     * @param   string  $theme  Name of the theme (optional, default to 'theme_formal_white')
+     * @return  void
+     */
+    public static function configure_theme($key, $value, $theme = 'theme_formal_white') {
+        global $DB;
+
+        if (! $setting = $DB->get_record('config_plugins', array('plugin' => $theme, 'name' => $key))) {
+            $setting = new object();
+            $setting->plugin = $theme;
+            $setting->name = $key;
+            $setting->value = $value;
+            return $DB->insert_record('config_plugins', $setting);
+        }
+        $setting->value = $value;
+        return $DB->update_record('config_plugins', $setting);
+    } // function configure_theme 
+
+
+
 
 } // class replicator 
 
