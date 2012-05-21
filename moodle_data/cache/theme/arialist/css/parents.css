@@ -244,18 +244,18 @@ body.tag
 .tag_cloud
 .s1{font-size:0.9em}.tag_cloud
 .s0{font-size:0.8em}.file-picker
-.ygtvtn{background:url(image.php?theme=arialist&image=y%2Ftn&rev=286) 0 0 no-repeat;width:17px;height:22px}.file-picker
-.ygtvtm{background:url(image.php?theme=arialist&image=y%2Ftm&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvtmh{background:url(image.php?theme=arialist&image=y%2Ftmh&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvtp{background:url(image.php?theme=arialist&image=y%2Ftp&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvtph{background:url(image.php?theme=arialist&image=y%2Ftph&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvln{background:url(image.php?theme=arialist&image=y%2Fln&rev=286) 0 0 no-repeat;width:17px;height:22px}.file-picker
-.ygtvlm{background:url(image.php?theme=arialist&image=y%2Flm&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvlmh{background:url(image.php?theme=arialist&image=y%2Flmh&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvlp{background:url(image.php?theme=arialist&image=y%2Flp&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvlph{background:url(image.php?theme=arialist&image=y%2Flph&rev=286) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
-.ygtvloading{background:url(image.php?theme=arialist&image=y%2Floading&rev=286) 0 0 no-repeat;width:16px;height:22px}.file-picker
-.ygtvdepthcell{background:url(image.php?theme=arialist&image=y%2Fvline&rev=286) 0 0 no-repeat;width:17px;height:22px}.file-picker
+.ygtvtn{background:url(image.php?theme=arialist&image=y%2Ftn&rev=291) 0 0 no-repeat;width:17px;height:22px}.file-picker
+.ygtvtm{background:url(image.php?theme=arialist&image=y%2Ftm&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvtmh{background:url(image.php?theme=arialist&image=y%2Ftmh&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvtp{background:url(image.php?theme=arialist&image=y%2Ftp&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvtph{background:url(image.php?theme=arialist&image=y%2Ftph&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvln{background:url(image.php?theme=arialist&image=y%2Fln&rev=291) 0 0 no-repeat;width:17px;height:22px}.file-picker
+.ygtvlm{background:url(image.php?theme=arialist&image=y%2Flm&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvlmh{background:url(image.php?theme=arialist&image=y%2Flmh&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvlp{background:url(image.php?theme=arialist&image=y%2Flp&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvlph{background:url(image.php?theme=arialist&image=y%2Flph&rev=291) 0 0 no-repeat;width:34px;height:22px;cursor:pointer}.file-picker
+.ygtvloading{background:url(image.php?theme=arialist&image=y%2Floading&rev=291) 0 0 no-repeat;width:16px;height:22px}.file-picker
+.ygtvdepthcell{background:url(image.php?theme=arialist&image=y%2Fvline&rev=291) 0 0 no-repeat;width:17px;height:22px}.file-picker
 .ygtvblankdepthcell{width:17px;height:22px}.file-picker .ygtvitem
 table{margin-bottom:0}.file-picker .ygtvitem
 td{border:none;padding:0}* html .file-picker
@@ -324,7 +324,7 @@ a{padding:0
 #custommenu .yui3-menuitem-active .yui3-menuitem-content,
 #custommenu .yui3-menu-horizontal .yui3-menu-label,
 #custommenu .yui3-menu-horizontal .yui3-menu-content{background-image:none;background-position:right center;background-repeat:no-repeat}#custommenu .yui3-menu-label,
-#custommenu .yui3-menu .yui3-menu .yui3-menu-label{background-image:url(image.php?theme=arialist&image=vertical-menu-submenu-indicator&rev=286&component=theme)}#custommenu .yui3-menu .yui3-menu .yui3-menu-label-menuvisible{background-image:url(image.php?theme=arialist&image=horizontal-menu-submenu-indicator&rev=286&component=theme)}.smartselect{position:absolute}.smartselect
+#custommenu .yui3-menu .yui3-menu .yui3-menu-label{background-image:url(image.php?theme=arialist&image=vertical-menu-submenu-indicator&rev=291&component=theme)}#custommenu .yui3-menu .yui3-menu .yui3-menu-label-menuvisible{background-image:url(image.php?theme=arialist&image=horizontal-menu-submenu-indicator&rev=291&component=theme)}.smartselect{position:absolute}.smartselect
 .smartselect_mask{background-color:#fff}.smartselect
 ul{padding:0;margin:0}.smartselect ul
 li{list-style:none}.smartselect
@@ -339,7 +339,7 @@ li{position:relative;padding:2px
 5px}.smartselect .smartselect_menu_content ul li
 a{color:#333;text-decoration:none}.smartselect .smartselect_menu_content ul li
 a.selectable{color:inherit}.smartselect
-.smartselect_submenuitem{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed&rev=286);background-repeat:no-repeat;background-position:100%}.smartselect.spanningmenu
+.smartselect_submenuitem{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed&rev=291);background-repeat:no-repeat;background-position:100%}.smartselect.spanningmenu
 .smartselect_submenu{position:absolute;top:-1px;left:100%}.smartselect.spanningmenu .smartselect_submenu
 a{white-space:nowrap;padding-right:16px}.smartselect.spanningmenu .smartselect_menu_content ul li a.selectable:hover{text-decoration:underline}.smartselect.compactmenu
 .smartselect_submenu{position:relative;margin:2px
@@ -424,7 +424,7 @@ object{height:25px;width:600px}sub{vertical-align:sub}sup{vertical-align:super}.
 .dir-rtl .ygtvok,
 .dir-rtl .ygtvok:hover,
 .dir-rtl .ygtvcancel,
-.dir-rtl .ygtvcancel:hover{width:18px;height:22px;background-image:url(image.php?theme=arialist&image=yui2-treeview-sprite-rtl&rev=286&component=theme);background-repeat:no-repeat;cursor:pointer}.dir-rtl
+.dir-rtl .ygtvcancel:hover{width:18px;height:22px;background-image:url(image.php?theme=arialist&image=yui2-treeview-sprite-rtl&rev=291&component=theme);background-repeat:no-repeat;cursor:pointer}.dir-rtl
 .ygtvtn{background-position:0 -5600px}.dir-rtl
 .ygtvtm{background-position:0 -4000px}.dir-rtl .ygtvtmh,
 .dir-rtl
@@ -758,7 +758,7 @@ li.activity{margin-right:20px;position:relative}.path-course-view li.activity sp
 .path-course-view li.activity
 form.togglecompletion{display:inline;position:absolute;right:-20px;top:0;padding:0.2em 0}.path-course-view li.activity form.togglecompletion
 div{display:inline}.path-course-view li.activity form.togglecompletion
-.ajaxworking{position:absolute;top:0;left:20px;width:20px;height:20px;background:url(image.php?theme=arialist&image=i%2Fajaxloader&rev=286) no-repeat}.dir-rtl.path-course-view
+.ajaxworking{position:absolute;top:0;left:20px;width:20px;height:20px;background:url(image.php?theme=arialist&image=i%2Fajaxloader&rev=291) no-repeat}.dir-rtl.path-course-view
 li.activity{margin-right:0px;margin-left:20px}.dir-rtl.path-course-view li.activity form.togglecompletion,
 .dir-rtl.path-course-view li.activity
 span.autocompletion{right:auto;left:-20px}.section
@@ -795,17 +795,17 @@ li{list-style-type:none;padding:0;margin:0}.categorylist{width:100%}.categorylis
 .image{padding-right:2px}.course
 ul.section{margin:5px;padding:0}.weeks-format,.topics-format{margin-top:8px;min-width:763px}.categoryboxcontent{border-width:1px;border-style:solid}.course_category_tree
 .controls{visibility:hidden}.course_category_tree .controls
-div{display:inline;cursor:pointer}.course_category_tree .category.with_children>.category_label{background-image:url(image.php?theme=arialist&image=t%2Fexpanded&rev=286);background-repeat:no-repeat}.course_category_tree
+div{display:inline;cursor:pointer}.course_category_tree .category.with_children>.category_label{background-image:url(image.php?theme=arialist&image=t%2Fexpanded&rev=291);background-repeat:no-repeat}.course_category_tree
 .category_label{padding-left:13px}.course_category_tree .category
 .category{margin:5px}.course_category_tree .category
 .courses{padding-left:16px}.course_category_tree .category .courses
-.course_link{display:block;background-image:url(image.php?theme=arialist&image=i%2Fcourse&rev=286);background-repeat:no-repeat;padding-left:18px}.course_category_tree .category
+.course_link{display:block;background-image:url(image.php?theme=arialist&image=i%2Fcourse&rev=291);background-repeat:no-repeat;padding-left:18px}.course_category_tree .category
 .course{position:relative}.course_category_tree .category
 .course_info{position:absolute;right:0;top:0}.course_category_tree .category .course_info a,
 .course_category_tree .category .course_info
 div{float:left;width:16px;height:16px}.jsenabled .course_category_tree
 .controls{visibility:visible}.jsenabled .course_category_tree .category.with_children.collapsed
-.category_label{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed&rev=286)}.jsenabled .course_category_tree .category.with_children.collapsed .subcategories,
+.category_label{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed&rev=291)}.jsenabled .course_category_tree .category.with_children.collapsed .subcategories,
 .jsenabled .course_category_tree .category.with_children.collapsed
 .courses{display:none}.path-course
 .clearfloat{float:none;clear:both;height:0px}#page-course-index .categorylist
@@ -813,7 +813,7 @@ div{float:left;width:16px;height:16px}.jsenabled .course_category_tree
 .info{float:right;text-align:right}.dir-rtl .coursebox
 .summary{text-align:right}.dir-rtl .course_category_tree .category.with_children>.category_label{background-position:center right;padding-right:18px}.dir-rtl .course_category_tree .category_label, .dir-rtl .course_category_tree .category
 .course{padding-right:18px}.dir-rtl.jsenabled .course_category_tree .category.with_children.collapsed
-.category_label{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed_rtl&rev=286)}.dir-rtl .course_category_tree .category .courses
+.category_label{background-image:url(image.php?theme=arialist&image=t%2Fcollapsed_rtl&rev=291)}.dir-rtl .course_category_tree .category .courses
 .course_link{background-position:center right;padding-right:18px}.dir-rtl
 .clearfloat{float:none;clear:both;height:0px}.dir-rtl .categorylist .category .info,
 .dir-rtl .categorylist .category .indentation,
