@@ -22,14 +22,10 @@ class client extends base {
         
         self::log("Checking for available clients.");
         
-        $request = array(
-            'request' => 'get_available_clients'
-        );
+        $request = array('request' => 'get_available_clients');
         $response = self::get_server_response($request);
         
-        if (!$response) {
-           die(); // no clients available for processing.. do nothing
-        }
+        if (!$response) die(); // no clients available for processing.. do nothing
         
         $csv = new csv();
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
@@ -67,6 +63,7 @@ class client extends base {
 
 
     public static function process_new_client($csv_line) {
+        exit(print_r($csv_line));
 		self::log("Starting the creation of a new moodle school.");
         
         $user_and_pass = self::restore_database($csv_line);
@@ -74,7 +71,7 @@ class client extends base {
         $user_and_pass = array('username'=>'', 'password'=>'');
         
         self::create_codebase($csv_line);
-        self::create_moodle_config($csv_line, $user_and_pass);
+        self::create_moodle_config($csv_line, $user_and_pass); // Doesn't actually do anything...
         self::add_to_apache($csv_line);
         
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
