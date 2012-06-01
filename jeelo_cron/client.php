@@ -1,4 +1,5 @@
 <?php
+// TODO: turn into real cli script
 require_once("config.php");
 require_once("class.client.php");
 

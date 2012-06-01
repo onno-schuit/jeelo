@@ -313,7 +313,8 @@ class client extends base {
         $output = shell_exec($cmd); // command line execute
         self::log("Mysql ouput: [$output]"); // put mysql output into log file
          */
-    }
+    } // function get_db_from_server
+
     
     public static function create_moodle_config($csv_line, $user_and_pass) {
         global $CFG;
@@ -433,5 +434,30 @@ class client extends base {
         
         return $response;
     }
-}
+
+
+    public static function get_request_url($request) {
+        if (!is_array($request)) {
+            throw new Exception("Parameter should be an associative array");
+        }
+        $request['for'] = self::$client_name;
+ 
+        $pairs = array();
+        foreach ($request as $varname=>$value) {
+            $pairs[] = "$varname=$value";
+        }
+        $query_string = join('&', $pairs);
+ 
+        // add hash to the $query_string
+        $hash = self::create_hash_from_query_string($query_string);
+        $query_string .= "&hash=$hash";
+        
+        $request_url = self::$server_url . '?' . $query_string;
+        self::log($request_url);
+        
+        return $request_url; 
+    } // function get_request_url
+
+
+} // class client 
 
