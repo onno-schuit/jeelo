@@ -18,17 +18,25 @@ class school_controller extends controller
 	}
 	
 	function create_school() {
+        global $id;
 		$this->has_access_rights();
 		
         require_once('models/school.php');
-        $school = new school(required_param('school', PARAM_RAW));
-
-        if (!$school->validate_and_create()) return $this->add_school($school);
+        $school = new school($_POST['school']);
+        if (!$school->validate_and_save()) return $this->add_school($school);
         
         // If all done
-		exit("Redirect to confirm action");
-        // $this->confirm($school);
+        $buffer_id_hash = md5("3nv!r0nm3nt {$school->buffer_id}");
+        $url = "{$_SERVER['PHP_SELF']}?id=$id&controller=school&action=confirm&env=$buffer_id_hash";
+        redirect($url);
 	}
+
+    function confirm() {
+
+        $buffer_id_hash = required_param('env', PARAM_RAW);
+        $this->get_view(array('buffer_id_hash'=>$buffer_id_hash), 'confirmed');
+
+    }
 }
 
 ?>

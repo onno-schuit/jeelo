@@ -1,0 +1,2 @@
+2012-03-01 12:04:42 127.0.0.1: request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-03-01 12:04:42 SELECT * FROM {client_moodles} WHERE is_for_client='client' AND status='new'

@@ -1,0 +1,13 @@
+
+<?php
+// Have to get the email address
+launcher_helper::set_buffer_db();
+global $BUFFER_DB;
+
+$hash = "3nv!r0nm3nt";
+$query = "SELECT * FROM client_moodles WHERE md5(concat('$hash ', id)) = '$buffer_id_hash'";
+$buffer = $BUFFER_DB->get_record_sql($query);
+?>
+
+<!--Now that we have the correct buffer record we can show the page-->
+<?= get_string("school_prepaired", "launcher", $buffer);?>

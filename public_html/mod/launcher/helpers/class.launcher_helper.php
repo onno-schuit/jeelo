@@ -8,6 +8,13 @@ class launcher_helper extends helper {
         
         return (require_capability('mod/launcher:access', $context));
 	} // function has_assess_rights()
+
+    public static function set_buffer_db() {
+        global $BUFFER_DB, $DB, $CFG;
+        $db_class = get_class($DB);
+        $BUFFER_DB = new $db_class();
+        $BUFFER_DB->connect($CFG->buffer_dbhost, $CFG->buffer_dbuser, $CFG->buffer_dbpass, $CFG->buffer_dbname, false);
+    } // function set_source_db
 	
     function print_menu() {
         global $id;
@@ -47,7 +54,6 @@ class launcher_helper extends helper {
 	
     function print_upload_field($field, $moodle) {
 
-        //exit(print_object(soda_error::$validation_errors));
         echo "
         <tr>
             <td>" . get_string($field, 'launcher')
@@ -65,8 +71,11 @@ class launcher_helper extends helper {
 	{
 		global $CFG, $DB;
 		
-		// "SELECT * FROM {$CFG->prefix}course_categories WHERE visible = 1 AND sortorder != 0"
-		$categories = $DB->get_records('course_categories', array('visible'=>1, 'sortorder'=>'> 0')); // AND category != 0
+		// "SELECT * FROM {$CFG->prefix}course_categories WHERE visible = 1 AND sortorder != 0
+        if (!$categories = $DB->get_records_sql('SELECT * FROM {course_categories} WHERE id != 1 AND visible = 1')) {
+            echo get_string('no_categories', 'launcher'); // AND category != 0
+            return;
+        }
 
 		echo "<table>";
 		foreach($categories as $key=>$category)
@@ -80,13 +89,13 @@ class launcher_helper extends helper {
     {
         if (isset($categories_preset) && $categories_preset) {
             $categories_preset = (is_array(array_keys($categories_preset))) ? array_keys($categories_preset) : $categories_preset;
-            $checked = ($categories_preset != NULL && in_array($category['id'], $categories_preset)) ? 'checked="checked"' : '';
+            $checked = ($categories_preset != NULL && in_array($category->id, $categories_preset)) ? 'checked="checked"' : '';
         } else {
             $checked = '';
         }
 		
         echo '<tr>';
-		echo "<td><input type='checkbox' name='{$this->model_name}[categories][{$category['id']}]' value='{$category['id']}' id='{$this->model_name}_categories' $checked>{$category['name']}</td>";
+		echo "<td><input type='checkbox' name='{$this->model_name}[categories][{$category->id}]' value='{$category->id}' id='{$this->model_name}_categories' $checked>{$category->name}</td>";
         echo '</tr>';
 	}
 

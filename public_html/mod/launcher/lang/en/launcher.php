@@ -20,14 +20,14 @@ $string['add_schoolyear_header'] = 'Time to start the new school year? Fill out 
                                 Submitting this form will create a new school year for the moodle environment.';
 $string['add_schoolyear_header'] = 'Some help info<br />
                                 Some more help info';
-
-
-
+$string['school_prepaired'] = 'The Launcher has finished prepairing the new school. Please be patient while the cron job takes over.<br />
+                                The remaining process can take up to an hour to finish. An email will be send to {$a->email} once it\'s finished.';
 
 $string['install'] = 'Install';
-$string['maxlength'] = 'The (generated) database user name \"$a->msg\" is can maximum be 16 characters.';
-$string['unique'] = 'The (generated) database name \"$a->msg\" is already in use. Please chose a different site shortname.';
+$string['shortname_format'] = 'The shortname can be of maximum 16 characters and can only contain letters and numbers.';
+$string['unique'] = 'This shortname is already in use. Please chose a different one.';
 $string['msg_success'] = 'Worked like a charm!';
+$string['no_categories'] = 'No projects found.';
 
 $string['categories'] = 'Projects';
 $string['prepaired_for_installation'] = 'Prepaired for installation';
@@ -56,6 +56,8 @@ $string['settings_content'] = 'Content to be uploaded';
 $string['settings_layout'] = 'Layout settings';
 $string['navbar'] = 'Navigation bar color';
 $string['logo'] = 'Logo';
+$string['required_groups'] = 'If you want to upload users the groups are required.';
+$string['required_users'] = 'If you want to upload groups the users are required.';
 $string['error_file_extension'] = 'You can only upload csv files.';
 $string['error_jpg_extension'] = 'You can only upload jpg files.';
 $string['error_email'] = 'You have to fill out a correct email address.';

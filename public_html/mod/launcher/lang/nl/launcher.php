@@ -15,11 +15,14 @@ $string['add_school_header'] = 'U staat op het punt een nieuwe school toe te voe
                                 Vul alstublieft de juiste gegevens hier onder in. Let op: Dit proces is <b>onomkeerbaar</b>.';
 $string['add_schoolyear_header'] = 'Tijd voor het nieuwe schooljaar? Vul de gegevens hier onder in.<br />
                                 Deze actie zal een nieuw schooljaar aan de school toevoegen.';
+$string['school_prepaired'] = 'De Launcher is gereed met het klaarzetten van de nieuwe school. Heeft u alstublieft even geduld terwijl de Cron het over neemt.<br />
+    Het resterende proces kan tot een uur duren. Er wordt een email verstuurd naar {$a->email} zodra het klaar is.';
 
 $string['install'] = 'Installeren';
-$string['maxlength'] = 'De (gegenereerde) database gebruikersnaam \"$a->msg\" mag maar 16 karakters hebben.';
-$string['unique'] = 'De (gegenereerde) database naam \"$a->msg\" wordt al gebruikt. Kiest u alstublieft een andere korte naam.';
+$string['shortname_format'] = 'De korte naam mag maar 16 karakters hebben en mag alleen letters en nummers bevatten.';
+$string['unique'] = 'Deze korte naam wordt al gebruikt. Kiest u alstublieft een andere.';
 $string['msg_success'] = 'Het proces is succesvol afgerond. Een moment geduld alstublieft.';
+$string['no_categories'] = 'Geen projecten gevonden.';
 
 $string['categories'] = 'Projecten';
 $string['prepaired_for_installation'] = 'De gegevens zijn succesvol opgeslagen en staan klaar om te worden verwerkt.<br />
@@ -49,6 +52,8 @@ $string['settings_content'] = 'Inhoud van de omgeving';
 $string['settings_layout'] = 'Uiterlijk';
 $string['navbar'] = 'Navigatiebalk kleur';
 $string['logo'] = 'Logo';
+$string['required_groups'] = 'Wanneer gebruikers geupload worden zijn de groepen verplicht.';
+$string['required_users'] = 'Wanneer groepen geupload worden zijn de gebruikers verplicht.';
 $string['error_file_extension'] = 'Alleen .csv bestanden kunnen worden geupload.';
 $string['error_jpg_extension'] = 'Alleen .jpg bestanden kunnen worden geupload.';
 $string['error_email'] = 'Het ingevulde email adres is niet juist.';
