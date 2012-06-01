@@ -27,3 +27,5 @@ $mform->setType('groupyear', PARAM_RAW);
 
 ALTER TABLE `mdl_course` ADD `groupyear` VARCHAR( 255 )
 
+
+Specify group year for each course, in this format: 7/8 (use "course settings" to get there)
