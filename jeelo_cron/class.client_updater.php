@@ -7,7 +7,6 @@ set_time_limit(0);
 class client_updater extends client {
 
     function __construct($csv_line) {
-		
         $this->csv_line = $csv_line;
         $this->target_folder = '/home/jeelos';
         $this->tmp_updater_folder = "{$this->target_folder}/{$this->csv_line->domain}/moodle_data/temp/updater";
@@ -28,13 +27,13 @@ class client_updater extends client {
         $this->fields_groups = array('name'=>'naam', 'year'=>'jaar');
         // Possible group combinations
         $this->possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
-    }
+    } // function __construct
+
 
     function start_updater() {
         self::log("Starting the update...");
         
         $this->backup_database();
-        
         $this->update_sitewide_course();
         
 		// Prepair for adding a new schoolyear
@@ -48,12 +47,11 @@ class client_updater extends client {
 		// Everything done, now we'll handle the projects, users and groups
 		
         $this->create_projects();
-
         $this->add_sidewide_enrollment();
         
 		// Finally, we finish with confirming the schoolyear has been created by sending an email
         $this->email_schoolyear_created();
-    }
+    } // function start_updater
     
     
     function add_layout() {
@@ -62,7 +60,7 @@ class client_updater extends client {
         $this->change_site_template();
         
         return true;
-	}
+	} // function add_layout
 	
 	
 	function set_logo() {
@@ -70,11 +68,10 @@ class client_updater extends client {
         if (file_exists($file)) unlink($file);
 
         return (cp($this->logo_filename, $file));
-	}
+	} // function set_logo
 	
 	
 	function set_navbar_color() {
-
         $file = "{$this->target_folder}/{$this->csv_line->domain}/public_html/theme/children-education/styles_layout.css";
         $handler = file($file);
 
@@ -86,7 +83,7 @@ class client_updater extends client {
         }
 
         return (file_put_contents($file, $handler));
-	}
+	} // function set_navbar_color
     
     
     /* Before we do anything we'll want to backup
@@ -105,7 +102,8 @@ class client_updater extends client {
 		$cmd = "mysqldump -h{$cfg_clean->dbhost} -u{$cfg_clean->dbuser} -p{$cfg_clean->dbpass} {$cfg_clean->dbname}| gzip -9 > $target/$filename.sql.gz";
 		self::log($cmd);
 		shell_exec($cmd);
-	}
+	} // function backup_database
+
 
 	/* In case we need to make sure a filename is
 	 * unique we will run it through this loop. It
@@ -121,9 +119,10 @@ class client_updater extends client {
 		}
 
 		return ($file_base_name . $count);
-	}
+	} // function uniquify_filename
 
 
+    // Menno: t/m hier zou 't moeten werken
     function create_projects() {
         global $CFG;
         
@@ -146,12 +145,14 @@ class client_updater extends client {
         // $this->clean_buffer_db();
 
         return true;
-    }
+    } // function create_projects
     
+
     function change_site_template() {
 		$query = "UPDATE " . self::$prefix . "config SET value = 'children-education' WHERE name = 'theme'";
 		return (self::remote_execute($this->csv_line, $query));
-	}
+	} // function change_site_template
+
 
     function clean_buffer_db() {
         $request = array(
@@ -167,7 +168,8 @@ class client_updater extends client {
         }
 
         return true;
-    }
+    } // function clean_buffer_db
+
 
     function email_schoolyear_created() {
         $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
@@ -184,12 +186,11 @@ class client_updater extends client {
             Jeelo Launcher 1.9";
 
         return (self::mail_with_headers($user->email, $body, $subject));
-    }
+    } // function email_schoolyear_created
+
 
     function create_category($category) {
-
         $category->name = $category->name.' - '.date("m/Y"); // Add month and year to keep names unique
-
         $query = "INSERT INTO ". self::$prefix ."course_categories (
                     name, description, parent, sortorder, coursecount, visible, timemodified, depth, path, theme
                 ) VALUES (
@@ -210,7 +211,8 @@ class client_updater extends client {
         $context_id = $this->get_or_create_context(40, $category_id); // Creates the context
 
         return $category_id;
-    }
+    } // function create_category
+
 
     function get_or_create_context($context_level, $instance_id) {
 		// First create file
@@ -228,7 +230,8 @@ class client_updater extends client {
 		unlink($context_settings_file);
 		
         return ($context_id == 'false') ? false : $context_id;
-    }
+    } // function get_or_create_context
+
 
     function create_context_file($context_level, $instance_id) {
 		$target					= self::$target_folder . "{$this->csv_line->domain}/moodle_data";
@@ -246,10 +249,10 @@ class client_updater extends client {
 		fclose($handler);
 		
 		return $context_filename;
-	}
+	} // function create_context_file
+
 
     function create_courses_and_groups($parent_category_id, $child_category_id) {
-
         $handler = fopen("{$this->tmp_updater_folder}/csv/groups.csv", 'r');
         $line = 0;
         while($data = fgetcsv($handler, 0, ';')) {
@@ -275,10 +278,10 @@ class client_updater extends client {
             }
         }
         return true;
-    }
+    } // function create_courses_and_groups
+
 
     function get_courses_by_groupyear_and_category($category_id, $groupyears) {
-
         $request = array(
             'request' => 'get_courses',
             'groupyear' => $str_groupyears = implode($groupyears, '/'),
@@ -288,7 +291,8 @@ class client_updater extends client {
         $response = self::get_server_response($request);
         
         return (!empty($response)) ? $response : false;
-    }
+    } // function get_courses_by_groupyear_and_category
+
     
     function build_course_objects($response) {
 		$csv = new csv();
@@ -300,10 +304,10 @@ class client_updater extends client {
         }
         
         return $parent_courses;
-	}
+	} // function build_course_objects
+
 
     function add_group_members($course_id, $group_id, $group_name) {
-        
         $handler = fopen("{$this->tmp_updater_folder}/csv/users.csv", 'r');
         $line = 0;
         
@@ -328,17 +332,16 @@ class client_updater extends client {
             if (!$this->create_course_role_assignment($csv_user, $course_id)) return false;
         }
         return true;
-    }
+    } // function add_group_members
 
 
     function needs_all_course_enrollments($rol) {
         $global_roles = array('invalkracht', 'schoolleider');
         return (in_array($rol, $global_roles));
-    }
+    } // function needs_all_course_enrollments
 
 
     function add_sidewide_enrollment() {
-        
         $handler = fopen("{$this->tmp_updater_folder}/csv/users.csv", 'r');
         $line = 0;
         while($data = fgetcsv($handler, 0, ';')) {
@@ -372,11 +375,10 @@ class client_updater extends client {
             if (!self::remote_execute($this->csv_line, $query)) return false;
         }
         return true;
-    }
+    } // function add_sidewide_enrollment
 
 
     function create_course_role_assignment($user, $course_id) {
-
         switch($user->rol1) {
             case 'leerling':
                 $role_shortname = 'student';
@@ -415,7 +417,7 @@ class client_updater extends client {
                 )";
 
         return (self::remote_execute($this->csv_line, $query));
-    }
+    } // function create_course_role_assignment
 
 
     function add_group_member($user, $group_id) {
@@ -425,30 +427,31 @@ class client_updater extends client {
                         '$group_id', '{$user->userid}', '".time()."'
                     )";
         return (self::remote_execute($this->csv_line, $query));
-    }
+    } // function add_group_member
+
 
     function create_group($course_id, $group) {
         $query = "INSERT INTO ".self::$prefix."groups ( courseid, name ) VALUES ( '$course_id', '{$group->name}')";
         return (self::remote_execute($this->csv_line, $query, true));
-    }
+    } // function create_group
 
 
     function restore_course($category_id, $child_group, $parent_course) {
-
 		$restore_file = $this->create_data_file_for_restore($category_id, $child_group, $parent_course);
 		$new_course_id = $this->execute_course_restore($restore_file);
 
         return ($this->fix_category_id($new_course_id, $category_id)) ? $new_course_id : false;
-    }
+    } // function restore_course
+
 
     function fix_category_id($course_id, $category_id) {
         $query = "UPDATE ".self::$prefix."course SET category = '$category_id' WHERE id = '$course_id'";
 		self::log($query);
         return (self::remote_execute($this->csv_line, $query));
-	}
+	} // function fix_category_id
     
-	function execute_course_restore($backup_filename) {
 
+	function execute_course_restore($backup_filename) {
 		$target_restore_file	= self::$target_folder . "{$this->csv_line->domain}/public_html/class.restore_backup.php";
 		$target_backup_file		= self::$target_folder . "{$this->csv_line->domain}/moodle_data/$backup_filename";
 
@@ -460,7 +463,7 @@ class client_updater extends client {
 		self::log("Return of restore script: $course_id");
 		
         return ($course_id == 'false') ? false : $course_id;
-    }
+    } // function execute_course_restore
 
 
     function create_data_file_for_restore($category_id, $child_group, $parent_course) {
@@ -491,29 +494,27 @@ class client_updater extends client {
 
         $this->extract_course_files();
         $this->extract_csv_files();
-    }
-
+    } // function extract_files
 
 
     function extract_course_files() {
-
         mkdir($this->tmp_updater_folder . '/courses');
         $cmd = sprintf("tar -xz -C %s -f %s", $this->tmp_updater_folder . '/courses', $this->csv_line->courses_filename);
         self::log($cmd);
         shell_exec($cmd);
 
         return true;
-    }
+    } // function extract_course_files
+
 
     function extract_csv_files() {
-
         mkdir($this->tmp_updater_folder . '/csv');
         $cmd = sprintf("tar -xz -C %s -f %s", $this->tmp_updater_folder . '/csv', $this->csv_line->csv_filename);
         self::log($cmd);
         shell_exec($cmd);
 
         return true;
-    }
+    } // function extract_csv_files
 
 
     function groupyears_to_array($groupyear) {
@@ -523,7 +524,6 @@ class client_updater extends client {
 
     function set_existing_categories_invisible() {
         $error = false;
-
         $query = "UPDATE ".self::$prefix."course_categories SET visible='0' WHERE id != '1'";
         self::log($query);
         if (!self::remote_execute($this->csv_line, $query)) $error = true;
@@ -537,7 +537,7 @@ class client_updater extends client {
             die();
         }
         return;
-    }
+    } // function set_existing_categories_invisible
 
 
     function assign_column_names($data, $fields_type) {
@@ -550,11 +550,10 @@ class client_updater extends client {
         }
 
         return $obj;
-    }
+    } // function assign_column_names
 
 
     function update_all_users() {
-
         $query = "UPDATE ".self::$prefix."user SET deleted = 1 WHERE username != 'guest' && username != 'admin'";
         self::log($query);
         self::remote_execute($this->csv_line, $query); // Set all users deleted, we'll update them again later
@@ -571,10 +570,10 @@ class client_updater extends client {
             if (!$this->create_and_update_user($child_user)) die('Failed to edit users');
             unset($child_user);
         }
-    }
+    } // function update_all_users
+
 
     function create_user($user) {
-        
         $query = "
             INSERT INTO ".self::$prefix."user (
                 username, password, firstname, lastname, email, city, country, mnethostid, confirmed, deleted, timemodified
@@ -594,7 +593,8 @@ class client_updater extends client {
 
         self::log("Create new user {$user->email}");
         return (self::remote_execute($this->csv_line, $query));
-    }
+    } // function create_user
+
 
     function hash_internal_user_password($password) {
         $cfg_clean = self::get_clean_config($this->csv_line);
@@ -604,17 +604,18 @@ class client_updater extends client {
         } else {
             return md5($password);
         }
-    }
+    } // function hash_internal_user_password
+
 
     function update_user($result) {
-    
         // Update user
         $existing_user = mysql_fetch_object($result);
 
         $query = "UPDATE ".self::$prefix."user SET deleted = 0 WHERE id = {$existing_user->id}";
         self::log("Update existing user {$existing_user->id}");
         return (self::remote_execute($this->csv_line, $query));
-    }
+    } // function update_user
+
 
     function create_and_update_user($user) {
         global $CFG;
@@ -625,11 +626,10 @@ class client_updater extends client {
 
         // If exists update the user, else create it
         return (mysql_num_rows($result) > 0) ? $this->update_user($result) : $this->create_user($user);
-    }
+    } // function create_and_update_user
 
 
     function update_sitewide_course() {
-
         $query = "SELECT * FROM ".self::$prefix."course WHERE category = 0";
         $result = self::remote_execute($this->csv_line, $query);
         $site_wide_course_id = mysql_result($result, 0, 0);
@@ -643,9 +643,9 @@ class client_updater extends client {
         self::log("Update side-wide course.");
 
         return (self::remote_execute($this->csv_line, $query));
-    } // function FunctionName
+    } // function update_sitewide_course
 
-}
+} // class client_updater 
 
 ?>
 

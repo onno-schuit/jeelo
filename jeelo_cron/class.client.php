@@ -13,11 +13,11 @@ class client extends base {
     static $target_folder = '';
     static $log_file = './client_log.txt';
     static $log_echo = true;
-    static $client_url = '';
+    // static $client_url = ''; // NOT USED?
     static $tmp_dir = '/home/menno/php_projects/jeelo_databases';
  
  
-     static public function run() {
+    static public function run() {
         require_once("class.csv.php");
         
         self::log("Checking for available clients.");
@@ -35,12 +35,12 @@ class client extends base {
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
 
         while($moodle_clients_line = $csv->nextline()) {
-			// Usefull variable
-			self::$client_url = $moodle_clients_line->domain;
-			
+			// Useful variable
+			//self::$client_url = $moodle_clients_line->domain;
             self::process_client_from_csv($moodle_clients_line);
         }
-    }
+    } // function run
+
 
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
@@ -63,31 +63,28 @@ class client extends base {
         }
 
         //self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
-    }
+    } // function process_client_from_csv
+
 
     public static function process_new_client($csv_line) {
-		
 		self::log("Starting the creation of a new moodle school.");
         
         $user_and_pass = self::restore_database($csv_line);
-        exit(var_dump($user_and_pass));
+        //exit(var_dump($user_and_pass));
         $user_and_pass = array('username'=>'', 'password'=>'');
         
         self::create_codebase($csv_line);
-
         self::create_moodle_config($csv_line, $user_and_pass);
-        
         self::add_to_apache($csv_line);
         
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
         self::process_update_client($csv_line);
-        
         self::email_school_created($csv_line, $user_and_pass);
         
-    }
+    } // function process_new_client
+
     
     public static function restore_database($csv_line) {
-        
         //self::create_database($csv_line);
         
         self::import_database($csv_line);
@@ -110,7 +107,8 @@ class client extends base {
 		
         return $user_and_pass;
          */
-    }
+    } // function restore_database 
+
 
     function import_database($csv_line) {
         include("config.php");
@@ -126,7 +124,7 @@ class client extends base {
         var_dump($test);
         */
         exit(var_dump("Test"));
-    }
+    } // function import_database
     /*
 
     public static function import_database() {
@@ -160,14 +158,16 @@ class client extends base {
         self::log("Restarting apache");
         shell_exec('apachectl graceful');
         self::log("Apache restarted");
-    }
+    } // function add_to_apache
  
+
     public static function create_database($csv_line) {
         $sql = "CREATE DATABASE `{$csv_line->shortcode}`";
         self::log($sql);
         self::$db->query($sql);
-    }
+    } // function create_database
     
+
     public static function create_database_user($short_code) {
         $dbname = '' . $short_code; // no prefix
         $username = $short_code;
@@ -182,41 +182,34 @@ class client extends base {
             'username' => $username,
             'password' => $password
         );
-    }
+    } // function create_database_user
     
+
     public static function create_codebase($csv_line) {
-
 		$tmpfile = self::$target_folder . $csv_line->domain . '/site.tgz';
-		
 		self::create_codebase_folder($csv_line);
-
 		$codebase = self::get_codebase_from_server($csv_line, $tmpfile);
-		
 		self::copy_codebase_to_client($csv_line, $codebase);
-		
         self::remove_codebase_from_server($tmpfile);
-        
         self::extract_codebase_contents($tmpfile);
-    }
+    } // function create_codebase
+
     
     public static function copy_codebase_to_client($csv_line, $codebase) {
-		
 		$cmd = "wget --quiet --directory-prefix=" . self::$target_folder . "/" . $csv_line->domain . " $codebase";
 		self::log($cmd);
 		shell_exec($cmd);
-		
-	}
+	} // function copy_codebase_to_client
+
     
     public static function create_codebase_folder($csv_line) {
-		
         $target = self::$target_folder . $csv_line->domain;
         self::log("Creating folder: $target");
         mkdir($target, 0755); // without the public_html folder
-        
-	}
+	} // function create_codebase_folder
+
 	
 	public static function extract_codebase_contents($tmpfile) {
-		
         // extract contents
         $cmd = sprintf("tar -xz -C %s -f %s", dirname($tmpfile), $tmpfile);
         self::log($cmd);
@@ -224,10 +217,10 @@ class client extends base {
         
         // When done unlink the file
         unlink($tmpfile);
-	}
+	} // function extract_codebase_contents
+
 
 	public static function get_codebase_from_server($csv_line, $tmpfile) {
-	
 		$request = array(
             'request'	=> 'get_codebase',
             'for'		=> 'client',
@@ -242,7 +235,8 @@ class client extends base {
 		}
 		
 		return $response;
-	}
+	} // function get_codebase_from_server
+
 	
 	public static function remove_codebase_from_server($tmpfile) {
 		$request = array(
@@ -257,10 +251,10 @@ class client extends base {
 			exit();
 		}
 
-	}
+	} // function remove_codebase_from_server
     
+
     public static function get_db_from_server($csv_line) {
-        
         self::log("Getting db from server");
         $request = array(
             'request' => 'get_database',
@@ -277,14 +271,14 @@ class client extends base {
         }
 
        
+        // TODO: fixme! -- variables do not exist
         if (!ftp_chdir($fpc_ftp_conn, $fpc_ftp_path)) {
-        echo "Error go to the directory $fpc_ftp_path.<br />"; 
+            echo "Error go to the directory $fpc_ftp_path.<br />"; 
         }
         
-        $tmpfile = 'test';
-        file_put_contents($tmpfile . '.gz', $response);
+        //$tmpfile = 'test';
+        //file_put_contents($tmpfile . '.gz', $response);
 
-        /*
         
         // write contents to temp file
         $tmpfile = tempnam(self::$tmp_dir, 'jmdl'); // prefix jmdl (jeelo moodle)
@@ -320,8 +314,7 @@ class client extends base {
         global $CFG;
 
 		$target = "/home/jeelos/{$csv_line->domain}";
-
-    }
+    } // function create_moodle_config
 
 
     static public function email_school_created($csv_line, $user_and_pass) {
@@ -364,11 +357,10 @@ class client extends base {
             Jeelo Launcher 1.9";
 
         return (self::mail_with_headers($user->email, $body, $subject));
-    }
+    } // function email_school_created
 
 
     static public function mail_with_headers($email_to, $body, $subject) {
-        
         // To send HTML mail, the Content-type header must be set
         $headers  = 'MIME-Version: 1.0' . "\r\n";
         $headers .= '' . "\r\n";
@@ -376,7 +368,7 @@ class client extends base {
 
         // Mail it
         mail($email_to, $subject, $body, $headers);
-    }
+    } // function mail_with_headers
 
 
 	/*
@@ -424,16 +416,16 @@ class client extends base {
         );
         $response = self::get_server_response($request);
         self::log("Updated status for record $record_id to $status: $response");
-    }
+    } // function update_server_status
+
     
     public static function get_server_response($request, $debug = false) {
-		
 		$request_url = self::get_request_url($request);
         if ($debug) echo die(var_dump($request_url));
         $response = file_get_contents($request_url);
         
         return $response;
-    }
+    } // function get_server_response
 
 
     public static function get_request_url($request) {
