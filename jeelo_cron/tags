@@ -1,0 +1,353 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CFG	class.client.php	/^$CFG = new stdClass();$/;"	v
+DatabaseResult_Mysql	class.db.php	/^class DatabaseResult_Mysql$/;"	c
+Database_Mysql	class.db.php	/^class Database_Mysql$/;"	c
+FunctionName	class.client_updater.php	/^    } \/\/ function FunctionName$/;"	f
+__construct	class.client_updater.php	/^    function __construct($csv_line) {$/;"	f
+__construct	class.db.php	/^	function __construct($query, &$h, $resultless = 0)$/;"	f
+__construct	class.db.php	/^	function __construct()$/;"	f
+_dq	class.db.php	/^	private function _dq($query, $p = NULL, $resultless = 0)$/;"	f
+add_group_member	class.client_updater.php	/^    function add_group_member($user, $group_id) {$/;"	f
+add_group_members	class.client_updater.php	/^    function add_group_members($course_id, $group_id, $group_name) {$/;"	f
+add_layout	class.client_updater.php	/^    function add_layout() {$/;"	f
+add_password_switch	class.client.php	/^        $add_password_switch = !empty(self::$db->pass) ? ("-p" . self::$db->pass) : '';$/;"	v
+add_sidewide_enrollment	class.client_updater.php	/^    function add_sidewide_enrollment() {$/;"	f
+add_to_apache	class.client.php	/^    public static function add_to_apache($csv_line) {$/;"	f
+affected	class.db.php	/^			$this->affected = mysql_affected_rows($this->parent->dbh);$/;"	v
+affected	class.db.php	/^	function affected()$/;"	f
+affected	class.db.php	/^	var $affected = NULL;$/;"	v
+assign_column_names	class.client_updater.php	/^    function assign_column_names($data, $fields_type) {$/;"	f
+backup_database	class.client_updater.php	/^    function backup_database() {$/;"	f
+backup_filename	class.client_updater.php	/^		$backup_filename		= "course_data_".time().".txt";$/;"	v
+base	class.base.php	/^class base {$/;"	c
+body	class.client.php	/^        $body = "$/;"	v
+body	class.client_updater.php	/^        $body = "$/;"	v
+build_course_objects	class.client_updater.php	/^    function build_course_objects($response) {$/;"	f
+build_csv_object	class.csv.php	/^    function build_csv_object($data, $table_name) {$/;"	f
+categories	class.client_updater.php	/^        $categories = $csv->build_csv_object($response, 'client_categories');$/;"	v
+category_id	class.client_updater.php	/^        $category_id = self::remote_execute($this->csv_line, $query, true);$/;"	v
+cfg_clean	class.client_updater.php	/^		$cfg_clean = self::get_clean_config($this->csv_line);$/;"	v
+cfg_clean	class.client_updater.php	/^        $cfg_clean = self::get_clean_config($this->csv_line);$/;"	v
+change_site_template	class.client_updater.php	/^    function change_site_template() {$/;"	f
+child_category_id	class.client_updater.php	/^            $child_category_id = $this->create_category($category);$/;"	v
+child_course_id	class.client_updater.php	/^                $child_course_id = $this->restore_course($child_category_id, $child_group, $parent_course);$/;"	v
+child_group	class.client_updater.php	/^            $child_group = $this->assign_column_names($data, 'fields_groups');$/;"	v
+child_group	class.client_updater.php	/^            $child_group = new stdClass();$/;"	v
+child_group_id	class.client_updater.php	/^                $child_group_id = $this->create_group($child_course_id, $child_group);$/;"	v
+child_user	class.client_updater.php	/^            $child_user = $this->assign_column_names($data, 'fields_users');$/;"	v
+child_user	class.client_updater.php	/^            $child_user = new stdClass();$/;"	v
+clean_buffer_db	class.client_updater.php	/^    function clean_buffer_db() {$/;"	f
+clean_cfg	class.client.php	/^        $clean_cfg = self::get_clean_config($csv_line);$/;"	v
+client	class.client.php	/^class client extends base {$/;"	c
+client_categories_fields	class.csv.php	/^    private $client_categories_fields = array($/;"	v
+client_courses_fields	class.csv.php	/^    private $client_courses_fields = array($/;"	v
+client_moodles_fields	class.csv.php	/^    private $client_moodles_fields = array($/;"	v
+client_name	class.client.php	/^    static $client_name = 'client';$/;"	v
+client_updater	class.client.php	/^        $client_updater = new client_updater($csv_line);$/;"	v
+client_updater	class.client_updater.php	/^class client_updater extends client {$/;"	c
+client_url	class.client.php	/^    static $client_url = '';$/;"	v
+cmd	class.client.php	/^		$cmd = "wget --quiet --directory-prefix=" . self::$target_folder . "\/" . $csv_line->domain . " $codebase";$/;"	v
+cmd	class.client.php	/^        $cmd = sprintf("mysql -u %s %s %s < %s", self::$db->user, $add_password_switch, $dbname, $tmpfile);$/;"	v
+cmd	class.client.php	/^        $cmd = sprintf("tar -xz -C %s -f %s", dirname($tmpfile), $tmpfile);$/;"	v
+cmd	class.client.php	/^        $cmd = sprintf("tar xvf %s", $tmpfile . '.gz');$/;"	v
+cmd	class.client_updater.php	/^		$cmd = "mysqldump -h{$cfg_clean->dbhost} -u{$cfg_clean->dbuser} -p{$cfg_clean->dbpass} {$cfg_clean->dbname}| gzip -9 > $target\/$filename.sql.gz";$/;"	v
+cmd	class.client_updater.php	/^		$cmd = "php -f $get_or_create_context $context_settings_file";$/;"	v
+cmd	class.client_updater.php	/^		$cmd = "php -f $target_restore_file $target_backup_file";$/;"	v
+cmd	class.client_updater.php	/^        $cmd = sprintf("tar -xz -C %s -f %s", $this->tmp_updater_folder . '\/courses', $this->csv_line->courses_filename);$/;"	v
+cmd	class.client_updater.php	/^        $cmd = sprintf("tar -xz -C %s -f %s", $this->tmp_updater_folder . '\/csv', $this->csv_line->csv_filename);$/;"	v
+codebase	class.client.php	/^		$codebase = self::get_codebase_from_server($csv_line, $tmpfile);$/;"	v
+column	class.csv.php	/^                $column = $columns[$key_property];$/;"	v
+columns	class.csv.php	/^        $columns = $this->{$table_name.'_fields'};$/;"	v
+config_clean_contents	class.client.php	/^        $config_clean_contents = file_get_contents($folder . '\/public_html\/config_clean.php');$/;"	v
+config_clean_contents	class.client.php	/^        $config_clean_contents = self::set_config_contents($config_clean_contents, '$CFG->dbpass', $user_and_pass['password']);$/;"	v
+config_clean_input	class.client.php	/^        $config_clean_input = '<?php \/\/ Clean Configuration File$/;"	v
+config_contents	class.client.php	/^            $config_contents = self::set_config_contents($config_contents, $field, $value);$/;"	v
+config_contents	class.client.php	/^        $config_contents = file_get_contents($folder . '\/public_html\/config.php');$/;"	v
+config_contents	class.client.php	/^        $config_contents = substr($config_contents, 0, $start+1) . $value . substr($config_contents, $end);$/;"	v
+config_input	class.client.php	/^        $config_input = '<?php \/\/ Moodle Configuration File$/;"	v
+connect	class.db.php	/^	function connect($host, $user, $pass, $db)$/;"	f
+contents	class.client.php	/^        $contents = file_get_contents(dirname(__FILE__) . '\/apache_vhost_file.txt');$/;"	v
+contents	class.client.php	/^        $contents = str_replace('{domain}', $csv_line->domain, $contents);$/;"	v
+contents	class.client.php	/^        $contents = str_replace('{short_code}', $csv_line->short_code, $contents);$/;"	v
+context_data	class.client_updater.php	/^		$context_data						= serialize($context_settings);$/;"	v
+context_filename	class.client_updater.php	/^		$context_filename		= "context_data_".time().".txt";$/;"	v
+context_id	class.client_updater.php	/^        $context_id = $this->get_or_create_context(40, $category_id); \/\/ Creates the context$/;"	v
+context_id	class.client_updater.php	/^        $context_id = $this->get_or_create_context(50, $course_id); \/\/ Creates the context$/;"	v
+context_settings	class.client_updater.php	/^		$context_settings = new stdClass();$/;"	v
+context_settings_file	class.client_updater.php	/^		$context_settings_file		= self::$target_folder . "{$this->csv_line->domain}\/moodle_data\/$context_file";$/;"	v
+contextid	class.client_updater.php	/^            $contextid = $this->get_or_create_context(10, 1);$/;"	v
+copy_codebase_to_client	class.client.php	/^    public static function copy_codebase_to_client($csv_line, $codebase) {$/;"	f
+count	class.client_updater.php	/^		$count = 1;$/;"	v
+count	class.client_updater.php	/^        $count = 0;$/;"	v
+course	class.client_updater.php	/^		$course = new stdClass();$/;"	v
+course_data	class.client_updater.php	/^		$course_data			= serialize($course);$/;"	v
+create_and_update_user	class.client_updater.php	/^    function create_and_update_user($user) {$/;"	f
+create_category	class.client_updater.php	/^    function create_category($category) {$/;"	f
+create_codebase	class.client.php	/^    public static function create_codebase($csv_line) {$/;"	f
+create_codebase_folder	class.client.php	/^    public static function create_codebase_folder($csv_line) {$/;"	f
+create_context_file	class.client_updater.php	/^    function create_context_file($context_level, $instance_id) {$/;"	f
+create_course_role_assignment	class.client_updater.php	/^    function create_course_role_assignment($user, $course_id) {$/;"	f
+create_courses_and_groups	class.client_updater.php	/^    function create_courses_and_groups($parent_category_id, $child_category_id) {$/;"	f
+create_data_file_for_restore	class.client_updater.php	/^    function create_data_file_for_restore($category_id, $child_group, $parent_course) {$/;"	f
+create_database	class.client.php	/^    public static function create_database($csv_line) {$/;"	f
+create_database_user	class.client.php	/^    public static function create_database_user($short_code) {$/;"	f
+create_group	class.client_updater.php	/^    function create_group($course_id, $group) {$/;"	f
+create_hash_from_query_string	class.base.php	/^    public static function create_hash_from_query_string($query_string) {$/;"	f
+create_moodle_config	class.client.php	/^    public static function create_moodle_config($csv_line, $user_and_pass) {$/;"	f
+create_projects	class.client_updater.php	/^    function create_projects() {$/;"	f
+create_user	class.client_updater.php	/^    function create_user($user) {$/;"	f
+cs_apache_conf_dir	config.php	/^$cs_apache_conf_dir = '\/etc\/httpd\/conf\/jeelos';$/;"	v
+cs_client_log_file	config.php	/^$cs_client_log_file = '\/var\/log\/jeelo\/client.txt';$/;"	v
+cs_dbhost	config.php	/^$cs_dbhost = 'localhost';$/;"	v
+cs_dbname	config.php	/^$cs_dbname = 'jeelo_buffer';$/;"	v
+cs_dbpass	config.php	/^$cs_dbpass = 'menno';$/;"	v
+cs_dbuser	config.php	/^$cs_dbuser = 'root';$/;"	v
+cs_jeelos_target_folder	config.php	/^$cs_jeelos_target_folder = '\/home\/menno\/php_projects\/jeelos\/';$/;"	v
+cs_server_url	config.php	/^$cs_server_url = 'http:\/\/localhost\/jeelo\/local\/cs_scripts\/server.php';$/;"	v
+csv	class.client.php	/^        $csv = new csv();$/;"	v
+csv	class.client_updater.php	/^		$csv = new csv();$/;"	v
+csv	class.client_updater.php	/^        $csv = new csv();$/;"	v
+csv	class.csv.php	/^        $csv = (isset($this->csv[$this->curr_line])) ? $this->csv[$this->curr_line] : false;$/;"	v
+csv	class.csv.php	/^    private $csv = array();$/;"	v
+csv	class.csv.php	/^class csv {$/;"	c
+csv_courses	class.client_updater.php	/^        $csv_courses = $csv->build_csv_object($response, 'client_courses');$/;"	v
+csv_line	class.client_updater.php	/^        $this->csv_line = $csv_line;$/;"	v
+csv_user	class.client_updater.php	/^            $csv_user = $this->assign_column_names($data, 'fields_users');$/;"	v
+csv_user	class.client_updater.php	/^            $csv_user = new stdClass();$/;"	v
+curr_line	class.csv.php	/^    private $curr_line = 0;$/;"	v
+db	class.base.php	/^    static $db;$/;"	v
+db_file	class.client.php	/^        $db_file = self::get_db_from_server($csv_line);$/;"	v
+db_filename	class.client.php	/^        $db_filename = self::get_db_from_server($csv_line);$/;"	v
+db_user	class.client_updater.php	/^            $db_user = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."user WHERE username = '{$csv_user->email}'");$/;"	v
+dbh	class.db.php	/^	var $dbh; \/\/ mysql handle$/;"	v
+dbname	class.client.php	/^        $dbname = '' . $csv_line->shortcode; \/\/ no prefix$/;"	v
+dbname	class.client.php	/^        $dbname = '' . $short_code; \/\/ no prefix$/;"	v
+debug	class.client.php	/^    public static function get_server_response($request, $debug = false) {$/;"	v
+destination	class.client.php	/^        $destination = $cs_apache_conf_dir . '\/' . $filename;$/;"	v
+dir	class.client.php	/^		$dir = getcwd();$/;"	v
+dq	class.db.php	/^	function dq($query, $p = NULL)$/;"	f
+email_school_created	class.client.php	/^    static public function email_school_created($csv_line, $user_and_pass) {$/;"	f
+email_schoolyear_created	class.client_updater.php	/^    function email_schoolyear_created() {$/;"	f
+end	class.client.php	/^        $end = strpos($config_contents, '"', $start+1); \/\/ find next double quote$/;"	v
+error	class.client_updater.php	/^        $error = false;$/;"	v
+error	class.client_updater.php	/^        if (!self::remote_execute($this->csv_line, $query)) $error = true;$/;"	v
+error	class.db.php	/^	function error()$/;"	f
+error_str	class.db.php	/^	var $error_str;$/;"	v
+ex	class.db.php	/^	function ex($query, $p = NULL)$/;"	f
+execute_course_restore	class.client_updater.php	/^	function execute_course_restore($backup_filename) {$/;"	f
+existing_user	class.client_updater.php	/^        $existing_user = mysql_fetch_object($result);$/;"	v
+exit_code	class.client.php	/^    static public function update_server_status($record_id, $status, $exit_code=0) {$/;"	v
+extract_codebase_contents	class.client.php	/^	public static function extract_codebase_contents($tmpfile) {$/;"	f
+extract_course_files	class.client_updater.php	/^    function extract_course_files() {$/;"	f
+extract_csv_files	class.client_updater.php	/^    function extract_csv_files() {$/;"	f
+extract_files	class.client_updater.php	/^    function extract_files() {$/;"	f
+fetch_assoc	class.db.php	/^	function fetch_assoc()$/;"	f
+fetch_field	class.db.php	/^    function fetch_field($query) {$/;"	f
+fetch_row	class.db.php	/^	function fetch_row()$/;"	f
+fetch_row	class.db.php	/^    function fetch_row($query) {$/;"	f
+fetch_rows	class.db.php	/^    function fetch_rows($query) {$/;"	f
+field	class.client.php	/^        foreach($fields_to_change as $field=>$value) {$/;"	v
+fields_groups	class.client_updater.php	/^        $this->fields_groups = array('name'=>'naam', 'year'=>'jaar');$/;"	v
+fields_to_change	class.client.php	/^        $fields_to_change = array($/;"	v
+fields_users	class.client_updater.php	/^        $this->fields_users = array($/;"	v
+file	class.client_updater.php	/^        $file = "{$this->target_folder}\/{$this->csv_line->domain}\/public_html\/theme\/children-education\/pix\/banner.jpg";$/;"	v
+file	class.client_updater.php	/^        $file = "{$this->target_folder}\/{$this->csv_line->domain}\/public_html\/theme\/children-education\/styles_layout.css";$/;"	v
+filename	class.client.php	/^        $filename = preg_replace('\/[^A-Za-z0-9_\\.+]\/', '', $csv_line->domain);$/;"	v
+filename	class.client.php	/^        $filename = str_replace('.', '_', $filename);$/;"	v
+filename	class.client_updater.php	/^		$filename = $this->uniquify_filename($target, $this->csv_line->domain . "_" . date("Ymd"), '.sql.gz');$/;"	v
+fix_category_id	class.client_updater.php	/^    function fix_category_id($course_id, $category_id) {$/;"	f
+folder	class.client.php	/^        $folder = self::$target_folder . $csv_line->domain;$/;"	v
+fp	class.base.php	/^        $fp = fopen(static::$log_file, 'a');$/;"	v
+get_clean_config	class.client.php	/^    public static function get_clean_config($csv_line) {$/;"	f
+get_codebase_from_server	class.client.php	/^	public static function get_codebase_from_server($csv_line, $tmpfile) {$/;"	f
+get_courses_by_groupyear_and_category	class.client_updater.php	/^    function get_courses_by_groupyear_and_category($category_id, $groupyears) {$/;"	f
+get_db_from_server	class.client.php	/^    public static function get_db_from_server($csv_line) {$/;"	f
+get_or_create_context	class.client_updater.php	/^		$get_or_create_context	= self::$target_folder . "{$this->csv_line->domain}\/public_html\/launcher_scripts\/get_or_create_context.php";$/;"	v
+get_or_create_context	class.client_updater.php	/^    function get_or_create_context($context_level, $instance_id) {$/;"	f
+get_request_url	class.client.php	/^	public static function get_request_url($request) {$/;"	f
+get_server_response	class.client.php	/^    public static function get_server_response($request, $debug = false) {$/;"	f
+global_roles	class.client_updater.php	/^        $global_roles = array('invalkracht', 'schoolleider');$/;"	v
+groupyear_to_array	class.client_updater.php	/^    } \/\/ function groupyear_to_array$/;"	f
+groupyears_to_array	class.client_updater.php	/^    function groupyears_to_array($groupyear) {$/;"	f
+handler	class.client_updater.php	/^		$handler = fopen("$target\/$backup_filename", "w");$/;"	v
+handler	class.client_updater.php	/^		$handler = fopen("$target\/$context_filename", "w");$/;"	v
+handler	class.client_updater.php	/^        $handler = file($file);$/;"	v
+handler	class.client_updater.php	/^        $handler = fopen("{$this->tmp_updater_folder}\/csv\/groups.csv", 'r');$/;"	v
+handler	class.client_updater.php	/^        $handler = fopen("{$this->tmp_updater_folder}\/csv\/users.csv", 'r');$/;"	v
+hash	class.base.php	/^        $hash = md5($salt . $query_string);$/;"	v
+hash	class.client.php	/^        $hash = self::create_hash_from_query_string($query_string);$/;"	v
+hash_internal_user_password	class.client_updater.php	/^    function hash_internal_user_password($password) {$/;"	f
+headers	class.client.php	/^        $headers  = 'MIME-Version: 1.0' . "\\r\\n";$/;"	v
+id	class.client.php	/^        if ($return_id) $id = mysql_insert_id();$/;"	v
+import_database	class.client.php	/^    function import_database($csv_line) {$/;"	f
+import_database	class.client.php	/^    public static function import_database() {$/;"	f
+init_db	class.base.php	/^    public static function init_db($host, $user, $pass, $db) {$/;"	f
+key	class.client_updater.php	/^        foreach($handler as $key=>$data) {$/;"	v
+key	class.client_updater.php	/^        foreach($this->$fields_type as $key => $column) { \/\/ Assign column names to $group$/;"	v
+key_property	class.csv.php	/^            foreach($properties as $key_property=>$property) {$/;"	v
+last_insert_id	class.db.php	/^	function last_insert_id()$/;"	f
+line	class.client_updater.php	/^        $line = 0;$/;"	v
+line_num	class.csv.php	/^        foreach($this->lines as $line_num=>$line) {$/;"	v
+lines	class.csv.php	/^        $this->lines = explode("\\n", trim($data));$/;"	v
+lines	class.csv.php	/^    private $lines = array();$/;"	v
+log	class.base.php	/^    public static function log($message) {$/;"	f
+log_echo	class.client.php	/^    static $log_echo = true;$/;"	v
+log_file	class.base.php	/^    static $log_file = 'default_log.txt';$/;"	v
+log_file	class.client.php	/^    static $log_file = '.\/client_log.txt';$/;"	v
+m	class.db.php	/^		$m = explode('?', $query);$/;"	v
+mail_with_headers	class.client.php	/^    static public function mail_with_headers($email_to, $body, $subject) {$/;"	f
+moodle_clients	class.client.php	/^        $moodle_clients = $csv->build_csv_object($response, 'client_moodles');$/;"	v
+needs_all_course_enrollments	class.client_updater.php	/^    function needs_all_course_enrollments($rol) {$/;"	f
+new_course_id	class.client_updater.php	/^		$new_course_id = $this->execute_course_restore($restore_file);$/;"	v
+nextline	class.csv.php	/^    function nextline() {$/;"	f
+obj	class.client_updater.php	/^        $obj = new stdClass();$/;"	v
+offset	class.client.php	/^        $offset = strpos($config_contents, $field); \/\/ find the line with CFG->dbpass$/;"	v
+output	class.client.php	/^        $output = shell_exec($cmd); \/\/ command line execute$/;"	v
+output	class.client.php	/^        $output = shell_exec($cmd);$/;"	v
+p	class.db.php	/^		elseif(!is_array($p)) $p = array($p);$/;"	v
+p	class.db.php	/^		if(!isset($p)) $p = array();$/;"	v
+p	class.db.php	/^	function dq($query, $p = NULL)$/;"	v
+p	class.db.php	/^	function ex($query, $p = NULL)$/;"	v
+p	class.db.php	/^	function sq($query, $p = NULL)$/;"	v
+p	class.db.php	/^	function sqa($query, $p = NULL)$/;"	v
+p	class.db.php	/^	private function _dq($query, $p = NULL, $resultless = 0)$/;"	v
+pairs	class.client.php	/^        $pairs = array();$/;"	v
+parent	class.db.php	/^		$this->parent = $h;$/;"	v
+parent	class.db.php	/^	var $parent;$/;"	v
+parent_courses	class.client_updater.php	/^			$parent_courses = $this->build_course_objects($response);$/;"	v
+parent_courses	class.client_updater.php	/^        $parent_courses = array();$/;"	v
+pass	class.db.php	/^        $this->pass = $pass;$/;"	v
+pass	class.db.php	/^    public $pass;$/;"	v
+password	class.client.php	/^        $password = md5("SomeSalt" . $username); \/\/ Unsafe...$/;"	v
+possible_groups	class.client_updater.php	/^        $this->possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));$/;"	v
+prefix	class.client.php	/^    static $prefix = 'mdl_';$/;"	v
+prefix	class.db.php	/^	var $prefix = '';$/;"	v
+prefix	class.db.php	/^    var $prefix;$/;"	v
+process_client_from_csv	class.client.php	/^    public static function process_client_from_csv($csv_line) {$/;"	f
+process_new_client	class.client.php	/^    public static function process_new_client($csv_line) {$/;"	f
+process_update_client	class.client.php	/^    public static function process_update_client($csv_line) {$/;"	f
+properties	class.csv.php	/^            $properties = explode(';', $line);$/;"	v
+q	class.db.php	/^		$q = $this->_dq($query);$/;"	v
+q	class.db.php	/^		$q = $this->_dq($query, $p);$/;"	v
+q	class.db.php	/^		$q = mysql_query("SELECT 1 FROM `$table` WHERE 1=0", $this->dbh);$/;"	v
+q	class.db.php	/^		$this->q = mysql_query($query, $this->parent->dbh);$/;"	v
+q	class.db.php	/^	var $q;$/;"	v
+query	class.client.php	/^        $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";$/;"	v
+query	class.client_updater.php	/^			$query = "SELECT * FROM " . self::$prefix . "role_assignments WHERE roleid = '$roleid' AND userid = '$userid' AND contextid = '$contextid'";$/;"	v
+query	class.client_updater.php	/^		$query = "SELECT * FROM " . self::$prefix . "role_assignments WHERE roleid = '" . mysql_result($role, 0, 0) . "' AND contextid = '$context_id' AND userid = '{$user->userid}'";$/;"	v
+query	class.client_updater.php	/^		$query = "UPDATE " . self::$prefix . "config SET value = 'children-education' WHERE name = 'theme'";$/;"	v
+query	class.client_updater.php	/^            $query = "INSERT INTO ".self::$prefix."role_assignments ($/;"	v
+query	class.client_updater.php	/^        $query = "$/;"	v
+query	class.client_updater.php	/^        $query = "INSERT INTO ". self::$prefix ."course_categories ($/;"	v
+query	class.client_updater.php	/^        $query = "INSERT INTO ".self::$prefix."groups ( courseid, name ) VALUES ( '$course_id', '{$group->name}')";$/;"	v
+query	class.client_updater.php	/^        $query = "INSERT INTO ".self::$prefix."groups_members ($/;"	v
+query	class.client_updater.php	/^        $query = "INSERT INTO ".self::$prefix."role_assignments ($/;"	v
+query	class.client_updater.php	/^        $query = "SELECT * FROM ".self::$prefix."course WHERE category = 0";$/;"	v
+query	class.client_updater.php	/^        $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";$/;"	v
+query	class.client_updater.php	/^        $query = "SELECT * FROM ".self::$prefix."user WHERE username = '{$user->email}'";$/;"	v
+query	class.client_updater.php	/^        $query = "UPDATE ".self::$prefix."course SET category = '$category_id' WHERE id = '$course_id'";$/;"	v
+query	class.client_updater.php	/^        $query = "UPDATE ".self::$prefix."course SET visible='0' WHERE category != '1'";$/;"	v
+query	class.client_updater.php	/^        $query = "UPDATE ".self::$prefix."course_categories SET visible='0' WHERE id != '1'";$/;"	v
+query	class.client_updater.php	/^        $query = "UPDATE ".self::$prefix."user SET deleted = 0 WHERE id = {$existing_user->id}";$/;"	v
+query	class.client_updater.php	/^        $query = "UPDATE ".self::$prefix."user SET deleted = 1 WHERE username != 'guest' && username != 'admin'";$/;"	v
+query	class.db.php	/^			$query = "";$/;"	v
+query	class.db.php	/^		$this->query = $query;$/;"	v
+query	class.db.php	/^	var $query;$/;"	v
+query	class.db.php	/^            $query = str_replace($table, $this->prefix . $table_name, $query);$/;"	v
+query	class.db.php	/^    function query($query) {$/;"	f
+query_string	class.client.php	/^        $query_string = join('&', $pairs);$/;"	v
+quote	class.db.php	/^	function quote($s)$/;"	f
+quoteForLike	class.db.php	/^	function quoteForLike($format, $s)$/;"	f
+remote_execute	class.client.php	/^    public static function remote_execute($csv_line, $query, $return_id = false) {$/;"	f
+remove_codebase_from_server	class.client.php	/^	public static function remove_codebase_from_server($tmpfile) {$/;"	f
+request	class.client.php	/^		$request = array($/;"	v
+request	class.client.php	/^        $request = array($/;"	v
+request	class.client_updater.php	/^        $request = array($/;"	v
+request_url	class.client.php	/^		$request_url = self::get_request_url($request);$/;"	v
+request_url	class.client.php	/^        $request_url = self::$server_url . '?' . $query_string;$/;"	v
+res	class.db.php	/^		if($q->rows()) $res = $q->fetch_assoc();$/;"	v
+res	class.db.php	/^		if($q->rows()) $res = $q->fetch_row();$/;"	v
+response	class.client.php	/^		$response = self::get_server_response($request);$/;"	v
+response	class.client.php	/^        $response = file_get_contents($request_url);$/;"	v
+response	class.client.php	/^        $response = self::get_server_response($request);$/;"	v
+response	class.client_updater.php	/^        $response = self::get_server_response($request);$/;"	v
+restore_course	class.client_updater.php	/^    function restore_course($category_id, $child_group, $parent_course) {$/;"	f
+restore_database	class.client.php	/^    public static function restore_database($csv_line) {$/;"	f
+restore_file	class.client_updater.php	/^		$restore_file = $this->create_data_file_for_restore($category_id, $child_group, $parent_course);$/;"	v
+result	class.client.php	/^        $result = self::remote_execute($csv_line, $query);$/;"	v
+result	class.client_updater.php	/^			$result = self::remote_execute($this->csv_line, $query);$/;"	v
+result	class.client_updater.php	/^		$result = self::remote_execute($this->csv_line, $query);$/;"	v
+result	class.client_updater.php	/^        $result = self::remote_execute($this->csv_line, $query);$/;"	v
+resultless	class.db.php	/^	function __construct($query, &$h, $resultless = 0)$/;"	v
+results	class.db.php	/^        $results = array();$/;"	v
+return_id	class.client.php	/^    public static function remote_execute($csv_line, $query, $return_id = false) {$/;"	v
+role	class.client_updater.php	/^            $role = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."role WHERE shortname = 'admin'");$/;"	v
+role	class.client_updater.php	/^        $role = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."role WHERE shortname = '$role_shortname'");$/;"	v
+role_shortname	class.client_updater.php	/^                $role_shortname = 'schoolleader';$/;"	v
+role_shortname	class.client_updater.php	/^                $role_shortname = 'student';$/;"	v
+role_shortname	class.client_updater.php	/^                $role_shortname = 'substitute';$/;"	v
+role_shortname	class.client_updater.php	/^                $role_shortname = 'teacher';$/;"	v
+roleid	class.client_updater.php	/^            $roleid = mysql_result($user, 0, 0);$/;"	v
+rows	class.db.php	/^		$this->rows = mysql_num_rows($this->q);$/;"	v
+rows	class.db.php	/^	function rows()$/;"	f
+rows	class.db.php	/^	var $rows = NULL;$/;"	v
+run	class.client.php	/^     static public function run() {$/;"	f
+s	class.db.php	/^		$s = str_replace(array('%','_'), array('\\%','\\_'), addslashes($s));$/;"	v
+salt	class.base.php	/^        $salt = "Solin's Secret Here!"; \/\/ something random$/;"	v
+server_url	class.client.php	/^    static $server_url = '';$/;"	v
+set_config_contents	class.client.php	/^    function set_config_contents($config_contents, $field, $value) {$/;"	f
+set_existing_categories_invisible	class.client_updater.php	/^    function set_existing_categories_invisible() {$/;"	f
+set_logo	class.client_updater.php	/^	function set_logo() {$/;"	f
+set_navbar_color	class.client_updater.php	/^	function set_navbar_color() {$/;"	f
+site_wide_course_id	class.client_updater.php	/^        $site_wide_course_id = mysql_result($result, 0, 0);$/;"	v
+sq	class.db.php	/^	function sq($query, $p = NULL)$/;"	f
+sqa	class.db.php	/^	function sqa($query, $p = NULL)$/;"	f
+sql	class.client.php	/^        $sql = "CREATE DATABASE `{$csv_line->shortcode}`";$/;"	v
+start	class.client.php	/^        $start = strpos($config_contents, '"', $offset); \/\/ find first double quote from there$/;"	v
+start_updater	class.client_updater.php	/^    function start_updater() {$/;"	f
+str_groupyears	class.client_updater.php	/^            'groupyear' => $str_groupyears = implode($groupyears, '\/'),$/;"	v
+str_replace	class.client_updater.php	/^        $str_replace = "  background-color: {$this->navbar};\\n";$/;"	v
+str_search	class.client_updater.php	/^        $str_search = "background:url(pix\/navbar.png) top repeat-x;";$/;"	v
+subject	class.client.php	/^        $subject = "Jeelo School aangemaakt";$/;"	v
+subject	class.client_updater.php	/^        $subject = "Jeelo Schooljaar toegevoegd";$/;"	v
+table	class.db.php	/^		$table = addslashes($table);$/;"	v
+table_exists	class.db.php	/^	function table_exists($table)$/;"	f
+table_name	class.db.php	/^            $table_name = str_replace('{', '', $table);$/;"	v
+table_name	class.db.php	/^            $table_name = str_replace('}', '', $table_name);$/;"	v
+target	class.client.php	/^		$target = "\/home\/jeelos\/{$csv_line->domain}";$/;"	v
+target	class.client.php	/^        $target = self::$target_folder . $csv_line->domain;$/;"	v
+target	class.client_updater.php	/^		$target					= self::$target_folder . "{$this->csv_line->domain}\/moodle_data";$/;"	v
+target	class.client_updater.php	/^		$target = self::$target_folder . "{$this->csv_line->domain}\/moodle_data\/launcher_dbs";$/;"	v
+target_backup_file	class.client_updater.php	/^		$target_backup_file		= self::$target_folder . "{$this->csv_line->domain}\/moodle_data\/$backup_filename";$/;"	v
+target_folder	class.client.php	/^    static $target_folder = '';$/;"	v
+target_folder	class.client_updater.php	/^        $this->target_folder = '\/home\/jeelos';$/;"	v
+target_restore_file	class.client_updater.php	/^		$target_restore_file	= self::$target_folder . "{$this->csv_line->domain}\/public_html\/class.restore_backup.php";$/;"	v
+test	class.client.php	/^        $test = shell_exec($cmd);echo "<br \/>";$/;"	v
+tmp_dir	class.client.php	/^    static $tmp_dir = '\/tmp\/jeelo';$/;"	v
+tmp_updater_folder	class.client_updater.php	/^        $this->tmp_updater_folder = "{$this->target_folder}\/{$this->csv_line->domain}\/moodle_data\/temp\/updater";$/;"	v
+tmpfile	class.client.php	/^		$tmpfile = self::$target_folder . $csv_line->domain . '\/site.tgz';$/;"	v
+tmpfile	class.client.php	/^        $tmpfile = tempnam(self::$tmp_dir, 'jmdl'); \/\/ prefix jmdl (jeelo moodle)$/;"	v
+uniquify_filename	class.client_updater.php	/^	function uniquify_filename($target, $file_base_name, $extension) {$/;"	f
+update_all_users	class.client_updater.php	/^    function update_all_users() {$/;"	f
+update_moodle_config	class.client.php	/^	static public function update_moodle_config($csv_line, $user_and_pass) {$/;"	f
+update_server_status	class.client.php	/^    static public function update_server_status($record_id, $status, $exit_code=0) {$/;"	f
+update_sitewide_course	class.client_updater.php	/^    function update_sitewide_course() {$/;"	f
+update_user	class.client_updater.php	/^    function update_user($result) {$/;"	f
+user	class.client.php	/^        $user = mysql_fetch_object($result);$/;"	v
+user	class.client_updater.php	/^            $user = self::remote_execute($this->csv_line, "SELECT * FROM ".self::$prefix."user WHERE username = '{$csv_user->email}'");$/;"	v
+user	class.client_updater.php	/^        $user = mysql_fetch_object($result);$/;"	v
+user	class.db.php	/^        $this->user = $user;$/;"	v
+user	class.db.php	/^    public $user;$/;"	v
+user_and_pass	class.client.php	/^        $user_and_pass = array('username'=>'', 'password'=>'');$/;"	v
+user_and_pass	class.client.php	/^        $user_and_pass = self::create_database_user($csv_line);$/;"	v
+user_and_pass	class.client.php	/^        $user_and_pass = self::create_database_user($csv_line->shortcode);$/;"	v
+user_and_pass	class.client.php	/^        $user_and_pass = self::restore_database($csv_line);$/;"	v
+userid	class.client_updater.php	/^            $userid = mysql_result($user, 0, 0);$/;"	v
+username	class.client.php	/^        $username = $short_code;$/;"	v
+varname	class.client.php	/^        foreach ($request as $varname=>$value) {$/;"	v
+will	class.csv.php	/^     * This function will create a new csv object$/;"	f
