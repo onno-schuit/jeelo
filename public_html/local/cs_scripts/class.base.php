@@ -20,6 +20,7 @@ class base {
     
     public static function log($message) {
         // error_reporting(0);
+        return; // TEMP TEST
         $fp = fopen(static::$log_file, 'a');
         fputs($fp, date("Y-m-d H:i:s") . " " . $message . "\n");
         fclose($fp);

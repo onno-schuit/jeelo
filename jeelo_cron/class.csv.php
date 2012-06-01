@@ -2,6 +2,7 @@
 
 class csv {
 
+    // The elements of this array are made available as keys in a 'csv' array
     private $client_moodles_fields = array(
         'id',
         'timecreated',

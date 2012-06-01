@@ -1,5 +1,6 @@
 <?php
-require_once("class.base.php");
+require_once("../public_html/local/cs_scripts/class.base.php");
+require_once("../public_html/local/replicator/class.replicator.php");
 // For debugging:
 error_reporting(E_ALL);
 ini_set('display_errors','On');
@@ -14,7 +15,7 @@ class client extends base {
     static $log_file = './client_log.txt';
     static $log_echo = true;
     // static $client_url = ''; // NOT USED?
-    static $tmp_dir = '/home/menno/php_projects/jeelo_databases';
+    //static $tmp_dir = '/home/menno/php_projects/jeelo_databases';
  
  
     static public function run() {
@@ -26,6 +27,7 @@ class client extends base {
         $response = self::get_server_response($request);
         
         if (!$response) die(); // no clients available for processing.. do nothing
+        exit(print_object($response));
         
         $csv = new csv();
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');

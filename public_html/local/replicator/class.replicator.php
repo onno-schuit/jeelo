@@ -16,6 +16,9 @@ require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
  */
 class replicator {
 
+    public static function test() {
+        echo "Testing 1, 2, 3!";        
+    } // function test
 
     /**
      * Makes a dump of the Moodle codebase (i.e. webroot folder). For security 
