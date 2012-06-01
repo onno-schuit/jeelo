@@ -1,0 +1,62 @@
+*** Moodle Launcher "Upgrade Moodle" Feature ***
+
+
+** User Interface **
+
+1. Screen:
+    - explanation and warning
+    - "Upgrade All" button
+
+    "You are about to upgrade all Moodles. Click the "Upgrade All" button if 
+     the Mother Moodle has been upgraded to a new version, or if you had a 
+     new plugin installed.
+     This process will put the Moodle websites into maintenance mode, meaning 
+     that students and teachers can no longer access the courses.
+     Please note that a true Moodle upgrade is irreversible (modules be can 
+     uninstalled at a later time).
+     Do not use the "Upgrade All" button if there are no new modules, or if you
+     did not upgrade the Moodle version of this website."
+
+
+2. Confirmation
+    "Are you sure you want to start the upgrade process?" No / Yes, start the upgrade
+
+3. "All Moodles are now being upgraded. You will receive a notification through
+    email if there were any problems.
+    Please be patient as this process may take quite some time, depending on how
+    many Moodle website you have got."
+
+
+** Technical Details **
+
+* Mother Moodle
+    1. replicator::dump_codebase($source, $target)
+       (previous version should have been backed up)
+
+* Buffer DB
+    2. set status of all Moodles to "to_be_upgraded"
+
+* Client Moodle
+    3. Send request to change status to "being_upgraded"
+
+* Buffer DB
+    4. Process request
+        - If there is any other client with status "being_upgraded", respond with
+          a "nogo"
+        - Else, change status for this client to "being_upgraded" (using a table lock)
+          and respond with a "go".
+
+* Client Moodle
+   5a. Nogo: exit();
+   5b. Go: Make backups through replicator::backup_client_moodle($homedir, $database, $username, $password)
+        - moodledata directory
+        - databasedump
+        - config.php
+    6. Get and install new codebase
+    7. Put Moodle in maintenance mode, perform upgrade, disable maintenance mode
+    8. Delete zip file
+    9. Send request to Buffer DB to change status to "normal"
+
+* Buffer DB
+   10. Process request: set status to "normal"
+
