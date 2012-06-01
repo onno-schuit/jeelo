@@ -99,15 +99,23 @@ class launcher_helper extends helper {
         echo '</tr>';
 	}
 
-	/*
     function get_moodle_environments() {
-        global $CFG, $DB;
-        
-        $query = "SELECT * FROM jeelo_buffer.client_moodles WHERE status = 'processed'";
-        if (!$moodle_environments = get_records_sql($query)) error(get_string('no_moodles', 'launcher'));
-        return $moodle_environments;
-    }
-    */
+        global $BUFFER_DB;
 
+        if (empty($BUFFER_DB)) launcher_helper::set_buffer_db();
+
+        return ($BUFFER_DB->get_records("client_moodles", array("status"=>"processed")));
+    }
+
+    function print_moodles_dropdown() {
+        $clients = $this->get_moodle_environments();
+        echo "<select name='{$this->model_name}[environment]' onchange='this.form.submit()'>";
+        echo "<option value='select'>Select</option>";
+
+        foreach($clients as $client) {
+            echo "<option value='{$client->id}'>{$client->shortname}</option>";
+        }
+        echo "</select>";
+    }
 }
 ?>

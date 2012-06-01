@@ -11,10 +11,12 @@
   'launcher_header' => 'Welcome to the launcher.',
   'add_school_header' => 'You are about to add a new school. This action will create an entirely new moodle environment.<br />
                                 Please enter the information below. Note: This process is <b>irreversible</b>.',
-  'add_schoolyear_header' => 'Some help info<br />
-                                Some more help info',
+  'add_schoolyear_header' => 'Time to start the new school year? Fill out the information below.<br />
+                                Submitting this form will create a new school year for the moodle environment.',
+  'add_upgrade_header' => 'Some header info upgrade...',
+  'upgrade' => 'Upgrade',
   'school_prepaired' => 'The Launcher has finished prepairing the new school. Please be patient while the cron job takes over.<br />
-                                The remaining process can take up to an hour to finish. An email will send to {$a->email} once it\'s finished.',
+                                The remaining process can take up to an hour to finish. An email will be send to {$a->email} once it\'s finished.',
   'install' => 'Install',
   'shortname_format' => 'The shortname can be of maximum 16 characters and can only contain letters and numbers.',
   'unique' => 'This shortname is already in use. Please chose a different one.',

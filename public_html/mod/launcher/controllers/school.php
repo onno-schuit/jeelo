@@ -7,7 +7,6 @@ class school_controller extends controller
 		$this->has_access_rights();
 		
         $this->add_school();
-
 	}
 
 	function add_school($school = false) {

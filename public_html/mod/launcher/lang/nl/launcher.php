@@ -11,10 +11,14 @@ $string['launcher'] = 'launcher';
 $string['pluginadministration'] = 'launcher administration';
 $string['pluginname'] = 'launcher';
 
+$string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'U staat op het punt een nieuwe school toe te voegen. Deze actie zal een complete nieuwe moodle omgeving opbouwen.<br />
                                 Vul alstublieft de juiste gegevens hier onder in. Let op: Dit proces is <b>onomkeerbaar</b>.';
 $string['add_schoolyear_header'] = 'Tijd voor het nieuwe schooljaar? Vul de gegevens hier onder in.<br />
                                 Deze actie zal een nieuw schooljaar aan de school toevoegen.';
+$string['add_upgrade_header'] = 'Some header info upgrade...';
+$string['upgrade'] = 'Upgrade';
+
 $string['school_prepaired'] = 'De Launcher is gereed met het klaarzetten van de nieuwe school. Heeft u alstublieft even geduld terwijl de Cron het over neemt.<br />
     Het resterende proces kan tot een uur duren. Er wordt een email verstuurd naar {$a->email} zodra het klaar is.';
 
