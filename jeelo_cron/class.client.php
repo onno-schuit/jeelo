@@ -27,12 +27,12 @@ class client extends base {
         $response = self::get_server_response($request);
         
         if (!$response) die(); // no clients available for processing.. do nothing
-        exit(print_object($response));
         
         $csv = new csv();
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
 
         while($moodle_clients_line = $csv->nextline()) {
+            exit(print_object($moodle_clients_line));
 			// Useful variable
 			//self::$client_url = $moodle_clients_line->domain;
             self::process_client_from_csv($moodle_clients_line);
