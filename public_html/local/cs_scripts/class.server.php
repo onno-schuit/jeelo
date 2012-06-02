@@ -8,7 +8,7 @@ class server extends base {
     static $dirroot = '/home/jeelos/moeder/public_html';
     static $wwwroot = 'http://moeder.srv1a.jeelo.nl';
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
-    static $status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
+    static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
     //
     static $host = 'localhost';
@@ -73,7 +73,7 @@ class server extends base {
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
 
-        $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' AND status IN ('" . join(static::$status_array, "', '") . "')";
+        $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' AND status IN ('" . join(static::$prepaired_status_array, "', '") . "')";
         self::log($query);
 
         $rows = $db->fetch_rows($query);
@@ -149,6 +149,15 @@ class server extends base {
     } // function test
 
 
+    public static function get_moodle_client_by_id($id) {
+        $query = sprintf("SELECT * FROM {client_moodles} WHERE id=%d", $id);
+        if (! $row = static::$db->fetch_row($query) ) {
+            die('error: record not found');
+        }               
+        return $row;
+    } // function get_moodle_client_by_id
+
+
     /**
      * Sends file back if criteria are met; otherwise prints error
      * 
@@ -157,24 +166,15 @@ class server extends base {
      */
     public static function handle_request_get_codebase($query_string) {
         // create vars: $request,$for,$hash from query_string
-        extract(self::_export_query_string($query_string, 'for,id')); // puts query string into separate variables
-        //parse_str($query_string);
+        extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
 
-        $db = static::$db; // makes it easier to use
-        $for = str_replace("'", '', $for); // sanitize user input
+        $moodle_client = static::get_moodle_client_by_id($id);
 
-        $query = sprintf("SELECT * FROM {client_moodles} WHERE id=%d AND is_for_client='%s' AND status='being_processed'", $id, $for);
-        $row = $db->fetch_row($query);
-        
-        if (!$row) {
-            die('error: record not found');
-        }
-        $file =  $row['codebase_filename'];
+        $file =  $moodle_client['codebase_filename'];
         if (!file_exists($file)) {
 			self::log("Failed to find codebase. File does not exist: $file");
 			echo "no_file";
         }
-
 
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
@@ -193,12 +193,9 @@ class server extends base {
     
     function handle_request_remove_codebase($query_string) {
 		// create vars: $request,$for,$hash from query_string
-        extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
-        
-        $db = self::$db; // makes it easier to use
-        $for = str_replace("'", '', $for); // sanitize user input
-
-		shell_exec("rm " . self::$dirroot . "/site.tgz");
+        extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
+        $moodle_client = static::get_moodle_client_by_id($id);
+		shell_exec("rm " . $moodle_client['codebase_filename']);
 	} // function handle_request_remove_codebase
 
 

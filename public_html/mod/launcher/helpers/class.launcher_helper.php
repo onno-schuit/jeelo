@@ -1,4 +1,6 @@
 <?php
+include_once("{$CFG->dirroot}/local/cs_scripts/class.server.php");
+
 class launcher_helper extends helper {
 
  	function has_access_rights()
@@ -13,7 +15,7 @@ class launcher_helper extends helper {
         global $BUFFER_DB, $DB, $CFG;
         $db_class = get_class($DB);
         $BUFFER_DB = new $db_class();
-        $BUFFER_DB->connect($CFG->buffer_dbhost, $CFG->buffer_dbuser, $CFG->buffer_dbpass, $CFG->buffer_dbname, false);
+        $BUFFER_DB->connect(server::$host, server::$user, server::$pass, server::$db, false);
     } // function set_source_db
 	
     function print_menu() {

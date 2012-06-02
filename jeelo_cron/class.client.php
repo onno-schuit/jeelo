@@ -175,11 +175,10 @@ class client extends base {
     
 
     public static function create_codebase($csv_line) {
-		$target = self::create_codebase_folder($csv_line->domain);
-		self::get_codebase_from_server($csv_line->id, $target . '/' . basename($csv_line->codebase_filename));
-        exit("Test results now\n");
-        self::remove_codebase_from_server($tmpfile);
-        self::extract_codebase_contents($tmpfile);
+        $target_path = self::create_codebase_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
+		self::get_codebase_from_server($csv_line->id, $target_path);
+        self::remove_codebase_from_server($csv_line->id);
+        self::extract_codebase_contents($target_path);
     } // function create_codebase
 
     
@@ -201,14 +200,11 @@ class client extends base {
 	} // function create_codebase_folder
 
 	
-	public static function extract_codebase_contents($tmpfile) {
-        // extract contents
-        $cmd = sprintf("tar -xz -C %s -f %s", dirname($tmpfile), $tmpfile);
+	public static function extract_codebase_contents($zip_path) {
+        $cmd = sprintf("tar -xz -C %s -f %s", dirname($zip_path), $zip_path);
         self::log($cmd);
         shell_exec($cmd);
-        
-        // When done unlink the file
-        unlink($tmpfile);
+        unlink($zip_path);
 	} // function extract_codebase_contents
 
 
@@ -223,19 +219,12 @@ class client extends base {
 	} // function get_codebase_from_server
 
 	
-	public static function remove_codebase_from_server($tmpfile) {
+	public static function remove_codebase_from_server($moodle_client_id) {
 		$request = array(
             'request'	=> 'remove_codebase',
-            'for'		=> 'client'
+            'id'		=> $moodle_client_id
         );
-        
-		// Response = directory / filename of the codebase
-		$response = self::get_server_response($request);
-		if ($response == 'faal') {
-			self::log("Failed to retrieve codebase from server.");
-			exit();
-		}
-
+		self::get_server_response($request);
 	} // function remove_codebase_from_server
     
 

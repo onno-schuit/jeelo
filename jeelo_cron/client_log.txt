@@ -167,3 +167,16 @@ us&id=128&status=being_processed&exit_code=0&for=client&hash=814d5a1b4c75795d11e
 2012-06-02 20:05:23 Updated status for record 129 to being_processed: ok
 2012-06-02 20:05:23 Starting the creation of a new moodle school.
 2012-06-02 20:05:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:29:04 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:46:31 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=129&for=client&hash=d9f5d8164d70957a669edd5b244abf31
+2012-06-02 21:03:26 tar -xz -C /home/jeelos/solin7.srv1a.jeelo.nl -f /home/jeelos/solin7.srv1a.jeelo.nl/solin6.srv1a.jeelo.nl_code_1338647620.tgz
+2012-06-02 21:19:23 Checking for available clients.
+2012-06-02 21:19:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 21:19:23 Processing id 131, status prepaired_school
+2012-06-02 21:19:23 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=131&status=being_processed&exit_code=0&for=client&hash=d2ca29ca1037c7adf4db8b99c8727f21
+2012-06-02 21:19:23 Updated status for record 131 to being_processed: ok
+2012-06-02 21:19:23 Starting the creation of a new moodle school.
+2012-06-02 21:19:23 Creating folder: /home/jeelos/solin10.srv1a.jeelo.nl
+2012-06-02 21:19:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=131&hash=1dac8dad1dadd0c46f0b1eacdd7cd9c4
+2012-06-02 21:19:23 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=131&for=client&hash=d4bb4db687295fe0b6fca9f1f029d6aa
+2012-06-02 21:19:23 tar -xz -C /home/jeelos/solin10.srv1a.jeelo.nl -f /home/jeelos/solin10.srv1a.jeelo.nl/solin10.srv1a.jeelo.nl_code_1338664723.tgz
