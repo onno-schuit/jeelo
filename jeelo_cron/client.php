@@ -6,9 +6,9 @@ require_once("class.client.php");
 client::init_db($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname); // from config.php
 
 // also from config.php:
-client::$server_url = $cs_server_url;
-client::$target_folder = $cs_jeelos_target_folder;
-client::$log_file = $cs_client_log_file;
+//client::$server_url = $cs_server_url;
+//client::$target_folder = $cs_jeelos_target_folder;
+//client::$log_file = $cs_client_log_file;
 
 // run the client script
 client::run();

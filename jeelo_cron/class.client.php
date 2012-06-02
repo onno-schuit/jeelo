@@ -1,6 +1,7 @@
 <?php
 require_once("../public_html/local/cs_scripts/class.base.php");
 require_once("../public_html/local/replicator/class.replicator.php");
+require_once("config.php");
 // For debugging:
 error_reporting(E_ALL);
 ini_set('display_errors','On');
@@ -10,12 +11,11 @@ class client extends base {
     
     static $client_name = 'client';
     static $prefix = 'mdl_';
-    static $server_url = '';
-    static $target_folder = '';
+    //static $target_folder = '/home/jeelos';
     static $log_file = './client_log.txt';
     static $log_echo = true;
     // static $client_url = ''; // NOT USED?
-    //static $tmp_dir = '/home/menno/php_projects/jeelo_databases';
+    static $tmp_dir = 'tmp';
  
  
     static public function run() {
@@ -23,16 +23,12 @@ class client extends base {
         
         self::log("Checking for available clients.");
         
-        $request = array('request' => 'get_available_clients');
-        $response = self::get_server_response($request);
-        
+        $response = self::get_server_response( $request = array('request' => 'get_available_clients') );
         if (!$response) die(); // no clients available for processing.. do nothing
-        
         $csv = new csv();
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
 
         while($moodle_clients_line = $csv->nextline()) {
-            exit(print_object($moodle_clients_line));
 			// Useful variable
 			//self::$client_url = $moodle_clients_line->domain;
             self::process_client_from_csv($moodle_clients_line);
@@ -44,7 +40,7 @@ class client extends base {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
         
         // Update status FIRST
-        //self::update_server_status($csv_line->id, 'being_processed');
+        self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
 
         switch($csv_line->status) {
             case 'prepaired_school':
@@ -65,14 +61,14 @@ class client extends base {
 
 
     public static function process_new_client($csv_line) {
-        exit(print_r($csv_line));
 		self::log("Starting the creation of a new moodle school.");
         
+        self::create_codebase($csv_line);
+        exit("\n Now go check results of create_codebase \n");
+
         $user_and_pass = self::restore_database($csv_line);
-        //exit(var_dump($user_and_pass));
         $user_and_pass = array('username'=>'', 'password'=>'');
         
-        self::create_codebase($csv_line);
         self::create_moodle_config($csv_line, $user_and_pass); // Doesn't actually do anything...
         self::add_to_apache($csv_line);
         
@@ -110,19 +106,13 @@ class client extends base {
 
 
     function import_database($csv_line) {
-        include("config.php");
-        
-        $db_filename = self::get_db_from_server($csv_line);
-        
-        $cmd = "gunzip -c {$db_filename} | mysql -u{$cs_dbuser} -p{$cs_dbpass} {$csv_line->shortcode}";
-        var_dump(shell_exec($cmd));
+        global $cs_dbuser, $cs_dbpass; 
 
-        /*
-        var_dump($cmd);echo "<br />";
-        $test = shell_exec($cmd);echo "<br />";
-        var_dump($test);
-        */
-        exit(var_dump("Test"));
+        $db_filename = self::get_db_from_server($csv_line);
+
+        $cmd = "gunzip -c {$db_filename} | mysql -u{$cs_dbuser} -p{$cs_dbpass} {$csv_line->shortcode}";
+        exit($cmd);
+        shell_exec($cmd);
     } // function import_database
     /*
 
@@ -185,26 +175,29 @@ class client extends base {
     
 
     public static function create_codebase($csv_line) {
-		$tmpfile = self::$target_folder . $csv_line->domain . '/site.tgz';
-		self::create_codebase_folder($csv_line);
-		$codebase = self::get_codebase_from_server($csv_line, $tmpfile);
-		self::copy_codebase_to_client($csv_line, $codebase);
+		$target = self::create_codebase_folder($csv_line->domain);
+		self::get_codebase_from_server($csv_line->id, $target . '/' . basename($csv_line->codebase_filename));
+        exit("Test results now\n");
         self::remove_codebase_from_server($tmpfile);
         self::extract_codebase_contents($tmpfile);
     } // function create_codebase
 
     
     public static function copy_codebase_to_client($csv_line, $codebase) {
-		$cmd = "wget --quiet --directory-prefix=" . self::$target_folder . "/" . $csv_line->domain . " $codebase";
+        // The directory prefix is the directory where all other files and subdirectories will be saved to, 
+        // i.e. the top of the retrieval tree.  
+		$cmd = "wget --quiet --directory-prefix=" . static::$target_folder . "/" . $csv_line->domain . " $codebase";
 		self::log($cmd);
 		shell_exec($cmd);
 	} // function copy_codebase_to_client
 
     
-    public static function create_codebase_folder($csv_line) {
-        $target = self::$target_folder . $csv_line->domain;
-        self::log("Creating folder: $target");
-        mkdir($target, 0755); // without the public_html folder
+    public static function create_codebase_folder($domain) {
+        if (!file_exists(static::$target_folder . '/' . $domain)) {
+            self::log("Creating folder: " . static::$target_folder . '/' . $domain);
+            mkdir(static::$target_folder . '/' . $domain, 0755); // without the public_html folder
+        }
+        return static::$target_folder . '/' . $domain;
 	} // function create_codebase_folder
 
 	
@@ -219,21 +212,14 @@ class client extends base {
 	} // function extract_codebase_contents
 
 
-	public static function get_codebase_from_server($csv_line, $tmpfile) {
+	public static function get_codebase_from_server($client_moodle_id, $target) {
 		$request = array(
-            'request'	=> 'get_codebase',
-            'for'		=> 'client',
-            'id'		=> $csv_line->id
+            'request' => 'get_codebase',
+            'for'     => 'client',
+            'id'      => $client_moodle_id
         );
-        
-		// Response = directory / filename of the codebase
-		$response = self::get_server_response($request);
-		if ($response == 'nofile') {
-			self::log("Failed to retreive codebase from server.");
-			exit();
-		}
-		
-		return $response;
+        //exit( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
+        shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
 	} // function get_codebase_from_server
 
 	
@@ -246,7 +232,7 @@ class client extends base {
 		// Response = directory / filename of the codebase
 		$response = self::get_server_response($request);
 		if ($response == 'faal') {
-			self::log("Failed to retreive codebase from server.");
+			self::log("Failed to retrieve codebase from server.");
 			exit();
 		}
 
@@ -268,50 +254,22 @@ class client extends base {
             self::log($response);
             die();
         }
-
        
         // TODO: fixme! -- variables do not exist
         if (!ftp_chdir($fpc_ftp_conn, $fpc_ftp_path)) {
             echo "Error go to the directory $fpc_ftp_path.<br />"; 
         }
         
-        //$tmpfile = 'test';
-        //file_put_contents($tmpfile . '.gz', $response);
-
-        
         // write contents to temp file
-        $tmpfile = tempnam(self::$tmp_dir, 'jmdl'); // prefix jmdl (jeelo moodle)
+        $tmpfile = static::tempnam(self::$tmp_dir, 'jmdl'); // prefix jmdl (jeelo moodle)
         
         self::log("Creating file " . $tmpfile . '.gz');
-        
-        unset($response); // clear memory ?
-		
         return ($tmpfile);
-        /*
-		$dir = getcwd();
-		chdir("/tmp");
-		
-        $cmd = sprintf("tar xvf %s", $tmpfile . '.gz');
-        self::log($cmd);
-        $output = shell_exec($cmd);
-        
-        chdir($dir);
-
-        // import into mysql
-        $dbname = '' . $csv_line->shortcode; // no prefix
-        $add_password_switch = !empty(self::$db->pass) ? ("-p" . self::$db->pass) : '';
-        $cmd = sprintf("mysql -u %s %s %s < %s", self::$db->user, $add_password_switch, $dbname, $tmpfile);
-        self::log($cmd);
-        
-        $output = shell_exec($cmd); // command line execute
-        self::log("Mysql ouput: [$output]"); // put mysql output into log file
-         */
     } // function get_db_from_server
 
     
     public static function create_moodle_config($csv_line, $user_and_pass) {
         global $CFG;
-
 		$target = "/home/jeelos/{$csv_line->domain}";
     } // function create_moodle_config
 
@@ -420,6 +378,7 @@ class client extends base {
     
     public static function get_server_response($request, $debug = false) {
 		$request_url = self::get_request_url($request);
+        //print_object($request_url);
         if ($debug) echo die(var_dump($request_url));
         $response = file_get_contents($request_url);
         

@@ -1,0 +1,169 @@
+2012-06-02 15:11:21 ?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:13:57 ?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:31:33 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:34:34 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:37:00 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:37:38 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:49:49 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:51:43 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:52:12 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:52:24 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:52:54 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:54:19 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:54:26 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:55:13 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:55:39 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:55:50 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:56:57 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:57:37 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 15:58:29 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:01:15 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:03:45 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:04:27 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:06:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:09:03 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:10:13 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=127&hash=7a8806aa57a9fe658bd5c5d5318732e0
+2012-06-02 16:34:44 Checking for available clients.
+2012-06-02 16:34:44 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:34:44 Processing id 128, status prepaired_school
+2012-06-02 16:34:44 http://localhost/jeelo/local/cs_scripts/server.php?request=set_stat$
+s
+s
+us&id=128&status=being_processed&exit_code=0&for=client&hash=814d5a1b4c75795d11e5116f3fe3da79
+2012-06-02 16:34:44 Updated status for record 128 to being_processed: 
+2012-06-02 16:34:44 Starting the creation of a new moodle school.
+2012-06-02 16:34:44 Creating folder: /solin6.srv1a.jeelo.nl
+2012-06-02 16:36:07 Checking for available clients.
+2012-06-02 16:36:07 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:36:07 Processing id 128, status prepaired_school
+2012-06-02 16:36:07 http://localhost/jeelo/local/cs_scripts/server.php?request=set_stat$
+s
+s
+us&id=128&status=being_processed&exit_code=0&for=client&hash=814d5a1b4c75795d11e5116f3fe3da79
+2012-06-02 16:36:07 Updated status for record 128 to being_processed: 
+2012-06-02 16:36:07 Starting the creation of a new moodle school.
+2012-06-02 16:36:07 Creating folder: /solin6.srv1a.jeelo.nl
+2012-06-02 16:41:09 Checking for available clients.
+2012-06-02 16:41:09 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:41:09 Processing id 128, status prepaired_school
+2012-06-02 16:41:09 http://localhost/jeelo/local/cs_scripts/server.php?request=set_stat$
+s
+s
+us&id=128&status=being_processed&exit_code=0&for=client&hash=814d5a1b4c75795d11e5116f3fe3da79
+2012-06-02 16:41:09 Updated status for record 128 to being_processed: 
+2012-06-02 16:41:09 Starting the creation of a new moodle school.
+2012-06-02 16:41:09 Creating folder: /home/jeelos/solin6.srv1a.jeelo.nl
+2012-06-02 16:47:15 Checking for available clients.
+2012-06-02 16:47:15 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:47:16 Processing id 129, status prepaired_school
+2012-06-02 16:47:16 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=129&status=being_processed&exit_code=0&for=client&hash=61261e1793fe5ae7722293daf056e25f
+2012-06-02 16:47:16 Updated status for record 129 to being_processed: ok
+2012-06-02 16:47:16 Starting the creation of a new moodle school.
+2012-06-02 16:47:16 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-02 16:49:54 Checking for available clients.
+2012-06-02 16:49:54 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:50:18 Checking for available clients.
+2012-06-02 16:50:18 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:52:56 Checking for available clients.
+2012-06-02 16:52:56 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:52:56 Processing id 129, status prepaired_school
+2012-06-02 16:52:56 Starting the creation of a new moodle school.
+2012-06-02 16:52:56 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-02 16:53:51 Checking for available clients.
+2012-06-02 16:54:56 Checking for available clients.
+2012-06-02 16:54:56 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:54:56 Processing id 129, status prepaired_school
+2012-06-02 16:54:56 Starting the creation of a new moodle school.
+2012-06-02 16:54:56 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-02 16:55:47 Checking for available clients.
+2012-06-02 16:55:47 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:55:53 Checking for available clients.
+2012-06-02 16:55:53 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:56:25 Checking for available clients.
+2012-06-02 16:56:25 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:56:25 Processing id 129, status prepaired_school
+2012-06-02 16:56:25 Starting the creation of a new moodle school.
+2012-06-02 16:57:12 Checking for available clients.
+2012-06-02 16:57:12 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:57:12 Processing id 129, status prepaired_school
+2012-06-02 16:57:12 Starting the creation of a new moodle school.
+2012-06-02 16:57:12 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-02 16:57:51 Checking for available clients.
+2012-06-02 16:57:51 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:57:51 Processing id 129, status prepaired_school
+2012-06-02 16:57:51 Starting the creation of a new moodle school.
+2012-06-02 16:57:51 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-02 16:59:15 Checking for available clients.
+2012-06-02 16:59:15 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:59:15 Processing id 129, status prepaired_school
+2012-06-02 16:59:15 Starting the creation of a new moodle school.
+2012-06-02 16:59:44 Checking for available clients.
+2012-06-02 16:59:44 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 16:59:44 Processing id 129, status prepaired_school
+2012-06-02 16:59:44 Starting the creation of a new moodle school.
+2012-06-02 17:00:16 Checking for available clients.
+2012-06-02 17:00:16 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 17:00:16 Processing id 129, status prepaired_school
+2012-06-02 17:00:16 Starting the creation of a new moodle school.
+2012-06-02 17:01:22 Checking for available clients.
+2012-06-02 17:01:22 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 17:01:22 Processing id 129, status prepaired_school
+2012-06-02 17:01:22 Starting the creation of a new moodle school.
+2012-06-02 17:01:22 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 17:08:03 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 17:10:18 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:39:14 Checking for available clients.
+2012-06-02 19:39:14 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:42:35 Checking for available clients.
+2012-06-02 19:42:35 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:44:51 Checking for available clients.
+2012-06-02 19:44:51 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:47:28 Checking for available clients.
+2012-06-02 19:47:28 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:48:02 Checking for available clients.
+2012-06-02 19:48:02 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:48:02 Processing id 129, status prepaired_school
+2012-06-02 19:48:02 Starting the creation of a new moodle school.
+2012-06-02 19:48:02 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl/solin7.srv1a.jeelo.nl_code_1338648388.tgz
+2012-06-02 19:49:12 Checking for available clients.
+2012-06-02 19:49:12 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:49:12 Processing id 129, status prepaired_school
+2012-06-02 19:49:12 Starting the creation of a new moodle school.
+2012-06-02 19:49:12 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:49:52 Checking for available clients.
+2012-06-02 19:49:52 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:49:52 Processing id 129, status prepaired_school
+2012-06-02 19:49:52 Starting the creation of a new moodle school.
+2012-06-02 19:49:52 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl/solin7.srv1a.jeelo.nl_code_1338648388.tgz
+2012-06-02 19:49:52 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:51:14 Checking for available clients.
+2012-06-02 19:51:14 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:51:14 Processing id 129, status prepaired_school
+2012-06-02 19:51:14 Starting the creation of a new moodle school.
+2012-06-02 19:51:14 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:55:00 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:56:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 19:56:35 Checking for available clients.
+2012-06-02 19:56:35 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 19:56:35 Processing id 129, status prepaired_school
+2012-06-02 19:56:35 Starting the creation of a new moodle school.
+2012-06-02 19:56:35 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:00:33 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:01:40 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:02:49 Checking for available clients.
+2012-06-02 20:02:49 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 20:02:49 Processing id 129, status prepaired_school
+2012-06-02 20:02:49 Starting the creation of a new moodle school.
+2012-06-02 20:02:49 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:03:57 Checking for available clients.
+2012-06-02 20:03:57 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 20:03:57 Processing id 129, status prepaired_school
+2012-06-02 20:03:57 Starting the creation of a new moodle school.
+2012-06-02 20:03:57 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6
+2012-06-02 20:05:23 Checking for available clients.
+2012-06-02 20:05:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-02 20:05:23 Processing id 129, status prepaired_school
+2012-06-02 20:05:23 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=129&status=being_processed&exit_code=0&for=client&hash=61261e1793fe5ae7722293daf056e25f
+2012-06-02 20:05:23 Updated status for record 129 to being_processed: ok
+2012-06-02 20:05:23 Starting the creation of a new moodle school.
+2012-06-02 20:05:23 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&for=client&id=129&hash=d82d1b1b8fafb75939896c98a92aa1a6

@@ -10,16 +10,21 @@ require_once($CFG->dirroot.'/local/soda/class.user.php');
 class school extends user {
 
     //static $table_name = 'launcher_moodles';
-    public $global_root       = '/home/menno/php_projects/jeelo';
+    public $global_root;
     public $dumps_location    = '/etc/moodle_clients';
 
-    function __construct($properties) {
 
+    function __construct($properties) {
+        global $CFG;
+
+        $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));
         launcher_helper::set_buffer_db();
         $this->include_upload_files();
+        $this->datetime_stamp = time();
 
         parent::__construct($properties);
-    }
+    } // function __construct
+
 
     function validate_and_save() {
 
@@ -27,7 +32,7 @@ class school extends user {
         $this->prepair_school();
 
         return true;
-    }
+    } // function validate_and_save
 
     function prepair_school() {
 
@@ -40,7 +45,7 @@ class school extends user {
         $this->dump_projects();
 
         $this->update_buffer_status('prepaired_school');
-    }
+    } // function prepair_school
 
     function update_buffer_status($status) {
         global $BUFFER_DB;
@@ -50,7 +55,7 @@ class school extends user {
         $buffer->status = $status;
 
         $BUFFER_DB->update_record('client_moodles', $buffer);
-    }
+    } // function update_buffer_status
 
     function define_validation_rules() {
 
@@ -73,7 +78,7 @@ class school extends user {
 
         $this->validate_upload_files();
 
-    }
+    } // function define_validation_rules
 
     function validate_upload_files() {
 
@@ -102,7 +107,7 @@ class school extends user {
             return (end(explode(".", $upload_groups['name'])) == 'csv');
         });
         
-    }
+    } // function validate_upload_files
 
     function set_dump_locations() {
         
@@ -112,7 +117,7 @@ class school extends user {
         if ($this->has_csv_files_received()) $this->set_dump_file('csv'); // The csv files are optional...
         if ($this->has_categories_selected()) $this->set_dump_file('courses'); // Projects are optional...
 
-    }
+    } // function set_dump_locations
 
     function get_categories_selected() {
         global $DB;
@@ -120,7 +125,7 @@ class school extends user {
         $query = "SELECT * FROM {course_categories} WHERE id IN (" . join($this->categories, ',') . ")";
 
         return ($categories = $DB->get_records_sql($query));
-    }
+    } // function get_categories_selected
     
     function get_courses_selected($category_id) {
         global $DB;
@@ -128,7 +133,7 @@ class school extends user {
         $query = "SELECT * FROM {course} WHERE id != 1 AND category = $category_id";
         
         return ($DB->get_records_sql($query));
-    }
+    } // function get_courses_selected
 
     function dump_projects() {
         global $DB;
@@ -151,7 +156,7 @@ class school extends user {
         }
 
         $this->compress_courses();
-    }
+    } // function dump_projects
 
     function dump_category($category) {
         global $BUFFER_DB;
@@ -160,7 +165,7 @@ class school extends user {
         $category->original_id = $category->id;
 
         return ($BUFFER_DB->insert_record('client_categories', $category));
-    }
+    } // function dump_category
 
     /**
      * Uses standard Moodle backup function to create a zip of a Moodle course
@@ -180,7 +185,7 @@ class school extends user {
 
         $this->save_course_in_buffer($course, $category_id);
 
-    }
+    } // function dump_course
 
     function save_course_in_buffer($course, $category_id) {
         global $BUFFER_DB;
@@ -189,7 +194,7 @@ class school extends user {
         $course->parent_category_id = $category_id;
 
         return ($BUFFER_DB->insert_record('client_courses', $course));
-    }
+    } // function save_course_in_buffer
 
     /**
      * Makes a course backup without any users.
@@ -214,7 +219,7 @@ class school extends user {
         $results_array = $bc->get_results();
         $bc->destroy();
         return $results_array['backup_destination'];
-    }
+    } // function backup_course
 
     function compress_courses() {
 
@@ -222,7 +227,7 @@ class school extends user {
         shell_exec("cd {$this->dumps_location}/courses; tar -cz -f $target *.zip");
         shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
          
-    }
+    } // function compress_courses
 
     function add_to_buffer() {
         global $BUFFER_DB;
@@ -242,7 +247,7 @@ class school extends user {
         if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');
 
         return ($BUFFER_DB->insert_record("client_moodles", $buffer));
-    }
+    } // function add_to_buffer
 
     function dump_csv_files() {
 
@@ -261,15 +266,14 @@ class school extends user {
         unlink("{$this->dumps_location}/csv/groups.csv");
         
         return true;
-    }
+    } // function dump_csv_files
+
 
     function dump_codebase() {
-
-        $homedir = $this->global_root;
         $target = $this->get_dump_file('code');
+        return shell_exec("cd {$this->global_root} ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*");
+    } // function dump_codebase
 
-        return shell_exec("cd {$homedir} ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*");
-    }
 
     function dump_database() {
         global $CFG;
@@ -278,30 +282,34 @@ class school extends user {
 
         $cmd = "mysqldump -u{$CFG->dbuser} -p{$CFG->dbpass} {$CFG->dbname} | gzip > {$target}";
         return shell_exec("mysqldump -u{$CFG->dbuser} -p{$CFG->dbpass} {$CFG->dbname} | gzip > {$target}");
-    }
+    } // function dump_database
+
 
     function set_dump_file($type, $ext = '.tgz') {
-        $this->dump->$type = "{$this->dumps_location}/$type/{$this->domain}_{$type}_" . date("Ymd") . "$ext";
-    }
+        //$this->dump->$type = "{$this->dumps_location}/$type/{$this->domain}_{$type}_" . date("Ymd") . "$ext";
+        // date makes it impossible to repeatedly test the same dumps...
+        $this->dump->$type = "{$this->dumps_location}/$type/{$this->domain}_{$type}_{$this->datetime_stamp}$ext";
+    } // function set_dump_file
+
 
     function get_dump_file($type) {
         return (isset($this->dump->$type)) ? $this->dump->$type : false;
-    }
+    } // function get_dump_file
     
     function include_upload_files() {
         if (!isset($_FILES)) return true;
         foreach($_FILES as $key=>$file) {
             $this->$key = $file;
         }
-    }
+    } // function include_upload_files
 
     function has_csv_files_received() {
         return (!empty($this->upload_users['tmp_name']) && !empty($this->upload_groups['tmp_name']));
-    }
+    } // function has_csv_files_received
 
     function has_categories_selected() {
         return (isset($this->categories) && !empty($this->categories));
-    }
+    } // function has_categories_selected
 
 }
 ?>

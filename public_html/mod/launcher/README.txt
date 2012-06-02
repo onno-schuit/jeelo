@@ -52,8 +52,17 @@ Dirs:
 /etc/moodle_clients/courses
 /etc/moodle_clients/db
 /etc/moodle_clients/code
+/home/jeelos
 
 /var/log/jeelo
+
+----
+
+Logs:
+
+
+/var/log/jeelo/client.txt
+public_html/local/cs_scripts/server_log.txt
 
 ----
 
@@ -65,6 +74,19 @@ In /etc/apache2/httpd.conf
 include /etc/apache2/conf/jeelos (for testing purposes)
 
 Adapt jeelo_cron/apache_vhost_file.txt
+
+
+Adapt:
+
+public_html/local/cs_scripts/class.server.php
+
+    static $log_file = './server_log.txt';
+    static $dirroot = '/home/jeelos/moeder/public_html';
+    static $wwwroot = 'http://moeder.srv1a.jeelo.nl';
+
+    * With regard to $dirroot and $wwwroot
+      the assumption is that the code base first gets copied to /etc/moodle_clients, then to a publicly accessible place
+      ('moeder' moodle)
 
 
 ----

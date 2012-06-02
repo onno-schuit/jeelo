@@ -1,15 +1,15 @@
 <?php
 defined('MOODLE_INTERNAL') || die();
 
-$string['modulename'] = 'launcher';
-$string['modulenameplural'] = 'launchers';
+$string['modulename'] = 'Launcher';
+$string['modulenameplural'] = 'Launchers';
 $string['modulename_help'] = 'Use the launcher module for... | The launcher module allows...';
 $string['launcherfieldset'] = 'Custom example fieldset';
-$string['launchername'] = 'launcher name';
+$string['launchername'] = 'Launcher name';
 $string['launchername_help'] = 'This is the content of the help tooltip associated with the launchername field. Markdown syntax is supported.';
 $string['launcher'] = 'launcher';
-$string['pluginadministration'] = 'launcher administration';
-$string['pluginname'] = 'launcher';
+$string['pluginadministration'] = 'Launcher administration';
+$string['pluginname'] = 'Launcher';
 
 $string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'U staat op het punt een nieuwe school toe te voegen. Deze actie zal een complete nieuwe moodle omgeving opbouwen.<br />

@@ -8,6 +8,13 @@ class server extends base {
     static $dirroot = '/home/jeelos/moeder/public_html';
     static $wwwroot = 'http://moeder.srv1a.jeelo.nl';
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
+    static $status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
+    // status can also be: being_processed
+    //
+    static $host = 'localhost';
+    static $user = 'root';
+    static $pass = 'paarse';
+    static $db = 'jeelo_buffer';
 
     /**
      * Checks if the request is valid by comparing the hash with our calculated hash; dies with error if 
@@ -18,9 +25,8 @@ class server extends base {
      */
     public static function check_hash($query_string) {
         
-        /// FOR TESTING PURPOSES:
+        /// FOR TESTING PURPOSES: TODO: remove return!
         return true;
-        
         
         // extract variables: $hash
         extract(self::_export_query_string($query_string, 'hash')); // puts query string into separate variables
@@ -32,7 +38,7 @@ class server extends base {
             die('error: invalid hash'); 
         }
         return true;
-    }
+    } // function check_hash
 
 
     /* Deletes courses and categories from database
@@ -50,7 +56,7 @@ class server extends base {
         $db->query($query);
 
         return true;
-    }
+    } // function handle_request_clean_buffer_db
 
     
     /**
@@ -67,13 +73,9 @@ class server extends base {
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
 
-        $status_arr = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
-
-        // use sprintf to replace variables
-        $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' AND status IN ('" . join($status_arr, "', '") . "')";
+        $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' AND status IN ('" . join(static::$status_array, "', '") . "')";
         self::log($query);
 
-        // run the query
         $rows = $db->fetch_rows($query);
 
         foreach ($rows as $row) {
@@ -83,9 +85,8 @@ class server extends base {
             echo "\n";
         }
 
-        // halt
         die();
-    }
+    } // function handle_request_get_available_clients
 
     /**
      * Sends file back if criteria are met; otherwise prints error
@@ -128,7 +129,25 @@ class server extends base {
         readfile($row['sql_filename']);
             
         die(); // no further output
-    }
+    } // function handle_request_get_database
+
+
+    public static function test() {
+        $file = '/etc/moodle_clients/code/solin7.srv1a.jeelo.nl_code_1338648388.tgz';
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename='.basename($file));
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        ob_clean();
+        flush();
+        readfile($file);
+        exit;               
+    } // function test
+
 
     /**
      * Sends file back if criteria are met; otherwise prints error
@@ -137,41 +156,40 @@ class server extends base {
      * @return void
      */
     public static function handle_request_get_codebase($query_string) {
-
         // create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'for,id')); // puts query string into separate variables
-        
-        $db = self::$db; // makes it easier to use
+        //parse_str($query_string);
+
+        $db = static::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
 
-        // use sprintf to replace variables
-        $query = sprintf("SELECT * FROM {client_moodles} WHERE 
-            id=%d AND is_for_client='%s' AND status='being_processed'",
-            $id, $for);
-        // run the query
+        $query = sprintf("SELECT * FROM {client_moodles} WHERE id=%d AND is_for_client='%s' AND status='being_processed'", $id, $for);
         $row = $db->fetch_row($query);
         
         if (!$row) {
             die('error: record not found');
         }
-        
-        if (!file_exists($row['codebase_filename'])) {
-            die('error: codebase file not found');
-        }
-		
-		$cmd = "cp " . $row['codebase_filename'] . " " . self::$dirroot . "/site.tgz";
-		self::log($cmd);
-		shell_exec($cmd);
-		
-		if (!file_exists(self::$dirroot . "/site.tgz")) {
-			self::log("Failed to copy codebase.");
+        $file =  $row['codebase_filename'];
+        if (!file_exists($file)) {
+			self::log("Failed to find codebase. File does not exist: $file");
 			echo "no_file";
-		} else {
-			echo self::$wwwroot . "/site.tgz";
-		}
-		
-        die(); // no further output
-    }
+        }
+
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename='.basename($file));
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        ob_clean();
+        flush();
+        readfile($file);
+        exit;
+    } // function handle_request_get_codebase
+
     
     function handle_request_remove_codebase($query_string) {
 		// create vars: $request,$for,$hash from query_string
@@ -181,10 +199,10 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
 
 		shell_exec("rm " . self::$dirroot . "/site.tgz");
-	}
+	} // function handle_request_remove_codebase
+
 
     function handle_request_get_courses($query_string) {
-
         extract(self::_export_query_string($query_string, 'for,groupyear,client_moodle_id')); // puts query string into separate variables
         
         $courses_to_call = array();
@@ -231,7 +249,8 @@ class server extends base {
         }
         // halt
         die();
-    }
+    } // function handle_request_get_courses
+
 
     function handle_request_get_categories($query_string) {
 
@@ -258,7 +277,7 @@ class server extends base {
 
         // halt
         die();
-    }
+    } // function handle_request_get_categories
 
 
     /**
@@ -287,7 +306,7 @@ class server extends base {
         // run the query
         $db->query($query);
         die('ok');
-    }
+    } // function handle_request_set_status
     
     /**
      * Converts query_string to indexed array 
@@ -315,8 +334,8 @@ class server extends base {
         
         // return associative array
         return $vars;
-    }
+    } // function _export_query_string
     
-}
+} // class server 
 
 ?>

@@ -1,0 +1,18 @@
+stdClass Object
+(
+    [id] => 127
+    [timecreated] => 2012-06-02 13:45:05
+    [domain] => solin4.srv1a.jeelo.nl
+    [shortcode] => solin4
+    [fullname] => Solin Academy
+    [email] => onno@solin.nl
+    [sql_filename] => /etc/moodle_clients/db/solin4.srv1a.jeelo.nl_db_1338627717.gz
+    [codebase_filename] => /etc/moodle_clients/code/solin4.srv1a.jeelo.nl_code_1338627717.tgz
+    [csv_filename] => /etc/moodle_clients/csv/solin4.srv1a.jeelo.nl_csv_1338627717.tgz
+    [courses_filename] => /etc/moodle_clients/courses/solin4.srv1a.jeelo.nl_courses_1338627717.tgz
+    [is_for_client] => client
+    [status] => prepaired_school
+    [exit_code] => 0
+    [timemodified] => 0000-00-00 00:00:00
+)
+

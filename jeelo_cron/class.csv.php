@@ -69,24 +69,19 @@ class csv {
             if (empty($line)) continue; // Skip lines with no data
 
             $properties = explode(';', $line);
-			
+            
             // Connect properties to object
             foreach($properties as $key_property=>$property) {
-
                 $column = $columns[$key_property];
                 $this->csv[$line_num]->$column = trim($property);
             }
         }
-
         return $this->csv;
     }
 
     function nextline() {
-
         $csv = (isset($this->csv[$this->curr_line])) ? $this->csv[$this->curr_line] : false;
-
         $this->curr_line ++;
-
         return $csv;
     }
 }
