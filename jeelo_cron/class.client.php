@@ -29,8 +29,6 @@ class client extends base {
         $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
 
         while($moodle_clients_line = $csv->nextline()) {
-			// Useful variable
-			//self::$client_url = $moodle_clients_line->domain;
             self::process_client_from_csv($moodle_clients_line);
         }
     } // function run
@@ -63,12 +61,12 @@ class client extends base {
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
         
-        self::create_codebase($csv_line);
-        exit("\n Now go check results of create_codebase \n");
 
-        $user_and_pass = self::restore_database($csv_line);
+        $user_and_pass = self::create_database($csv_line);
+        exit('check database results');
         $user_and_pass = array('username'=>'', 'password'=>'');
         
+        self::create_codebase($csv_line);
         self::create_moodle_config($csv_line, $user_and_pass); // Doesn't actually do anything...
         self::add_to_apache($csv_line);
         
@@ -79,10 +77,10 @@ class client extends base {
     } // function process_new_client
 
     
-    public static function restore_database($csv_line) {
-        //self::create_database($csv_line);
-        
-        self::import_database($csv_line);
+    public static function create_database($csv_line) {
+        $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . $csv_line->sql_filename;
+        self::get_database_from_server($csv_line->id, $target_path);
+
         /*
         $user_and_pass = self::create_database_user($csv_line);
 
@@ -102,18 +100,18 @@ class client extends base {
 		
         return $user_and_pass;
          */
-    } // function restore_database 
+    } // function create_database 
 
 
-    function import_database($csv_line) {
-        global $cs_dbuser, $cs_dbpass; 
+    public static function get_database_from_server($client_moodle_id, $target) {
+        self::log("Getting db from server for moodle_client id {$client_moodle_id}");
+        $request = array(
+            'request' => 'get_database',
+            'id' => $client_moodle_id
+        );
+        shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );               
+    } // function get_database_from_server
 
-        $db_filename = self::get_db_from_server($csv_line);
-
-        $cmd = "gunzip -c {$db_filename} | mysql -u{$cs_dbuser} -p{$cs_dbpass} {$csv_line->shortcode}";
-        exit($cmd);
-        shell_exec($cmd);
-    } // function import_database
     /*
 
     public static function import_database() {
@@ -150,11 +148,11 @@ class client extends base {
     } // function add_to_apache
  
 
-    public static function create_database($csv_line) {
+    public static function old_create_database($csv_line) {
         $sql = "CREATE DATABASE `{$csv_line->shortcode}`";
         self::log($sql);
         self::$db->query($sql);
-    } // function create_database
+    } // function old_create_database
     
 
     public static function create_database_user($short_code) {
@@ -175,7 +173,7 @@ class client extends base {
     
 
     public static function create_codebase($csv_line) {
-        $target_path = self::create_codebase_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
+        $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
 		self::get_codebase_from_server($csv_line->id, $target_path);
         self::remove_codebase_from_server($csv_line->id);
         self::extract_codebase_contents($target_path);
@@ -191,13 +189,13 @@ class client extends base {
 	} // function copy_codebase_to_client
 
     
-    public static function create_codebase_folder($domain) {
+    public static function get_or_create_home_folder($domain) {
         if (!file_exists(static::$target_folder . '/' . $domain)) {
             self::log("Creating folder: " . static::$target_folder . '/' . $domain);
             mkdir(static::$target_folder . '/' . $domain, 0755); // without the public_html folder
         }
         return static::$target_folder . '/' . $domain;
-	} // function create_codebase_folder
+	} // function get_or_create_home_folder
 
 	
 	public static function extract_codebase_contents($zip_path) {
@@ -209,12 +207,11 @@ class client extends base {
 
 
 	public static function get_codebase_from_server($client_moodle_id, $target) {
+        self::log("Getting codebase from server for moodle_client id {$csv_line->id}");
 		$request = array(
             'request' => 'get_codebase',
-            'for'     => 'client',
             'id'      => $client_moodle_id
         );
-        //exit( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
         shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
 	} // function get_codebase_from_server
 
