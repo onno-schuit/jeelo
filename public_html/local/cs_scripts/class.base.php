@@ -10,14 +10,13 @@ class base {
     static $target_folder =  '/home/jeelos';
     static $log_file =  '/var/log/jeelo/client.txt';
     
-    public static function init_db($host=false, $user=false, $pass=false, $db=false) {
+    public static function init_db($host=false, $user=false, $pass=false, $database_name=false) {
         $host = ($host) ? $host : static::$host;
         $user = ($user) ? $user : static::$user;
         $pass = ($pass) ? $pass : static::$pass;
-        $db   = ($db)   ? $db   : static::$db;
 
         static::$db = new Database_Mysql();
-        static::$db->connect($host, $user, $pass, $db);
+        static::$db->connect($host, $user, $pass, $database_name);
     }
     
     public static function create_hash_from_query_string($query_string) {

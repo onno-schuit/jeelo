@@ -81,7 +81,7 @@ class client extends base {
     public static function create_database($csv_line) {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->sql_filename);
         self::get_database_from_server($csv_line->id, $target_path);
-        self::install_database($csv_line->shortcode);
+        self::install_database($csv_line->shortcode, $target_path);
         return self::create_database_account($csv_line->shortcode);
     } // function create_database 
 
@@ -125,10 +125,13 @@ class client extends base {
     } // function add_to_apache
 
 
-    public static function install_database($database_name) {
+    /* @param   string     $zip        Filename and path of the zip containing the database dump
+     */
+    public static function install_database($database_name, $zip) {
         $sql = "CREATE DATABASE `$database_name` CHARACTER SET utf8 COLLATE utf8_general_ci;";
         self::log($sql);
         self::$db->query($sql);
+        shell_exec(sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", static::$user, static::$pass));
     } // function install_database
     
 
@@ -165,31 +168,31 @@ class client extends base {
 	} // function get_or_create_home_folder
 
 	
-	public static function extract_codebase_contents($zip_path) {
+    public static function extract_codebase_contents($zip_path) {
         $cmd = sprintf("tar -xz -C %s -f %s", dirname($zip_path), $zip_path);
         self::log($cmd);
         shell_exec($cmd);
         unlink($zip_path);
-	} // function extract_codebase_contents
+    } // function extract_codebase_contents
 
 
-	public static function get_codebase_from_server($client_moodle_id, $target) {
+    public static function get_codebase_from_server($client_moodle_id, $target) {
         self::log("Getting codebase from server for moodle_client id {$client_moodle_id}");
-		$request = array(
+        $request = array(
             'request' => 'get_codebase',
             'id'      => $client_moodle_id
         );
         shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
-	} // function get_codebase_from_server
+    } // function get_codebase_from_server
 
-	
-	public static function remove_codebase_from_server($moodle_client_id) {
-		$request = array(
+
+    public static function remove_codebase_from_server($moodle_client_id) {
+        $request = array(
             'request'	=> 'remove_codebase',
             'id'		=> $moodle_client_id
         );
-		self::get_server_response($request);
-	} // function remove_codebase_from_server
+        self::get_server_response($request);
+    } // function remove_codebase_from_server
     
     
     public static function create_moodle_config($csv_line, $user_and_pass) {

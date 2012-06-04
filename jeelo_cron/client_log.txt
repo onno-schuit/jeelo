@@ -439,3 +439,18 @@ Could not open log file ./server_log.txt for class base!
 2012-06-04 13:21:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=130&for=client&hash=4b05200bc4caa10ea094326967423ba6
 2012-06-04 13:21:55 tar -xz -C /home/jeelos/solin8.srv1a.jeelo.nl -f /home/jeelos/solin8.srv1a.jeelo.nl/solin8.srv1a.jeelo.nl_code_1338808890.tgz
 2012-06-04 13:21:58 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=130&for=client&hash=4b15a7d7abae8d7ceb92c0ee65ee0d4c
+2012-06-04 13:51:33 Checking for available clients.
+2012-06-04 13:51:33 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 13:51:33 Processing id 131, status prepaired_school
+2012-06-04 13:51:33 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=131&status=being_processed&exit_code=0&for=client&hash=d2ca29ca1037c7adf4db8b99c8727f21
+2012-06-04 13:51:33 Updated status for record 131 to being_processed: ok
+2012-06-04 13:51:33 Starting the creation of a new moodle school.
+2012-06-04 13:51:33 Creating folder: /home/jeelos/solin9.srv1a.jeelo.nl
+2012-06-04 13:51:33 Getting db from server for moodle_client id 131
+2012-06-04 13:51:33 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=131&for=client&hash=cdcc6107367d89cd7f4e9be5cf4ac2d9
+2012-06-04 13:51:33 CREATE DATABASE `solin9` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 13:51:40 Created database user for client database.
+2012-06-04 13:51:40 Getting codebase from server for moodle_client id 131
+2012-06-04 13:51:40 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=131&for=client&hash=07fb33471adc1aaa9d35e39c90bcd212
+2012-06-04 13:51:40 tar -xz -C /home/jeelos/solin9.srv1a.jeelo.nl -f /home/jeelos/solin9.srv1a.jeelo.nl/solin9.srv1a.jeelo.nl_code_1338810663.tgz
+2012-06-04 13:51:43 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=131&for=client&hash=d4bb4db687295fe0b6fca9f1f029d6aa
