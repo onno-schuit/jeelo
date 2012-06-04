@@ -9,16 +9,17 @@ set_time_limit(0);
 
 class client extends base {
     
-    static $client_name = 'client';
+    static $client_name = 'client'; // probably not necessary ('for' is always 'client', so not useful)
     static $prefix = 'mdl_';
-    //static $target_folder = '/home/jeelos';
-    static $log_file = './client_log.txt';
-    static $log_echo = true;
-    // static $client_url = ''; // NOT USED?
-    static $tmp_dir = 'tmp';
+
     static $host = 'localhost';
     static $user = 'root';
     static $pass = 'paarse'; 
+
+    static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
+    static $apache_conf_dir = '/etc/apache2/conf/jeelos';
+    static $target_folder =  '/home/jeelos';
+    static $log_file =  '/var/log/jeelo/client.txt';
 
 
     static public function run() {
@@ -70,10 +71,9 @@ class client extends base {
             $database_pass = $database_account['password'],
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
-        exit('everything should be working up till here');
 
         self::add_to_apache($csv_line);
-        
+
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
         self::process_update_client($csv_line);
         self::email_school_created($csv_line, $user_and_pass);
@@ -107,22 +107,19 @@ class client extends base {
      * @return void
      */
     public static function add_to_apache($csv_line) {
-        global $cs_apache_conf_dir;
         $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $csv_line->domain);
         $filename = str_replace('.', '_', $filename);
-        $destination = $cs_apache_conf_dir . '/' . $filename;
-        self::log("Creating file $destination");
+        $destination = static::$apache_conf_dir  . '/' . $filename;
+        self::log("Creating apache config file $destination");
 
         $contents = file_get_contents(dirname(__FILE__) . '/apache_vhost_file.txt');
         $contents = str_replace('{domain}', $csv_line->domain, $contents);
-        $contents = str_replace('{short_code}', $csv_line->short_code, $contents);
-
-        global $cs_apache_conf_dir;
+        $contents = str_replace('{shortcode}', $csv_line->shortcode, $contents);
 
         file_put_contents($destination, $contents);  
         self::log("File $destination created");
         
-        self::log("Restarting apache");
+        self::log("Restarting apache for {$csv_line->domain}");
         shell_exec('apachectl graceful');
         self::log("Apache restarted");
     } // function add_to_apache

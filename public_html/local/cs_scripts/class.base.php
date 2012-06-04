@@ -6,9 +6,6 @@ class base {
 
     static $db;
     //static $log_file = 'default_log.txt'; // probably not used!
-    static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
-    static $target_folder =  '/home/jeelos';
-    static $log_file =  '/var/log/jeelo/client.txt';
     
     public static function init_db($host=false, $user=false, $pass=false, $database_name=false) {
         $host = ($host) ? $host : static::$host;

@@ -516,3 +516,60 @@ Could not open log file ./server_log.txt for class base!
 2012-06-04 16:32:43 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=135&for=client&hash=8f761c2bb3a7e41aebf30d9707585917
 2012-06-04 16:32:43 CREATE DATABASE `solin15` CHARACTER SET utf8 COLLATE utf8_general_ci;
 2012-06-04 16:33:20 Created database user for client database.
+2012-06-04 21:27:49 Checking for available clients.
+2012-06-04 21:27:49 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 21:27:49 Processing id 136, status prepaired_school
+2012-06-04 21:27:49 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=136&status=being_processed&exit_code=0&for=client&hash=853086d175eab8add16d34530a6315f6
+2012-06-04 21:27:49 Updated status for record 136 to being_processed: ok
+2012-06-04 21:27:49 Starting the creation of a new moodle school.
+2012-06-04 21:27:49 Creating folder: /home/jeelos/solin16.srv1a.jeelo.nl
+2012-06-04 21:27:49 Getting codebase from server for moodle_client id 136
+2012-06-04 21:27:49 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=136&for=client&hash=79fa5ad8c2e42836e0092440f8cbd28d
+2012-06-04 21:27:49 tar -xz -C /home/jeelos/solin16.srv1a.jeelo.nl -f /home/jeelos/solin16.srv1a.jeelo.nl/solin16.srv1a.jeelo.nl_code_1338838021.tgz
+2012-06-04 21:27:50 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=136&for=client&hash=0cc338a1bd7a1a6c77506adf34410e66
+2012-06-04 21:27:50 Getting db from server for moodle_client id 136
+2012-06-04 21:27:50 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=136&for=client&hash=aef51a712b43ae18b89a93f952863411
+2012-06-04 21:27:50 CREATE DATABASE `solin16` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 21:28:26 Created database user for client database.
+2012-06-04 21:28:26 Creating apache config file /solin16_srv1a_jeelo_nl
+2012-06-04 21:28:26 File /solin16_srv1a_jeelo_nl created
+2012-06-04 21:28:26 Restarting apache for solin16.srv1a.jeelo.nl
+2012-06-04 21:28:26 Apache restarted
+2012-06-04 21:31:01 Checking for available clients.
+2012-06-04 21:31:01 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 21:31:01 Processing id 137, status prepaired_school
+2012-06-04 21:31:01 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=137&status=being_processed&exit_code=0&for=client&hash=75b1cf2f0980836b202926e07087c51b
+2012-06-04 21:31:01 Updated status for record 137 to being_processed: ok
+2012-06-04 21:31:01 Starting the creation of a new moodle school.
+2012-06-04 21:31:01 Creating folder: /home/jeelos/solin17.srv1a.jeelo.nl
+2012-06-04 21:31:01 Getting codebase from server for moodle_client id 137
+2012-06-04 21:31:01 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=137&for=client&hash=e19c30dc11592287331caf0c8e379205
+2012-06-04 21:31:01 tar -xz -C /home/jeelos/solin17.srv1a.jeelo.nl -f /home/jeelos/solin17.srv1a.jeelo.nl/solin17.srv1a.jeelo.nl_code_1338838241.tgz
+2012-06-04 21:31:02 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=137&for=client&hash=2a9342d433781f2bc77ef30780bb30b0
+2012-06-04 21:31:02 Getting db from server for moodle_client id 137
+2012-06-04 21:31:02 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=137&for=client&hash=614063fe44a392c1f67ab5310596b38e
+2012-06-04 21:31:02 CREATE DATABASE `solin17` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 21:31:33 Created database user for client database.
+2012-06-04 21:31:33 Creating apache config file /solin17_srv1a_jeelo_nl
+2012-06-04 21:31:33 File /solin17_srv1a_jeelo_nl created
+2012-06-04 21:31:33 Restarting apache for solin17.srv1a.jeelo.nl
+2012-06-04 21:31:33 Apache restarted
+2012-06-04 21:37:41 Checking for available clients.
+2012-06-04 21:37:41 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 21:37:41 Processing id 138, status prepaired_school
+2012-06-04 21:37:41 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=138&status=being_processed&exit_code=0&for=client&hash=f0ea92604c5db2399f11626621c5afc7
+2012-06-04 21:37:41 Updated status for record 138 to being_processed: ok
+2012-06-04 21:37:41 Starting the creation of a new moodle school.
+2012-06-04 21:37:41 Creating folder: /home/jeelos/solin18.srv1a.jeelo.nl
+2012-06-04 21:37:41 Getting codebase from server for moodle_client id 138
+2012-06-04 21:37:41 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=138&for=client&hash=a098a0e3fadd3ae8d8540c5573d1e89f
+2012-06-04 21:37:41 tar -xz -C /home/jeelos/solin18.srv1a.jeelo.nl -f /home/jeelos/solin18.srv1a.jeelo.nl/solin18.srv1a.jeelo.nl_code_1338838614.tgz
+2012-06-04 21:37:43 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=138&for=client&hash=0f713f7706fd5383a8ca839226a86f3a
+2012-06-04 21:37:43 Getting db from server for moodle_client id 138
+2012-06-04 21:37:43 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=138&for=client&hash=59606ceb1269b3af750fa0e55635710a
+2012-06-04 21:37:43 CREATE DATABASE `solin18` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 21:38:15 Created database user for client database.
+2012-06-04 21:38:15 Creating apache config file /etc/apache2/conf/jeelos/solin18_srv1a_jeelo_nl
+2012-06-04 21:38:15 File /etc/apache2/conf/jeelos/solin18_srv1a_jeelo_nl created
+2012-06-04 21:38:15 Restarting apache for solin18.srv1a.jeelo.nl
+2012-06-04 21:38:15 Apache restarted

@@ -63,7 +63,7 @@ class client_updater extends client {
 	} // function add_layout
 	
 	
-	function set_logo() {
+    function set_logo() {
         $file = "{$this->target_folder}/{$this->csv_line->domain}/public_html/theme/children-education/pix/banner.jpg";
         if (file_exists($file)) unlink($file);
 
@@ -71,7 +71,7 @@ class client_updater extends client {
 	} // function set_logo
 	
 	
-	function set_navbar_color() {
+    function set_navbar_color() {
         $file = "{$this->target_folder}/{$this->csv_line->domain}/public_html/theme/children-education/styles_layout.css";
         $handler = file($file);
 
@@ -109,7 +109,7 @@ class client_updater extends client {
 	 * unique we will run it through this loop. It
 	 * returns the filename without increment if the
 	 * filename is already unique. */
-	function uniquify_filename($target, $file_base_name, $extension) {
+    function uniquify_filename($target, $file_base_name, $extension) {
 		
 		if (!file_exists($target . '/' . $file_base_name . $extension)) return $file_base_name;
 		
@@ -451,7 +451,7 @@ class client_updater extends client {
 	} // function fix_category_id
     
 
-	function execute_course_restore($backup_filename) {
+    function execute_course_restore($backup_filename) {
 		$target_restore_file	= self::$target_folder . "{$this->csv_line->domain}/public_html/class.restore_backup.php";
 		$target_backup_file		= self::$target_folder . "{$this->csv_line->domain}/moodle_data/$backup_filename";
 

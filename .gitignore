@@ -27,3 +27,4 @@ CVS
 /.cache
 moodledata/*
 *.swo
+*.swn
