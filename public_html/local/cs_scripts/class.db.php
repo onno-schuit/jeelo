@@ -63,18 +63,18 @@ class Database_Mysql
 	{
 	}
 
-	function connect($host, $user, $pass, $db)
+	function connect($host, $user, $pass, $db = false)
 	{
-		if(!$this->dbh = @mysql_connect($host,$user,$pass))
-		{
-			throw new Exception(mysql_error());
-		}
-		if( @!mysql_select_db($db, $this->dbh) )
-		{
-			throw new Exception($this->error());
-		}
         $this->user = $user;
         $this->pass = $pass;
+
+		if(!$this->dbh = @mysql_connect($host,$user,$pass)) {
+			throw new Exception(mysql_error());
+		}
+        if (!$db) return true;
+		if( @!mysql_select_db($db, $this->dbh) ) {
+			throw new Exception($this->error());
+		}
 		return true;
 	}
 

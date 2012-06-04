@@ -165,6 +165,7 @@ class server extends base {
      * @return void
      */
     public static function handle_request_get_codebase($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
         // create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
 

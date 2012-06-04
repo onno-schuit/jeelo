@@ -189,3 +189,253 @@ us&id=128&status=being_processed&exit_code=0&for=client&hash=814d5a1b4c75795d11e
 2012-06-03 17:09:34 Getting db from server
 2012-06-03 17:09:34 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=132&for=client&hash=7cd1fa3f087d722ecbd5c7f5210560a0
 2012-06-03 17:26:00 Creating folder: /home/jeelos/solin11.jeelo.nl
+2012-06-04 09:25:50 Checking for available clients.
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:25:50 Processing id <br />, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<br />&status=being_processed&exit_code=0&for=client&hash=d656f5ced3f87f2de865533b782497d4
+2012-06-04 09:25:50 Updated status for record <br /> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651176</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948384</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948616</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>&status=being_processed&exit_code=0&for=client&hash=67e4e60c2c696eddf49a8fe4ec83b39f
+2012-06-04 09:25:50 Updated status for record <font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651328</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948432</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948648</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000&status=being_processed&exit_code=0&for=client&hash=277dafad7ab765eb4a988c59be8e706e
+2012-06-04 09:25:50 Updated status for record <tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000 to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0005</td><td bgcolor='#eeeeec' align='right'>651072</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0061</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0061</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>&status=being_processed&exit_code=0&for=client&hash=52a0b4241c7705d6c4b70c799ed99746
+2012-06-04 09:25:50 Updated status for record <tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651072</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0026</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0026</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>&status=being_processed&exit_code=0&for=client&hash=93b9e91fb2382b086b55000fcd91eee2
+2012-06-04 09:25:50 Updated status for record <tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651088</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0025</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0025</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>652064</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>652064</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>&status=being_processed&exit_code=0&for=client&hash=907aea37d1f74c4129004865c2e57ebe
+2012-06-04 09:25:50 Updated status for record <tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>652064</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651056</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0023</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949240</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949240</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>&status=being_processed&exit_code=0&for=client&hash=a9dca08fc5e5ca718c389892663a7c76
+2012-06-04 09:25:50 Updated status for record <tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949240</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651056</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id <tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949472</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949472</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>&status=being_processed&exit_code=0&for=client&hash=15a78a09556c209cb48f9324820f4e9e
+2012-06-04 09:25:50 Updated status for record <tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>949472</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651056</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0025</td><td bgcolor='#eeeeec' align='right'>948344</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0025</td><td bgcolor='#eeeeec' align='right'>948560</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id (  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>&status=being_processed&exit_code=0&for=client&hash=30c5e4b491f468606afa76b349db098b
+2012-06-04 09:25:50 Updated status for record (  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0003</td><td bgcolor='#eeeeec' align='right'>651168</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948384</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948616</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id </table></font>, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=</table></font>&status=being_processed&exit_code=0&for=client&hash=e37f1b81d0932c6c8bf6cd2a3de359af
+2012-06-04 09:25:50 Updated status for record </table></font> to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0002</td><td bgcolor='#eeeeec' align='right'>654312</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0023</td><td bgcolor='#eeeeec' align='right'>951512</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0023</td><td bgcolor='#eeeeec' align='right'>951744</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:25:50 Processing id Could not open log file ./server_log.txt for class base!, status 
+2012-06-04 09:25:50 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=Could not open log file ./server_log.txt for class base!&status=being_processed&exit_code=0&for=client&hash=c51b2f68c464942fc7160e8755b35e1e
+2012-06-04 09:25:50 Updated status for record Could not open log file ./server_log.txt for class base! to being_processed: <br />
+<font size='1'><table dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: fopen(./server_log.txt) [<a href='function.fopen'>function.fopen</a>]: failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line <i>27</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0002</td><td bgcolor='#eeeeec' align='right'>651280</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948392</td><td bgcolor='#eeeeec'>base::log(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/server.php' bgcolor='#eeeeec'>../server.php<b>:</b>12</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0024</td><td bgcolor='#eeeeec' align='right'>948624</td><td bgcolor='#eeeeec'><a href='http://www.php.net/fopen' target='_new'>fopen</a>
+(  )</td><td title='/home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php' bgcolor='#eeeeec'>../class.base.php<b>:</b>27</td></tr>
+</table></font>
+Could not open log file ./server_log.txt for class base!
+2012-06-04 09:27:32 Checking for available clients.
+2012-06-04 09:27:32 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:28:07 Checking for available clients.
+2012-06-04 09:28:07 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:30:10 Checking for available clients.
+2012-06-04 09:30:10 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:30:44 Checking for available clients.
+2012-06-04 09:30:44 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:30:44 Processing id 126, status prepaired_school
+2012-06-04 09:30:44 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=126&status=being_processed&exit_code=0&for=client&hash=945c9ae99c0f243b81c09522809302e9
+2012-06-04 09:30:44 Updated status for record 126 to being_processed: ok
+2012-06-04 09:30:44 Starting the creation of a new moodle school.
+2012-06-04 09:30:44 Creating folder: /home/jeelos/solin4.srv1a.jeelo.nl
+2012-06-04 09:30:44 Getting db from server for moodle_client id 126
+2012-06-04 09:30:44 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=126&for=client&hash=841565818bc71aada2f5f2f01e76d4d2
+2012-06-04 09:35:29 Checking for available clients.
+2012-06-04 09:35:29 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:35:29 Processing id 126, status prepaired_school
+2012-06-04 09:35:29 Starting the creation of a new moodle school.
+2012-06-04 09:36:25 Checking for available clients.
+2012-06-04 09:36:25 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 09:36:25 Processing id 126, status prepaired_school
+2012-06-04 09:36:25 Starting the creation of a new moodle school.
+2012-06-04 11:07:18 Checking for available clients.
+2012-06-04 11:07:18 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 11:07:18 Processing id 126, status prepaired_school
+2012-06-04 11:07:18 Starting the creation of a new moodle school.
+2012-06-04 11:09:54 Checking for available clients.
+2012-06-04 11:09:54 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 11:09:54 Processing id 126, status prepaired_school
+2012-06-04 11:09:54 Starting the creation of a new moodle school.
+2012-06-04 11:09:54 Getting db from server for moodle_client id 126
+2012-06-04 11:09:54 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=126&for=client&hash=841565818bc71aada2f5f2f01e76d4d2
+2012-06-04 11:21:18 Checking for available clients.
+2012-06-04 11:21:18 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 11:21:18 Processing id 126, status prepaired_school
+2012-06-04 11:21:18 Starting the creation of a new moodle school.
+2012-06-04 11:42:57 CREATE DATABASE `test123` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 12:07:30 CREATE DATABASE `test12` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 12:30:33 Created database user for client database.
+2012-06-04 12:31:59 CREATE DATABASE `test123` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 12:32:18 Created database user for client database.
+2012-06-04 12:49:39 Checking for available clients.
+2012-06-04 12:49:39 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 12:49:39 Processing id 127, status prepaired_school
+2012-06-04 12:49:39 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=127&status=being_processed&exit_code=0&for=client&hash=42557f25655690547ddf183a00c705ac
+2012-06-04 12:49:39 Updated status for record 127 to being_processed: ok
+2012-06-04 12:49:39 Starting the creation of a new moodle school.
+2012-06-04 12:49:39 Creating folder: /home/jeelos/solin5.srv1a.jeelo.nl
+2012-06-04 12:49:39 Getting db from server for moodle_client id 127
+2012-06-04 12:49:39 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=127&for=client&hash=54d92203cd0850b3b4d3c0c3bc4879c1
+2012-06-04 12:49:39 CREATE DATABASE `` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 12:52:58 Checking for available clients.
+2012-06-04 12:52:58 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 12:52:58 Processing id 128, status prepaired_school
+2012-06-04 12:52:58 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=128&status=being_processed&exit_code=0&for=client&hash=a01f233e8c7c9c3566a494a38f2c6cf5
+2012-06-04 12:52:58 Updated status for record 128 to being_processed: ok
+2012-06-04 12:52:58 Starting the creation of a new moodle school.
+2012-06-04 12:52:58 Creating folder: /home/jeelos/solin6.srv1a.jeelo.nl
+2012-06-04 12:52:58 Getting db from server for moodle_client id 128
+2012-06-04 12:52:58 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=128&for=client&hash=a60131a5721bf0d0f2760a658d3872a9
+2012-06-04 12:52:58 CREATE DATABASE `solin6` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 12:52:58 Created database user for client database.
+2012-06-04 12:52:58 Getting codebase from server for moodle_client id 
+2012-06-04 12:52:58 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=128&for=client&hash=9b40a22702783757e7a5df9381469991
+2012-06-04 12:52:58 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=128&for=client&hash=6debe3ecd87bd21c889d705dcaa4bf18
+2012-06-04 12:52:58 tar -xz -C /home/jeelos/solin6.srv1a.jeelo.nl -f /home/jeelos/solin6.srv1a.jeelo.nl/solin6.srv1a.jeelo.nl_code_1338807115.tgz
+2012-06-04 13:02:35 Getting codebase from server for moodle_client id 
+2012-06-04 13:02:35 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=128&for=client&hash=9b40a22702783757e7a5df9381469991
+2012-06-04 13:11:55 Checking for available clients.
+2012-06-04 13:11:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 13:11:55 Processing id 129, status prepaired_school
+2012-06-04 13:11:55 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=129&status=being_processed&exit_code=0&for=client&hash=61261e1793fe5ae7722293daf056e25f
+2012-06-04 13:11:55 Updated status for record 129 to being_processed: ok
+2012-06-04 13:11:55 Starting the creation of a new moodle school.
+2012-06-04 13:11:55 Creating folder: /home/jeelos/solin7.srv1a.jeelo.nl
+2012-06-04 13:11:55 Getting db from server for moodle_client id 129
+2012-06-04 13:11:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=129&for=client&hash=ce0a3398ac10035a02b646ace5f06ef2
+2012-06-04 13:11:55 CREATE DATABASE `solin7` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 13:11:55 Created database user for client database.
+2012-06-04 13:11:55 Getting codebase from server for moodle_client id 129
+2012-06-04 13:11:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=129&for=client&hash=3fdbe6337dee2c06e59bc5ebbcbb33be
+2012-06-04 13:11:55 tar -xz -C /home/jeelos/solin7.srv1a.jeelo.nl -f /home/jeelos/solin7.srv1a.jeelo.nl/solin7.srv1a.jeelo.nl_code_1338808089.tgz
+2012-06-04 13:11:55 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=129&for=client&hash=d9f5d8164d70957a669edd5b244abf31
+2012-06-04 13:13:12 Getting codebase from server for moodle_client id 129
+2012-06-04 13:13:12 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=129&for=client&hash=3fdbe6337dee2c06e59bc5ebbcbb33be
+2012-06-04 13:19:05 Getting codebase from server for moodle_client id 129
+2012-06-04 13:19:05 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=129&for=client&hash=3fdbe6337dee2c06e59bc5ebbcbb33be
+2012-06-04 13:19:30 Getting codebase from server for moodle_client id 129
+2012-06-04 13:19:30 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=129&for=client&hash=3fdbe6337dee2c06e59bc5ebbcbb33be
+2012-06-04 13:21:55 Checking for available clients.
+2012-06-04 13:21:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 13:21:55 Processing id 130, status prepaired_school
+2012-06-04 13:21:55 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=130&status=being_processed&exit_code=0&for=client&hash=34dd925369dbfe3eaa961edc877f214e
+2012-06-04 13:21:55 Updated status for record 130 to being_processed: ok
+2012-06-04 13:21:55 Starting the creation of a new moodle school.
+2012-06-04 13:21:55 Creating folder: /home/jeelos/solin8.srv1a.jeelo.nl
+2012-06-04 13:21:55 Getting db from server for moodle_client id 130
+2012-06-04 13:21:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_database&id=130&for=client&hash=11b0acdf5a9d10cb5d5f9a9cdfd5ae8f
+2012-06-04 13:21:55 CREATE DATABASE `solin8` CHARACTER SET utf8 COLLATE utf8_general_ci;
+2012-06-04 13:21:55 Created database user for client database.
+2012-06-04 13:21:55 Getting codebase from server for moodle_client id 130
+2012-06-04 13:21:55 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=130&for=client&hash=4b05200bc4caa10ea094326967423ba6
+2012-06-04 13:21:55 tar -xz -C /home/jeelos/solin8.srv1a.jeelo.nl -f /home/jeelos/solin8.srv1a.jeelo.nl/solin8.srv1a.jeelo.nl_code_1338808890.tgz
+2012-06-04 13:21:58 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=130&for=client&hash=4b15a7d7abae8d7ceb92c0ee65ee0d4c

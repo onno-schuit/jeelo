@@ -16,8 +16,11 @@ class client extends base {
     static $log_echo = true;
     // static $client_url = ''; // NOT USED?
     static $tmp_dir = 'tmp';
- 
- 
+    static $host = 'localhost';
+    static $user = 'root';
+    static $pass = 'paarse'; 
+
+
     static public function run() {
         require_once("class.csv.php");
         
@@ -61,13 +64,11 @@ class client extends base {
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
         
-
-        $user_and_pass = self::create_database($csv_line);
-        exit('check database results');
-        $user_and_pass = array('username'=>'', 'password'=>'');
-        
+        $account = self::create_database($csv_line);
         self::create_codebase($csv_line);
-        self::create_moodle_config($csv_line, $user_and_pass); // Doesn't actually do anything...
+        exit('everything should be working up till here');
+        self::create_moodle_config($csv_line, $account); // Doesn't actually do anything...
+
         self::add_to_apache($csv_line);
         
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
@@ -78,28 +79,10 @@ class client extends base {
 
     
     public static function create_database($csv_line) {
-        $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . $csv_line->sql_filename;
+        $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->sql_filename);
         self::get_database_from_server($csv_line->id, $target_path);
-
-        /*
-        $user_and_pass = self::create_database_user($csv_line);
-
-        var_dump($user_and_pass);
-        exit();
-
-        /*
-        var_dump($db_zip);
-
-        //shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e 'CREATE DATABASE {$csv_line->shortcode} CHARACTER SET utf8 COLLATE utf8_general_ci;'");
-        exit();
-
-        $user_and_pass = self::create_database_user($csv_line->shortcode);
-
-        //self::create_database($csv_line);
-        //self::import_database($csv_line);
-		
-        return $user_and_pass;
-         */
+        self::install_database($csv_line->shortcode);
+        return self::create_database_account($csv_line->shortcode);
     } // function create_database 
 
 
@@ -112,12 +95,6 @@ class client extends base {
         shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );               
     } // function get_database_from_server
 
-    /*
-
-    public static function import_database() {
-        $db_file = self::get_db_from_server($csv_line);
-    }
-     */
 
     /**
      * Reads variable apache conf file, replaces vars and writes to /apache/conf/domain.conf
@@ -146,47 +123,37 @@ class client extends base {
         shell_exec('apachectl graceful');
         self::log("Apache restarted");
     } // function add_to_apache
- 
 
-    public static function old_create_database($csv_line) {
-        $sql = "CREATE DATABASE `{$csv_line->shortcode}`";
+
+    public static function install_database($database_name) {
+        $sql = "CREATE DATABASE `$database_name` CHARACTER SET utf8 COLLATE utf8_general_ci;";
         self::log($sql);
         self::$db->query($sql);
-    } // function old_create_database
+    } // function install_database
     
 
-    public static function create_database_user($short_code) {
-        $dbname = '' . $short_code; // no prefix
-        $username = $short_code;
+    public static function create_database_account($database_name) {
+        $username = $database_name;
         $password = md5("SomeSalt" . $username); // Unsafe...
         
 		self::$db->query("CREATE USER '$username'@'localhost' IDENTIFIED BY '$password'");
-		self::$db->query("GRANT USAGE ON $dbname . * TO '$username'@'localhost' IDENTIFIED BY '$password'");
-		self::$db->query("GRANT ALL PRIVILEGES ON $dbname . * TO '$username'@'localhost';");
+		self::$db->query("GRANT USAGE ON $database_name . * TO '$username'@'localhost' IDENTIFIED BY '$password'");
+		self::$db->query("GRANT ALL PRIVILEGES ON $database_name . * TO '$username'@'localhost';");
         self::log("Created database user for client database.");
 		
         return array(
             'username' => $username,
             'password' => $password
         );
-    } // function create_database_user
+    } // function create_database_account
     
 
     public static function create_codebase($csv_line) {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
 		self::get_codebase_from_server($csv_line->id, $target_path);
-        self::remove_codebase_from_server($csv_line->id);
         self::extract_codebase_contents($target_path);
+        self::remove_codebase_from_server($csv_line->id);
     } // function create_codebase
-
-    
-    public static function copy_codebase_to_client($csv_line, $codebase) {
-        // The directory prefix is the directory where all other files and subdirectories will be saved to, 
-        // i.e. the top of the retrieval tree.  
-		$cmd = "wget --quiet --directory-prefix=" . static::$target_folder . "/" . $csv_line->domain . " $codebase";
-		self::log($cmd);
-		shell_exec($cmd);
-	} // function copy_codebase_to_client
 
     
     public static function get_or_create_home_folder($domain) {
@@ -207,7 +174,7 @@ class client extends base {
 
 
 	public static function get_codebase_from_server($client_moodle_id, $target) {
-        self::log("Getting codebase from server for moodle_client id {$csv_line->id}");
+        self::log("Getting codebase from server for moodle_client id {$client_moodle_id}");
 		$request = array(
             'request' => 'get_codebase',
             'id'      => $client_moodle_id
@@ -224,35 +191,6 @@ class client extends base {
 		self::get_server_response($request);
 	} // function remove_codebase_from_server
     
-
-    public static function get_db_from_server($csv_line) {
-        self::log("Getting db from server");
-        $request = array(
-            'request' => 'get_database',
-            'id' => $csv_line->id
-        );
-
-        if (!is_dir(self::$tmp_dir)) mkdir(self::$tmp_dir);
-        
-        $response = self::get_server_response($request);
-        // check if we have file contents or maybe an error
-        if (strlen($response) < 100 && strstr($response, 'error')) {
-            self::log($response);
-            die();
-        }
-       
-        // TODO: fixme! -- variables do not exist
-        if (!ftp_chdir($fpc_ftp_conn, $fpc_ftp_path)) {
-            echo "Error go to the directory $fpc_ftp_path.<br />"; 
-        }
-        
-        // write contents to temp file
-        $tmpfile = static::tempnam(self::$tmp_dir, 'jmdl'); // prefix jmdl (jeelo moodle)
-        
-        self::log("Creating file " . $tmpfile . '.gz');
-        return ($tmpfile);
-    } // function get_db_from_server
-
     
     public static function create_moodle_config($csv_line, $user_and_pass) {
         global $CFG;
