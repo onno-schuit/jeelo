@@ -63,10 +63,13 @@ class client extends base {
 
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
-        
         self::create_codebase($csv_line);
-        $account = self::create_database($csv_line);
-        self::create_moodle_config($csv_line, $account); // Doesn't actually do anything...
+        $database_account = self::create_database($csv_line);
+        self::create_moodle_config($database_name = $csv_line->shortcode,
+            $database_user = $database_account['username'],
+            $database_pass = $database_account['password'],
+            $home_directory = static::get_or_create_home_folder($csv_line->domain)
+        );
         exit('everything should be working up till here');
 
         self::add_to_apache($csv_line);
@@ -160,11 +163,12 @@ class client extends base {
 
     
     public static function get_or_create_home_folder($domain) {
-        if (!file_exists(static::$target_folder . '/' . $domain)) {
-            self::log("Creating folder: " . static::$target_folder . '/' . $domain);
-            mkdir(static::$target_folder . '/' . $domain, 0755); // without the public_html folder
+        $home_folder = static::$target_folder . '/' . $domain;
+        if (!file_exists($home_folder)) {
+            self::log("Creating folder: " . $home_folder);
+            mkdir($home_folder, 0755);
         }
-        return static::$target_folder . '/' . $domain;
+        return $home_folder;
 	} // function get_or_create_home_folder
 
 	
@@ -194,10 +198,37 @@ class client extends base {
         self::get_server_response($request);
     } // function remove_codebase_from_server
     
+
+    public static function get_config_content($database_name, $database_user, $database_pass, $home_directory) {
+        $domain = basename($home_directory);
+        return "<?PHP
+unset(\$CFG);
+global \$CFG;
+\$CFG = new stdClass();
+\$CFG->dbtype    = 'mysqli';   
+\$CFG->dblibrary = 'native';   
+\$CFG->dbhost    = 'localhost';
+\$CFG->dbname    = '$database_name';    
+\$CFG->dbuser    = '$database_user';
+\$CFG->dbpass    = '$database_pass';   
+\$CFG->prefix    = 'mdl_';     
+\$CFG->dboptions = array( 'dbpersist' => false, 'dbsocket'  => false, 'dbport'    => '',   );
+\$CFG->dataroot  = '$home_directory/moodledata';
+\$CFG->dirroot  = '$home_directory/public_html';
+\$CFG->wwwroot  = 'http://$domain';
+\$CFG->directorypermissions = 02777;
+\$CFG->admin = 'admin';
+require_once(dirname(__FILE__) . '/lib/setup.php');";
+    } // function get_config_content
+
     
-    public static function create_moodle_config($csv_line, $user_and_pass) {
-        global $CFG;
-		$target = "/home/jeelos/{$csv_line->domain}";
+    public static function create_moodle_config($database_name, $database_user, $database_pass, $home_directory) {
+        umask(0137);
+        $configphp = static::get_config_content($database_name, $database_user, $database_pass, $home_directory);
+        if (($fh = @fopen($home_directory . '/public_html/config.php', 'w')) !== false) {
+            fwrite($fh, $configphp);
+            fclose($fh);
+        }
     } // function create_moodle_config
 
 

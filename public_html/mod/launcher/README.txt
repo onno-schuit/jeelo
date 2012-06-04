@@ -91,6 +91,10 @@ public_html/local/cs_scripts/class.server.php
 
 ----
 
+Assumptions: home directory name for client moodles is same as domain name
+
+----
+
 RUN
 
 1. Use Launcher to specify school, course, users and groups
