@@ -64,10 +64,10 @@ class client extends base {
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
         
-        $account = self::create_database($csv_line);
         self::create_codebase($csv_line);
-        exit('everything should be working up till here');
+        $account = self::create_database($csv_line);
         self::create_moodle_config($csv_line, $account); // Doesn't actually do anything...
+        exit('everything should be working up till here');
 
         self::add_to_apache($csv_line);
         

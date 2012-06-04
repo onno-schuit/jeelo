@@ -69,8 +69,7 @@ class launcher_helper extends helper {
         
     }
     
-	function print_categories_checkboxes($categories_preset = null)
-	{
+	function print_categories_checkboxes($categories_preset = null) {
 		global $CFG, $DB;
 		
 		// "SELECT * FROM {$CFG->prefix}course_categories WHERE visible = 1 AND sortorder != 0
@@ -97,7 +96,10 @@ class launcher_helper extends helper {
         }
 		
         echo '<tr>';
-		echo "<td><input type='checkbox' name='{$this->model_name}[categories][{$category->id}]' value='{$category->id}' id='{$this->model_name}_categories' $checked>{$category->name}</td>";
+        echo "<td>
+                <input id='category_{$category->id}' type='checkbox' name='{$this->model_name}[categories][{$category->id}]' value='{$category->id}' id='{$this->model_name}_categories' $checked>
+                <label for='category_{$category->id}'>{$category->name}</label>
+              </td>";
         echo '</tr>';
 	}
 

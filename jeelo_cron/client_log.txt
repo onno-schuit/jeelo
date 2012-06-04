@@ -454,3 +454,16 @@ Could not open log file ./server_log.txt for class base!
 2012-06-04 13:51:40 http://localhost/jeelo/local/cs_scripts/server.php?request=get_codebase&id=131&for=client&hash=07fb33471adc1aaa9d35e39c90bcd212
 2012-06-04 13:51:40 tar -xz -C /home/jeelos/solin9.srv1a.jeelo.nl -f /home/jeelos/solin9.srv1a.jeelo.nl/solin9.srv1a.jeelo.nl_code_1338810663.tgz
 2012-06-04 13:51:43 http://localhost/jeelo/local/cs_scripts/server.php?request=remove_codebase&id=131&for=client&hash=d4bb4db687295fe0b6fca9f1f029d6aa
+2012-06-04 14:50:08 Checking for available clients.
+2012-06-04 14:50:08 http://localhost/jeelo/local/cs_scripts/server.php?request=get_available_clients&for=client&hash=333694f9f4fb743da921f2c3a812cc0f
+2012-06-04 14:50:08 Processing id Warning: fopen(./server_log.txt): failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line 31, status 
+2012-06-04 14:50:08 http://localhost/jeelo/local/cs_scripts/server.php?request=set_status&id=Warning: fopen(./server_log.txt): failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line 31&status=being_processed&exit_code=0&for=client&hash=5793e67459896d5fae0ca46439397bfc
+2012-06-04 14:50:08 Updated status for record Warning: fopen(./server_log.txt): failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line 31 to being_processed: 
+Warning: fopen(./server_log.txt): failed to open stream: Permission denied in /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php on line 31
+
+Call Stack:
+    0.0003     653928   1. {main}() /home/onno/php/jeelo/public_html/local/cs_scripts/server.php:0
+    0.0036     955976   2. base::log() /home/onno/php/jeelo/public_html/local/cs_scripts/server.php:12
+    0.0036     956192   3. fopen() /home/onno/php/jeelo/public_html/local/cs_scripts/class.base.php:31
+
+Could not open log file ./server_log.txt for class base!
