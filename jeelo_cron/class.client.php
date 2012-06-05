@@ -69,6 +69,7 @@ class client extends base {
             $database_pass = $database_account['password'],
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
+        self::create_moodle_datadir($home_directory);
 
         self::add_to_apache($csv_line);
 
@@ -231,6 +232,11 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         }
     } // function create_moodle_config
 
+
+    public static function create_moodle_datadir($home_directory) {
+        $dirname = $home_directory . '/moodledata';
+        mkdir($dirname, 0777);
+    }
 
     static public function email_school_created($csv_line, $user_and_pass) {
         $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
