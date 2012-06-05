@@ -5,15 +5,15 @@ require_once("class.base.php");
 class server extends base {
 
     static $log_file = './server_log.txt';
-    static $dirroot = '/home/www/jeelo/public_html';
-    static $wwwroot = 'http://jeelo.debian.lcal';
+    static $dirroot = '/home/jeelo/public_html';
+    static $wwwroot = 'http://localhost/jeelo';
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
     static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
     //
     static $host = 'localhost';
     static $user = 'root';
-    static $pass = '';
+    static $pass = 'paarse';
     static $db = 'jeelo_buffer';
 
     /**
