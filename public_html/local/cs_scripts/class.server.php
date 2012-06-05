@@ -11,10 +11,6 @@ class server extends base {
     static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
     //
-    static $host = 'localhost';
-    static $user = 'root';
-    static $pass = '';
-    static $db = 'jeelo_buffer';
 
     /**
      * Checks if the request is valid by comparing the hash with our calculated hash; dies with error if 
