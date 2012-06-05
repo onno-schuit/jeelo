@@ -184,7 +184,8 @@ class client extends base {
             'request' => 'get_codebase',
             'id'      => $client_moodle_id
         );
-        shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );
+        shell_exec( $log = sprintf("wget -O $target '%s'", self::get_request_url($request)) );
+        self::log($log);
     } // function get_codebase_from_server
 
 
@@ -221,11 +222,12 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
 
     
     public static function create_moodle_config($database_name, $database_user, $database_pass, $home_directory) {
-        umask(0137);
         $configphp = static::get_config_content($database_name, $database_user, $database_pass, $home_directory);
-        if (($fh = @fopen($home_directory . '/public_html/config.php', 'w')) !== false) {
+        $filename = $home_directory . '/public_html/config.php';
+        if (($fh = @fopen($filename, 'w')) !== false) {
             fwrite($fh, $configphp);
             fclose($fh);
+            chmod($filename, 0644); // rw-r--r--
         }
     } // function create_moodle_config
 
@@ -343,6 +345,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
 
 
     public static function get_request_url($request) {
+        global $cs_server_url;
         if (!is_array($request)) {
             throw new Exception("Parameter should be an associative array");
         }
@@ -358,7 +361,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         $hash = self::create_hash_from_query_string($query_string);
         $query_string .= "&hash=$hash";
         
-        $request_url = self::$server_url . '?' . $query_string;
+        $request_url = $cs_server_url . '?' . $query_string;
         self::log($request_url);
         
         return $request_url; 

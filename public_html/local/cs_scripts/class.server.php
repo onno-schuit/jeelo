@@ -189,6 +189,8 @@ class server extends base {
 
     
     function handle_request_remove_codebase($query_string) {
+        /// for testing purposes
+        return;
 		// create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
         $moodle_client = static::get_moodle_client_by_id($id);

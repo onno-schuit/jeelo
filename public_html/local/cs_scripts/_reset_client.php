@@ -10,7 +10,11 @@ class base_ext extends base {
     function reset() {
         $db = self::$db;
         
+        $db->query("FLUSH PRIVILEGES");
         $db->query("UPDATE client_moodles SET status='prepaired_school'");
+        $db->query("DROP DATABASE testclient");
+        $db->query("DROP USER 'testclient'@'localhost'");
+        $db->query("FLUSH PRIVILEGES");
     }
 }
 base_ext::init_db($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname); // from config.php
