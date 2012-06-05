@@ -10,6 +10,7 @@ class server extends base {
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
     static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
+    //
 
     static $host = 'localhost';
     static $user = 'root';
@@ -44,7 +45,9 @@ class server extends base {
     /* Deletes courses and categories from database
      * To be called after an update has been succesfull */
     public static function handle_request_clean_buffer_db($query_string) {
+
         extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
+        
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
 
@@ -348,3 +351,4 @@ class server extends base {
 } // class server 
 
 ?>
+
