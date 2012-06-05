@@ -28,3 +28,8 @@ CVS
 moodledata/*
 *.swo
 *.swn
+*.gz
+jeelo_cron/apache_vhost_file.txt
+jeelo_cron/config.php
+public_html/local/cs_scripts/server_log.txt
+public_html/local/cs_scripts/config.php
