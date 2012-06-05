@@ -75,8 +75,10 @@ class client extends base {
         self::add_to_apache($csv_line);
 
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
+        /*
         self::process_update_client($csv_line);
         self::email_school_created($csv_line, $user_and_pass);
+        */
         
     } // function process_new_client
 
