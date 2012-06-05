@@ -1,4 +1,4 @@
-<VirtualHost 109.70.4.93:80>
+<VirtualHost *:80>
         DocumentRoot /home/jeelos/{domain}/public_html
         ServerName {domain}
         ServerAlias {shortcode}.solin.nl

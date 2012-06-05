@@ -13,8 +13,6 @@ class client extends base {
     static $prefix = 'mdl_';
 
     static $host = 'localhost';
-    static $user = 'root';
-    static $pass = 'paarse'; 
 
     static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
     static $apache_conf_dir = '/etc/apache2/conf/jeelos';
@@ -130,10 +128,11 @@ class client extends base {
     /* @param   string     $zip        Filename and path of the zip containing the database dump
      */
     public static function install_database($database_name, $zip) {
+        global $cs_dbuser, $cs_dbpass;
         $sql = "CREATE DATABASE `$database_name` CHARACTER SET utf8 COLLATE utf8_general_ci;";
         self::log($sql);
         self::$db->query($sql);
-        shell_exec(sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", static::$user, static::$pass));
+        shell_exec(sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", $cs_dbuser, $cs_dbpass));
     } // function install_database
     
 
