@@ -1,5 +1,6 @@
 <?php
 include_once("{$CFG->dirroot}/local/cs_scripts/class.server.php");
+include_once("{$CFG->dirroot}/local/cs_scripts/config.php");
 
 class launcher_helper extends helper {
 
@@ -12,10 +13,10 @@ class launcher_helper extends helper {
 	} // function has_assess_rights()
 
     public static function set_buffer_db() {
-        global $BUFFER_DB, $DB, $CFG;
+        global $BUFFER_DB, $DB, $CFG, $cs_dbhost, $cs_dbname, $cs_dbpass, $cs_dbuser;
         $db_class = get_class($DB);
         $BUFFER_DB = new $db_class();
-        $BUFFER_DB->connect(server::$host, server::$user, server::$pass, server::$db, false);
+        $BUFFER_DB->connect($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname, false);
     } // function set_source_db
 	
     function print_menu() {

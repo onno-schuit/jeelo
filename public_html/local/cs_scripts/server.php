@@ -2,10 +2,10 @@
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-//require_once("../../config.php");
+require_once("config.php");
 require_once("class.server.php");
 
-server::init_db(server::$host, server::$user, server::$pass, server::$db); // from config.php
+server::init_db($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname); // from config.php
 
 $query_string = $_SERVER['QUERY_STRING'];
 

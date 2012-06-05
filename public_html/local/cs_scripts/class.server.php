@@ -11,10 +11,13 @@ class server extends base {
     static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
     //
+<<<<<<< HEAD
     static $host = 'localhost';
     static $user = 'root';
     static $pass = 'paarse';
     static $db = 'jeelo_buffer';
+=======
+>>>>>>> b0dab640bfcb00696ac9df24464d538a38d51dca
 
     /**
      * Checks if the request is valid by comparing the hash with our calculated hash; dies with error if 
@@ -204,6 +207,8 @@ class server extends base {
 
     
     function handle_request_remove_codebase($query_string) {
+        /// for testing purposes
+        return;
 		// create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
         $moodle_client = static::get_moodle_client_by_id($id);

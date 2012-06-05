@@ -8,9 +8,6 @@ class base {
     //static $log_file = 'default_log.txt'; // probably not used!
     
     public static function init_db($host=false, $user=false, $pass=false, $database_name=false) {
-        $host = ($host) ? $host : static::$host;
-        $user = ($user) ? $user : static::$user;
-        $pass = ($pass) ? $pass : static::$pass;
 
         static::$db = new Database_Mysql();
         static::$db->connect($host, $user, $pass, $database_name);
