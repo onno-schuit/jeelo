@@ -1,6 +1,5 @@
 <?php
-require_once("../public_html/local/cs_scripts/class.base.php");
-require_once("../public_html/local/replicator/class.replicator.php");
+require_once("class.base.php");
 require_once("config.php");
 // For debugging:
 error_reporting(E_ALL);
@@ -18,6 +17,11 @@ class client extends base {
     static $apache_conf_dir = '/etc/apache2/conf/jeelos';
     static $target_folder =  '/home/jeelos';
     static $log_file =  '/var/log/jeelo/client.txt';
+
+
+    public static function parent_test() {
+        echo "Okay from client::parent_test";        
+    } // function parent_test
 
 
     static public function run() {

@@ -41,6 +41,13 @@ switch($_REQUEST['request']) {
     case 'clean_buffer_db':
         server::handle_request_clean_buffer_db($query_string);
         break;
+    default:
+        $method_name = 'handle_request_' . $_REQUEST['request'];
+        server::$method_name($query_string);
+        /********
+        $method_call = 'handle_request_' . $_REQUEST['request'] . '($query_string);';
+        eval($str);
+         */
 }
 
 

@@ -1,6 +1,6 @@
 <?php
 
-require_once("class.base.php");
+require_once('../../../jeelo_cron/class.base.php');
 
 class server extends base {
 
@@ -170,13 +170,15 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
 
         $moodle_client = static::get_moodle_client_by_id($id);
+        static::send_file_to_client($moodle_client['codebase_filename']);
+    } // function handle_request_get_codebase
 
-        $file =  $moodle_client['codebase_filename'];
+
+    public static function send_file_to_client($file) {
         if (!file_exists($file)) {
 			self::log("Failed to find codebase. File does not exist: $file");
 			echo "no_file";
         }
-
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename='.basename($file));
@@ -188,8 +190,17 @@ class server extends base {
         ob_clean();
         flush();
         readfile($file);
-        exit;
-    } // function handle_request_get_codebase
+        exit;               
+    } // function send_file_to_client
+
+
+    public static function handle_request_get_csv_zip($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
+        extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
+
+        $moodle_client = static::get_moodle_client_by_id($id);
+        static::send_file_to_client($moodle_client['csv_filename']);
+    } // function handle_request_get_csv_zip
 
     
     function handle_request_remove_codebase($query_string) {

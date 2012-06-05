@@ -77,7 +77,7 @@ class client_updater extends client {
 
         $str_search = "background:url(pix/navbar.png) top repeat-x;";
         $str_replace = "  background-color: {$this->navbar};\n";
-
+FunctionName
         foreach($handler as $key=>$data) {
             if (trim($data) == $str_search) $handler[$key] = $str_replace;
         }
