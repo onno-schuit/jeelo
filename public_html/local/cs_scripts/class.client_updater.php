@@ -39,7 +39,7 @@ class client_updater extends base {
             die();
         }
         
-        self::update_server_status(self::$_client_id, 'being_processed');
+        self::update_server_status(self::$_client_id, 'being_updated');
         switch($status) {
             case 'first_install':
                 self::run_first_install();                

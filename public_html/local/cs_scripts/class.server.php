@@ -288,7 +288,7 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
-        if (!in_array($status, array('new','being_processed', 'processed','first_install'))) {
+        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated'))) {
             die('invalid status');
         }
         $exit_code = isset($exit_code) ? $exit_code : 0;
@@ -319,13 +319,23 @@ class server extends base {
         $shortname = str_replace("'", '', $shortname); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT CONCAT_WS(':', status, id) FROM {client_moodles} 
+        $query = sprintf("SELECT id, status FROM {client_moodles} 
             WHERE shortname='%s' AND is_for_client='%s'", 
             $shortname, $for);
             
         // run the query
-        $result = $db->fetch_field($query);
-        die($result);
+        $row = $db->fetch_row($query);
+        
+        $queue = false;
+        if ($row['status'] == 'needs_update') {
+            $queue = $db->fetch_field("SELECT COUNT(id) FROM {client_moodles} WHERE status='being_updated'");
+        }
+        if ($queue) {
+            $row['status'] .= '_in_queue';
+        }
+        
+        die($row['status'] . ':' . $row['id']); // also send id, because client might only know 'shortname'
+        
     } // function handle_request_set_status
     
     /**
