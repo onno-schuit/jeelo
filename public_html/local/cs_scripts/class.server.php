@@ -85,6 +85,37 @@ class server extends base {
     } // function handle_request_get_available_clients
 
     /**
+     * Outputs a csv line for the next installation to be upgraded
+     * 
+     * @param string $query_string
+     * @return void
+     */
+    public static function handle_request_get_next_upgrade($query_string) {
+        // create vars: $request,$for,$hash from query_string
+        //server.php?request=get_available_clients&for=client
+        extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
+
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
+        if ($db->fetch_field("SELECT COUNT(id) FROM client_moodles WHERE is_for_client='$for'
+            AND status='being_upgraded'")) {
+                self::log("Checking upgrade records: upgrade already in progress");
+                die(); // upgrade already in progress.. wait for it to end..
+                
+        }
+
+        $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' 
+            AND status IN ('processed')
+            AND to_be_upgraded=1 LIMIT 1";
+        self::log($query);
+
+        $row = $db->fetch_row($query);
+        
+        die(join(';', $row));
+        
+    } // function handle_request_get_available_clients
+
+    /**
      * Sends file back if criteria are met; otherwise prints error
      * 
      * @param string $query_string
@@ -187,6 +218,34 @@ class server extends base {
         exit;
     } // function handle_request_get_codebase
 
+    /**
+     * Sends file back if criteria are met; otherwise prints error
+     * 
+     * @param string $query_string
+     * @return void
+     */
+    public static function handle_request_get_upgrade_codebase($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
+
+        $file =  '/etc/moodle_clients/upgrade_codebase.tgz';
+        if (!file_exists($file)) {
+			self::log("Failed to find codebase. File does not exist: $file");
+			echo "no_file";
+        }
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename='.basename($file));
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($file));
+        ob_clean();
+        flush();
+        readfile($file);
+        exit;
+    } // function handle_request_get_codebase
     
     function handle_request_remove_codebase($query_string) {
         /// for testing purposes

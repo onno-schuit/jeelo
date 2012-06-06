@@ -25,13 +25,20 @@ class client extends base {
         self::log("Checking for available clients.");
         
         $response = self::get_server_response( $request = array('request' => 'get_available_clients') );
-        if (!$response) die(); // no clients available for processing.. do nothing
-        $csv = new csv();
-        $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
-
-        while($moodle_clients_line = $csv->nextline()) {
-            self::process_client_from_csv($moodle_clients_line);
+        if ($response) {
+            $csv = new csv();
+            $moodle_clients = $csv->build_csv_object($response, 'client_moodles');
+    
+            while($moodle_clients_line = $csv->nextline()) {
+                self::process_client_from_csv($moodle_clients_line);
+            }
         }
+        
+        self::log("Checking for upgrade.");
+        $response = self::get_server_response( $request = array('request' => 'get_next_upgrade') );
+        if (!$response) die(); // no clients available for processing.. do nothing
+        self::process_upgrade($response);
+        
     } // function run
 
 
@@ -58,6 +65,25 @@ class client extends base {
         //self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
     } // function process_client_from_csv
 
+
+    public static function process_upgrade($line) {
+        $info = csv::to_object($line, 'client_moodles');
+
+        // download code base to tmp file
+        $request = array(
+            'request' => 'get_upgrade_codebase'
+        );
+        $target = '/tmp/codebase_upgrade.tgz';
+        $info->codebase_upgrade = $target;
+        
+        $cmd = sprintf("wget -O $target '%s'", self::get_request_url($request));
+        self::log($cmd);
+        shell_exec( $cmd );
+        
+        require_once(dirname(__FILE__) . "/class.client_upgrade.php");
+
+        client_upgrade::run($info);               
+    }
 
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");

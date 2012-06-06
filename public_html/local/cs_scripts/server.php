@@ -16,6 +16,9 @@ switch($_REQUEST['request']) {
     case 'get_available_clients':
         server::handle_request_get_available_clients($query_string);
         break;
+    case 'get_next_upgrade':
+        server::handle_request_get_next_upgrade($query_string);
+        break;
     case 'set_status':
         server::handle_request_set_status($query_string);
         break;
@@ -28,6 +31,9 @@ switch($_REQUEST['request']) {
     case 'get_codebase':
         //server::test();
         server::handle_request_get_codebase($query_string);
+        break;
+    case 'get_upgrade_codebase':
+        server::handle_request_get_upgrade_codebase($query_string);
         break;
     case 'remove_codebase':
         server::handle_request_remove_codebase($query_string);
