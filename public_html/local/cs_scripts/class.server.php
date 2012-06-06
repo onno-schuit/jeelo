@@ -312,6 +312,29 @@ class server extends base {
         // return associative array
         return $vars;
     } // function _export_query_string
+
+
+    public static function handle_request_get_moodle_client_by_id($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+
+        // use sprintf to replace variables
+        $query = "SELECT * FROM client_moodles WHERE id = '$client_moodle_id';";
+        
+        self::log($query);
+        
+        // run the query
+        $rows = $db->fetch_rows($query);
+        if (count($rows) == 0) die(); // Die immediately if no records are found
+        
+        foreach ($rows as $row) {
+            echo join(';', $row);
+            echo "\n";
+        }
+        // halt
+        die();               
+    } // function handle_request_get_moodle_client_by_id
     
 } // class server 
 
