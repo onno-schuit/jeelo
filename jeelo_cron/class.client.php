@@ -15,7 +15,6 @@ class client extends base {
     static $host = 'localhost';
 
     static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
-    static $apache_conf_dir = '/etc/apache2/conf/jeelos';
     static $target_folder =  '/home/jeelos';
     static $log_file =  '/var/log/jeelo/client.txt';
 
@@ -110,9 +109,10 @@ class client extends base {
      * @return void
      */
     public static function add_to_apache($csv_line) {
+        global $cs_apache_conf_dir;
         $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $csv_line->domain);
         $filename = str_replace('.', '_', $filename);
-        $destination = static::$apache_conf_dir  . '/' . $filename;
+        $destination = $cs_apache_conf_dir  . '/' . $filename;
         self::log("Creating apache config file $destination");
 
         $contents = file_get_contents(dirname(__FILE__) . '/apache_vhost_file.txt');
