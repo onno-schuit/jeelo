@@ -1,6 +1,6 @@
 <?php
 
-define('CLI_SCRIPT', true);
+if (!defined('CLI_SCRIPT')) define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
