@@ -72,6 +72,8 @@ class client extends base {
         self::create_moodle_datadir($home_directory);
 
         self::add_to_apache($csv_line);
+        
+        self::update_server_status($csv_line->id, 'first_install');
 
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
         /*

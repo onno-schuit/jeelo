@@ -19,6 +19,9 @@ switch($_REQUEST['request']) {
     case 'set_status':
         server::handle_request_set_status($query_string);
         break;
+    case 'get_status':
+        server::handle_request_get_status($query_string);
+        break;
     case 'get_database':
         server::handle_request_get_database($query_string);
         break;

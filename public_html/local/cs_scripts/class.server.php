@@ -288,7 +288,7 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
-        if (!in_array($status, array('new','being_processed', 'processed'))) {
+        if (!in_array($status, array('new','being_processed', 'processed','first_install'))) {
             die('invalid status');
         }
         $exit_code = isset($exit_code) ? $exit_code : 0;
@@ -302,6 +302,30 @@ class server extends base {
         // run the query
         $db->query($query);
         die('ok');
+    } // function handle_request_set_status
+
+    /**
+     * Updates status and exit code of a record if criteria are met; otherwise prints error
+     * 
+     * @param string $query_string
+     * @return void
+     */
+    public static function handle_request_get_status($query_string) {
+        // create vars: $request,$for,$hash from query_string
+        extract(self::_export_query_string($query_string, 'for,shortname')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+        $for = str_replace("'", '', $for); // sanitize user input
+        $shortname = str_replace("'", '', $shortname); // sanitize user input
+
+        // use sprintf to replace variables
+        $query = sprintf("SELECT CONCAT_WS(':', status, id) FROM {client_moodles} 
+            WHERE shortname='%s' AND is_for_client='%s'", 
+            $shortname, $for);
+            
+        // run the query
+        $result = $db->fetch_field($query);
+        die($result);
     } // function handle_request_set_status
     
     /**
