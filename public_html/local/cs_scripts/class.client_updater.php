@@ -39,14 +39,14 @@ class client_updater extends base {
             die();
         }
         
-        self::update_server_status(self::$_client_id, 'being_updated');
+//        self::update_server_status(self::$_client_id, 'being_updated');
         switch($status) {
             case 'first_install':
                 self::run_first_install();                
             case 'needs_update':
         }
         
-        self::update_server_status(self::$_client_id, 'processed');
+//        self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
 
@@ -86,11 +86,12 @@ EOF;
     
     static protected function _remove_all_courses() {
         global $DB, $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
         
-        $courses = $DB->get_records_select('course', 1);
-        foreach ($courses as $course) {
-            self::log(sprintf("Deleting course %d", $course->id));
-            delete_course($course->id, false);
+        $categories = $DB->get_records_select('course_categories', 1); 
+        foreach ($categories as $category) {
+            self::log(sprintf("Deleting category %d recursively", $category->id));
+            category_delete_full($category);
         }
         
     }
