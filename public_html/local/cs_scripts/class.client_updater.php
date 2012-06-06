@@ -30,9 +30,9 @@ class client_updater extends client {
 
     // Objects in following arrays are endowed with additional properties, usually after 'processing' 
     // (performed by client_updater::process_[..]), except in the case of courses
-    public static $courses = false; // has $course->current_category which contains foreign key pointing to mdl_course_categories.id
+    public static $courses = false; // has $course->groupyear, and $course->current_category which contains foreign key pointing to mdl_course_categories.id
     public static $categories = false; // has $category->current_id which contains the actual mdl_course_categories.id
-    public static $school_groups = false; // has $school_group->years and $school_group->name
+    public static $school_groups = false; // has $school_group->years (array) and $school_group->name
     public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
 
 
@@ -166,10 +166,38 @@ class client_updater extends client {
 
     public static function process_groups($client_moodle_id) {
         $groups = static::get_groups($client_moodle_id);
-        foreach($groups as $group) {
-
+        foreach($groups as $school_group) {
+            // each school_group gets its own version of all courses belonging to the same 'year' as the school_group
+            foreach(static::find_courses_by_year($school_group->years[0], $client_moodle_id) as $course) {
+                static::create_course_for_group($course, $school_group, $client_moodle_id); // school_group is used for new course name
+            }
         }
     } // function process_groups
+
+
+    public static function find_courses_by_year($year, $client_moodle_id) {
+        if (! static::$courses) static::get_courses($client_moodle_id);
+    } // function find_courses_by_year
+
+
+    public static function create_course_for_group($course, $school_group, $client_moodle_id) {
+        // create actual course
+        // ... TODO ...
+        // enrol all users in the current school_group in this course:
+        // static::enrol_users($course, $school_group);
+    } // function create_course_for_group
+
+
+    public static function enrol_users($course, $school_group, $client_moodle_id) {
+        foreach(static::find_users_by_group($school_group, $client_moodle_id) as $user) {
+            //enroll user in $course...
+        }
+    } // function enrol_users
+
+
+    public static function find_users_by_group($school_group, $client_moodle_id) {
+        if (! static::$users) static::process_users($client_moodle_id);
+    } // function find_users_by_group
 
 
     public static function get_categories_from_server($client_moodle_id) {
