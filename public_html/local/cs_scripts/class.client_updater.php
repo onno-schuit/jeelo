@@ -15,17 +15,25 @@ require_once(dirname(__FILE__) . '/../../../jeelo_cron/class.client.php');
  * If you run client_updater#main, it will check with the 'server' (buffer db wrapper)
  * to see if there are any tasks for this particular Moodle.
  *
+ * Please note that the memoized results are NOT returned by $client_moodle_id: it
+ * is assumed that the class will be used for updating one moodle client at a time only.
+ * If you plan to change that behavior, simply store all memoized results with the associated $client_moodle_id
+ * (e.g. in an array indexed by $client_moodle_id).
+ *
+ *
  * TODO: remove {home_folder}/csv folder after updater has run its course
  */
 class client_updater extends client {
 
     public static $client_moodle = false;
-    public static $courses = false;
-    public static $categories = false;
-    public static $school_groups = false;
-    public static $users = false;
     public static $client_db = false;
 
+    // Objects in following arrays are endowed with additional properties, usually after 'processing' 
+    // (performed by client_updater::process_[..]), except in the case of courses
+    public static $courses = false; // has $course->current_category which contains foreign key pointing to mdl_course_categories.id
+    public static $categories = false; // has $category->current_id which contains the actual mdl_course_categories.id
+    public static $school_groups = false; // has $school_group->years and $school_group->name
+    public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
 
 
     public static function set_client_db() {
@@ -135,7 +143,7 @@ class client_updater extends client {
     } // function get_courses_from_server 
 
 
-    // memoizes results
+    // memoizes results, triggers 'static::process_categories($client_moodle_id)'
     public static function get_courses($client_moodle_id) {
         if (static::$courses) return static::$courses;
 
@@ -149,10 +157,19 @@ class client_updater extends client {
             foreach($properties as $index => $property) {
                 $course->$property = $parsed[$index];
             }
+            $course->current_category_id = static::get_current_category_id($client_moodle_id, $course->parent_category_id);
             $courses[] = $course;
         }
         return static::$courses = $courses;
     } // function get_courses
+
+
+    public static function process_groups($client_moodle_id) {
+        $groups = static::get_groups($client_moodle_id);
+        foreach($groups as $group) {
+
+        }
+    } // function process_groups
 
 
     public static function get_categories_from_server($client_moodle_id) {
@@ -185,15 +202,7 @@ class client_updater extends client {
     } // function get_categories
 
 
-    public static function create_courses($groups, $parent_category_id) {
-        foreach($groups as $group) {
-            foreach($group->years as $group_year) {
-                static::find_courses_for($group_year, $parent_category_id);
-            }
-        }
-    } // function create_courses
-
-
+    // Read csv file for users and create or update users
     public static function process_users($client_moodle_id) {
         global $CFG, $DB;
 
@@ -206,6 +215,44 @@ class client_updater extends client {
     } // function process_users
 
 
+    public static function process_categories($client_moodle_id) {
+        global $CFG, $DB;
+
+        $query = "UPDATE {$CFG->prefix}course_categories SET visible = 0 WHERE id != 1";
+        $DB->execute($query);
+        $categories = static::get_categories($client_moodle_id);        
+        foreach($categories as $category) {
+            static::create_or_update_category($category);
+        }
+    } // function process_categories
+
+
+    // $category->current_id is updated with actual mdl_course_categories.id
+    public static function create_or_update_category($category) {
+        global $CFG, $DB;
+        if (! $existing_category = $DB->get_record('course_categories', array('name' => $category->name)) ) {
+            return $category->current_id = $DB->insert_record('course_categories', $category);
+        }
+        $temp_id = $category->id;
+        $category->id = $category->current_id = $existing_category->id;
+        $query = "UPDATE {$CFG->prefix}course_categories SET visible = 1 WHERE id = {$category->id}";
+        $DB->execute($query);
+        $category->id = $temp_id;
+        /*
+        return $DB->update_record('course_categories', $category);               
+        */
+    } // function create_or_update_category
+
+
+    public static function get_current_category_id($client_moodle_id, $parent_category_id) {
+        if (! static::$categories) static::process_categories($client_moodle_id);
+        foreach(static::$categories as $category) {
+            if ($category->id == $parent_category_id) return $category->current_id;
+        }
+        return false;
+    } // function get_current_category_id
+
+
     public static function create_or_update_user($user) {
         global $CFG, $DB;
         if (! $existing_user = $DB->get_record('user', array('username' => $user->email)) ) {
@@ -215,11 +262,11 @@ class client_updater extends client {
     } // function create_or_update_user
 
 
-
     public static function update_user($existing_user, $user) {
         global $CFG, $DB;
         self::log("Update existing user {$existing_user->id}");
-        //$DB->execute("UPDATE {$CFG->prefix}user SET deleted = 0 WHERE id = {$existing_user->id}");
+        $user->current_user = $existing_user;
+        $DB->execute("UPDATE {$CFG->prefix}user SET deleted = 0 WHERE id = {$existing_user->id}");
     } // function update_user
 
 
@@ -245,9 +292,12 @@ class client_updater extends client {
         $string = join("','", $values);
         $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES 
             ('$string')";
-        print  "\n" . $sql . "\n";
+        //print  "\n" . $sql . "\n";
+        // Throws error for unfathomable reason:
         //$DB->insert_record('user', $new_user);
         static::$db->query($sql);
+        $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid));
+        $user->current_user = $record;
     } // function create_user
 
 } // class client_updater
