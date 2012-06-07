@@ -235,6 +235,7 @@ class client_updater extends client {
 
     public static function enrol_users($course, $school_group, $client_moodle_id) {
         foreach(static::find_users_by_group($school_group, $client_moodle_id) as $user) {
+
             //enroll user in $course...
         }
     } // function enrol_users
@@ -242,6 +243,13 @@ class client_updater extends client {
 
     public static function find_users_by_group($school_group, $client_moodle_id) {
         if (! static::$users) static::process_users($client_moodle_id);
+        $found_users = array();
+        foreach(static::$users as $user) {
+            if (($user->groep1 == $school_group->name) || ($user->groep2 == $school_group->name) || ($user->groep3 == $school_group->name)) {
+                $found_users[] = $user;
+            }
+        }
+        return $found_users;
     } // function find_users_by_group
 
 
@@ -373,6 +381,7 @@ class client_updater extends client {
         $user->current_user = $record;
     } // function create_user
 
+
     static public function run() {
         global $CFG;
         
@@ -397,11 +406,13 @@ class client_updater extends client {
             case 'first_install':
                 self::run_first_install();                
             case 'needs_update':
+                self::process_groups(self::$_client_id);
         }
         
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
 
     static public function get_password($length=8) {
         $chars = 'bcdfghjklmnprstvwxzaeiou';
