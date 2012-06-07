@@ -56,7 +56,8 @@ $string['upload_groups'] = 'Upload groups';
 $string['settings_content'] = 'Content to be uploaded';
 $string['settings_layout'] = 'Layout settings';
 $string['navbar'] = 'Navigation bar color';
-$string['logo'] = 'Logo';
+$string['logo'] = 'Custom Logo';
+$string['customcss'] = 'Custom CSS';
 $string['required_groups'] = 'If you want to upload users the groups are required.';
 $string['required_users'] = 'If you want to upload groups the users are required.';
 $string['error_file_extension'] = 'You can only upload csv files.';
@@ -76,3 +77,5 @@ $string['mail_feedback_body_start'] = 'Hello $a->name,<br /><br />
 $string['mail_feedback_body_end'] = 'Sincerely,<br /><br />Solin';
 
 $string['error_key_variables'] = 'Key variables are missing. Please notify the programmers.';
+$string['upload_users_error'] = 'Please select a csv file containing users';
+$string['upload_groups_error'] = 'Please select a csv file containing groups';

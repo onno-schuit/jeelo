@@ -64,7 +64,7 @@ class client_updater extends client {
     public static function get_client_moodle($client_moodle_id) {
         if (static::$client_moodle) return static::$client_moodle;
 
-        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified');
+        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified', 'to_be_upgraded', 'logo', 'customcss');
         $data = static::get_moodle_client_from_server($client_moodle_id);
         $parsed = str_getcsv($data, ';');
         $client_moodle = new stdClass();
@@ -494,11 +494,21 @@ class client_updater extends client {
                 self::run_first_install();                
             case 'needs_update':
                 self::process_groups(self::$_client_id);
+                self::remove_temp_folders($_client_id);
         }
-        
+
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
+
+    static public function remove_temp_folders($client_moodle_id) {
+        $client_moodle = static::get_client_moodle($client_moodle_id);
+        $csv_dir = static::get_or_create_home_folder($client_moodle->domain) . '/csv';
+        $courses_dir = static::get_or_create_home_folder($client_moodle->domain) . '/courses';
+        shell_exec("rm -Rf {$csv_dir}");
+        shell_exec("rm -Rf {$courses_dir}");
+    } // function remove_temp_folders
 
 
     static public function get_password($length=8) {

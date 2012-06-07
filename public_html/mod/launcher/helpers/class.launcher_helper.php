@@ -43,6 +43,25 @@ class launcher_helper extends helper {
         echo "</tr>";
     }
     
+
+    function print_textarea($field, $moodle, $input_extra = '') {
+
+        // Set the preset value if one is already set
+        // Set default of the field 'server' to 'localhost'
+        $preset_value = (isset($moodle->$field)) ? $moodle->$field : (($field == 'server_name') ? 'localhost' : '');
+        echo "
+        <tr>
+            <td>".	get_string($field, 'launcher') . 
+					$this->print_help_button() . "</td>
+            <td><textarea id='$field' name='{$this->model_name}[$field]'>$preset_value</textarea></td>";
+        if ($moodle) {
+            echo "
+            <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";
+        }
+        echo "</tr>";
+    } // function print_textarea
+
+
     function print_help_button() {
 		// We'll figure this out later
 		// It used to be like this:

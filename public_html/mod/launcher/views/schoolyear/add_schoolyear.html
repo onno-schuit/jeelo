@@ -23,6 +23,15 @@
         <td><input type="text" name="<?=$this->model_name?>[admin_email]" value="<?=(isset($schoolyear->environment->admin_email)) ? $schoolyear->environment->admin_email : ''?>" /></td>
     </tr>
     <tr><td colspan='2'><hr /></td></tr>
+
+	<tr>
+		<td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
+	</tr>
+	<?php
+	$this->print_input_field('logo', $schoolyear);
+	$this->print_textarea('customcss', $schoolyear, 'class="color"');
+	?>
+
     
     <tr>
         <td colspan='2'><b><?=get_string('settings_content', 'launcher');?></b></td>
