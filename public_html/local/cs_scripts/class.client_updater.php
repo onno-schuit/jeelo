@@ -29,6 +29,7 @@ class client_updater extends client {
     public static $client_moodle = false;
     public static $client_db = false;
     public static $admin_user = false;
+    public static $student_role_id = false;
 
     // Objects in following arrays are endowed with additional properties, usually after 'processing' 
     // (performed by client_updater::process_[..]), except in the case of courses
@@ -129,6 +130,7 @@ class client_updater extends client {
         $handler = fopen($csv_directory . '/users.csv', 'r');
         $line = 0;
         $properties = array("voornaam","achternaam","email","woonplaats","land","rol1","rol2","groep1","groep2","groep3");
+        $users = array();
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
             if ($line == 1) continue;
@@ -235,7 +237,7 @@ class client_updater extends client {
 
 
     public static function enrol_users($new_course, $school_group, $client_moodle_id) {
-        foreach(static::find_users_by_group($school_group, $client_moodle_id) as $user) {
+        foreach(static::find_users_by_group($school_group->name, $client_moodle_id) as $user) {
             static::create_course_role_assignment($user, $new_course->id);
         }
     } // function enrol_users
@@ -287,7 +289,14 @@ class client_updater extends client {
                     '".time()."',
                     'manual'
                 )";
-        $DB->execute($query);
+        //$DB->execute($query);
+        $DB->insert_record('role_assignments', array(
+                'roleid' => $role_id,
+                'contextid' => $context_id,
+                'userid' => $user->current_user->id,
+                'timemodified' => time(),
+                'enrol' => 'manual')
+        );
         static::insert_into_user_enrolments_if_not_exists($user->current_user->id, $course_id);
     } // function create_course_role_assignment
 
@@ -300,7 +309,7 @@ class client_updater extends client {
         if ( $DB->get_record('user_enrolments', array('userid' => $user_id, 'enrolid' => $enrol_id)) ) return;
         $user_enrolment = new object();
         $user_enrolment->userid = $user_id;
-        $user_enrolment->enrolid = $enrol_id; // $this->get_enrol_id($course_id);
+        $user_enrolment->enrolid = $enrol_id;
         $user_enrolment->timestart = time();
         $user_enrolment->timeend = time() + 240 * 4 * 7 * 24 * 60 * 60;
         $user_enrolment->timemodified = time();
@@ -312,17 +321,18 @@ class client_updater extends client {
 
 
     static function get_student_role_id() {
+        global $DB;
         if (static::$student_role_id) return static::$student_role_id;
         $student_role = $DB->get_record('role', array('shortname' => 'student'));
         return static::$student_role_id = $student_role->id;
     } // function get_student_role_id
 
 
-    public static function find_users_by_group($school_group, $client_moodle_id) {
+    public static function find_users_by_group($school_group_name, $client_moodle_id) {
         if (! static::$users) static::process_users($client_moodle_id);
         $found_users = array();
         foreach(static::$users as $user) {
-            if (($user->groep1 == $school_group->name) || ($user->groep2 == $school_group->name) || ($user->groep3 == $school_group->name)) {
+            if (($user->groep1 == $school_group_name) || ($user->groep2 == $school_group_name) || ($user->groep3 == $school_group_name)) {
                 $found_users[] = $user;
             }
         }
