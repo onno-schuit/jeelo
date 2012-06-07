@@ -1,4 +1,5 @@
 <?php
+if (! defined('CLI_SCRIPT') ) define('CLI_SCRIPT', true);
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once(dirname(__FILE__) . '/../replicator/class.replicator.php');
@@ -229,16 +230,92 @@ class client_updater extends client {
         $DB->update_record('course', $new_course);
 
         // enrol all users in the current school_group in this course:
-        //static::enrol_users($new_course, $school_group, $client_moodle_id);
+        static::enrol_users($new_course, $school_group, $client_moodle_id);
     } // function create_course_for_group
 
 
-    public static function enrol_users($course, $school_group, $client_moodle_id) {
+    public static function enrol_users($new_course, $school_group, $client_moodle_id) {
         foreach(static::find_users_by_group($school_group, $client_moodle_id) as $user) {
-
-            //enroll user in $course...
+            static::create_course_role_assignment($user, $new_course->id);
         }
     } // function enrol_users
+
+
+
+    static public function map_role($user_role) {
+         switch($user_role) {
+            case 'leerling':
+                $role_shortname = 'student';
+                break;
+            case 'leerkracht':
+                $role_shortname = 'teacher';
+                break;
+            case 'invalkracht':
+                $role_shortname = 'substitute';
+                break;
+            case 'schoolleider':
+                $role_shortname = 'schoolleader';
+                break;
+            default:
+                return false; // Return false if role is something else, shouldn't happen though...
+                break;
+        }               
+        return $role_shortname;
+    } // function map_role
+
+
+    public static function create_course_role_assignment($user, $course_id) {
+        global $DB, $CFG;
+        if (!$role_shortname = static::map_role($user->rol1)) return false;
+
+        $context = $DB->get_record('context', array('contextlevel' => 50, 'instanceid' => $course_id));
+        $context_id = $context->id;
+
+        $role = $DB->get_record('role', array('shortname' => $role_shortname));
+        $role_id = $role->id;
+
+		// Check if it already exists
+        if ($DB->get_record('role_assignments', array('roleid' => $role_id, 'contextid' => $context_id, 'userid' => $user->current_user->id)) ) {
+            return true;
+        }
+        $query = "INSERT INTO {$CFG->prefix}role_assignments (
+                    roleid, contextid, userid, timemodified, enrol
+                ) VALUES (
+                    '$role_id',
+                    '$context_id',
+                    '{$user->current_user->id}',
+                    '".time()."',
+                    'manual'
+                )";
+        $DB->execute($query);
+        static::insert_into_user_enrolments_if_not_exists($user->current_user->id, $course_id);
+    } // function create_course_role_assignment
+
+
+    public static function insert_into_user_enrolments_if_not_exists($user_id, $course_id) {
+        global $DB;
+        if (!$enrol = $DB->get_record('enrol', array('courseid' => $course_id, 'roleid' => static::get_student_role_id() ) ) ) return false;
+        $enrol_id = $enrol->id;
+
+        if ( $DB->get_record('user_enrolments', array('userid' => $user_id, 'enrolid' => $enrol_id)) ) return;
+        $user_enrolment = new object();
+        $user_enrolment->userid = $user_id;
+        $user_enrolment->enrolid = $enrol_id; // $this->get_enrol_id($course_id);
+        $user_enrolment->timestart = time();
+        $user_enrolment->timeend = time() + 240 * 4 * 7 * 24 * 60 * 60;
+        $user_enrolment->timemodified = time();
+        $user_enrolment->timecreated = time();
+        $user_enrolment->status = 0; // 0 means active enrolment, 1 means suspended, anything else means inactive
+
+        $DB->insert_record('user_enrolments', $user_enrolment);
+    } // function insert_into_user_enrolments_if_not_exists
+
+
+    static function get_student_role_id() {
+        if (static::$student_role_id) return static::$student_role_id;
+        $student_role = $DB->get_record('role', array('shortname' => 'student'));
+        return static::$student_role_id = $student_role->id;
+    } // function get_student_role_id
 
 
     public static function find_users_by_group($school_group, $client_moodle_id) {
