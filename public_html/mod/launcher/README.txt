@@ -37,6 +37,7 @@ Create "buffer" database.
 
 ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NULL ,
         ADD INDEX ( `to_be_upgraded` );
+ALTER TABLE `jeelo_buffer`.`client_courses` ADD `backup_name` VARCHAR( 255 ) NOT NULL ;
 
 
 Specify connection details in config.php:
