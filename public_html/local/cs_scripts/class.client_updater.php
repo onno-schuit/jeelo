@@ -38,10 +38,10 @@ class client_updater extends client {
 
 
     public static function get_admin_user() {
-        if (static::$admin_user) return $admin_user;
+        if (static::$admin_user) return static::$admin_user;
 
         global $DB;
-        static::$admin_user = $DB->get_record('user', array('username' => 'admin'));
+        return static::$admin_user = $DB->get_record('user', array('username' => 'admin'));
     } // function get_admin_user
 
 
@@ -173,7 +173,7 @@ class client_updater extends client {
     public static function get_courses($client_moodle_id) {
         if (static::$courses) return static::$courses;
 
-        $properties = array('id', 'fullname', 'shortname', 'groupyear', 'client_moodle_id', 'parent_category_id');
+        $properties = array('id', 'fullname', 'shortname', 'groupyear', 'client_moodle_id', 'parent_category_id', 'backup_name');
         $data = static::get_courses_from_server($client_moodle_id);
         $lines = array_filter(explode("\n", $data));
         $courses = array();
@@ -192,7 +192,7 @@ class client_updater extends client {
 
 
     public static function process_groups($client_moodle_id) {
-        $groups = static::get_groups($client_moodle_id);
+        $groups = static::get_school_groups($client_moodle_id);
         foreach($groups as $school_group) {
             // each school_group gets its own version of all courses belonging to the same 'year' as the school_group
             foreach(static::find_courses_by_year($school_group->years[0], $client_moodle_id) as $course) {
@@ -214,15 +214,21 @@ class client_updater extends client {
 
 
     public static function create_course_for_group($course, $school_group, $client_moodle_id) {
+        global $DB;
+
         // create actual course
         $client_moodle = static::get_client_moodle($client_moodle_id);
         $zip_path = static::get_or_create_home_folder($client_moodle->domain) . "/courses/{$course->backup_name}";
+        $admin_user = static::get_admin_user();
         $new_course = replicator::restore_course(static::$admin_user->id, $zip_path, $course->current_category_id);
+
         // rename course
-        //
-        // ... TODO ...
+        $new_course->shortname = "$course->shortname {$school_group->name}";
+        $new_course->fullname = "$course->fullname {$school_group->name}";
+        $DB->update_record('course', $new_course);
+
         // enrol all users in the current school_group in this course:
-        // static::enrol_users($course, $school_group);
+        //static::enrol_users($new_course, $school_group, $client_moodle_id);
     } // function create_course_for_group
 
 
