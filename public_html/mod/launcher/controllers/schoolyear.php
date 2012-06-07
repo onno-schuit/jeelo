@@ -18,7 +18,18 @@ class schoolyear_controller extends controller
 
     function create_schoolyear() {
         
-        //if (!$schoolyear) $schoolyear = new schoolyear();
+        global $id;
+		$this->has_access_rights();
+        
+        // validate form
+
+        // get jeelo_buffer.client_moodles record
+        
+        // move uploaded groups and students
+
+        // update client_moodles record
+        
+		$this->get_view(array());
     }
 }
 
