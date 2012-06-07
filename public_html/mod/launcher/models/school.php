@@ -14,7 +14,7 @@ class school extends user {
     public $dumps_location    = '/etc/moodle_clients';
 
 
-    function __construct($properties) {
+    function __construct($properties = false) {
         global $CFG;
 
         $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));

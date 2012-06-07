@@ -137,7 +137,7 @@ class launcher_helper extends helper {
         echo "<option value='select'>Select</option>";
 
         foreach($clients as $client) {
-            echo "<option value='{$client->id}'>{$client->shortname}</option>";
+            echo "<option value='{$client->id}'>{$client->fullname}</option>";
         }
         echo "</select>";
     }
