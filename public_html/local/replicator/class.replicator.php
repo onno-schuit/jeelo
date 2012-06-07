@@ -1,6 +1,6 @@
 <?php
 
-define('CLI_SCRIPT', true);
+if (!defined('CLI_SCRIPT')) define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
@@ -288,7 +288,7 @@ class replicator {
     /**
      * Set color or logo for theme. Please note that a logo can really only be just a url, not
      * an actual image upload.
-     * Note: data is store in table mdl_config_plugins.
+     * Note: data is stored in table mdl_config_plugins.
      *
      * @param   string  $key    Name of the setting (e.g. 'headerbgc')
      * @param   string  $value  Actual value for the setting (e.g. '#AD0006')

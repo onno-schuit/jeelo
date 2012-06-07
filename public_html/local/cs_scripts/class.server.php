@@ -5,8 +5,10 @@ require_once("class.base.php");
 class server extends base {
 
     static $log_file = './server_log.txt';
+    /*
     static $dirroot = '/home/www/jeelo/public_html';
     static $wwwroot = 'http://jeelo.debian.lcal';
+     */
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
     static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
     // status can also be: being_processed
@@ -197,13 +199,25 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
 
         $moodle_client = static::get_moodle_client_by_id($id);
+        static::send_file_to_client($moodle_client['codebase_filename']);
+    } // function handle_request_get_codebase
 
-        $file =  $moodle_client['codebase_filename'];
+
+    public static function handle_request_download_courses($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
+        // create vars: $request,$for,$hash from query_string
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+
+        $moodle_client = static::get_moodle_client_by_id($client_moodle_id);
+        static::send_file_to_client($moodle_client['courses_filename']);
+    } // function handle_request_download_courses
+
+
+    public static function send_file_to_client($file) {
         if (!file_exists($file)) {
 			self::log("Failed to find codebase. File does not exist: $file");
 			echo "no_file";
         }
-
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename='.basename($file));
@@ -215,8 +229,17 @@ class server extends base {
         ob_clean();
         flush();
         readfile($file);
-        exit;
-    } // function handle_request_get_codebase
+        exit;               
+    } // function send_file_to_client
+
+
+    public static function handle_request_get_csv_zip($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
+        extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
+
+        $moodle_client = static::get_moodle_client_by_id($id);
+        static::send_file_to_client($moodle_client['csv_filename']);
+    } // function handle_request_get_csv_zip
 
     /**
      * Sends file back if criteria are met; otherwise prints error
@@ -258,48 +281,21 @@ class server extends base {
 
 
     function handle_request_get_courses($query_string) {
-        extract(self::_export_query_string($query_string, 'for,groupyear,client_moodle_id')); // puts query string into separate variables
-        
-        $courses_to_call = array();
-        $groupyears = explode('/', $groupyear);
-        unset($groupyear);
-        
-        // Get all the groups in an array for a join
-        foreach($groupyears as $groupyear) {
-            foreach(self::$possible_groups as $key=>$possible_group) {
-                if (in_array($groupyear, $possible_group)) $courses_to_call[$key] = join('/', $possible_group);
-            }
-        }
-
-        $sql_extra = '';
-        $count = 0;
-        foreach($courses_to_call as $key => $course_to_call) {
-            $count ++;
-            $sql_extra .= "'$course_to_call'";
-            if ($count != count($courses_to_call)) $sql_extra .= ','; // Make sure we wont have a comma at the end
-        }
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         
         $db = self::$db; // makes it easier to use
-        $for = str_replace("'", '', $for); // sanitize user input
 
         // use sprintf to replace variables
-        $query = "SELECT * FROM client_courses
-            WHERE groupyear IN ($sql_extra)
-            AND client_moodle_id = '$client_moodle_id'
-            AND category_id = '$category_id'";
+        $query = "SELECT * FROM client_courses WHERE client_moodle_id = '$client_moodle_id';";
         
-        //exit($query);
         self::log($query);
-        echo $query;
         
         // run the query
         $rows = $db->fetch_rows($query);
-        if (count($rows) == 0) die(); // Die immidietly if no records are found
+        if (count($rows) == 0) die(); // Die immediately if no records are found
         
         foreach ($rows as $row) {
-            foreach($row as $key=>$column){
-                echo ($key != 'parent_category_id') ? "$column;" : $column;
-            }
+            echo join(';', $row);
             echo "\n";
         }
         // halt
@@ -309,12 +305,9 @@ class server extends base {
 
     function handle_request_get_categories($query_string) {
 
-        // create vars: $request,$for,$hash from query_string
-        //server.php?request=get_available_clients&for=client
-        extract(self::_export_query_string($query_string, 'for,client_moodle_id')); // puts query string into separate variables
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         
         $db = self::$db; // makes it easier to use
-        $for = str_replace("'", '', $for); // sanitize user input
 
         // use sprintf to replace variables
         $query = sprintf("SELECT * FROM {client_categories} WHERE client_moodle_id = '%s'", $client_moodle_id);
@@ -324,9 +317,7 @@ class server extends base {
         $rows = $db->fetch_rows($query); 
 
         foreach ($rows as $row) {
-            foreach($row as $key=>$column){
-                echo ($key != 'client_moodle_id') ? "$column;" : $column;
-            }
+            echo join($row,';');
             echo "\n";
         }
 
@@ -430,7 +421,28 @@ class server extends base {
         // return associative array
         return $vars;
     } // function _export_query_string
+
+
+    public static function handle_request_get_moodle_client_by_id($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+        
+        $db = self::$db; // makes it easier to use
+
+        // use sprintf to replace variables
+        $query = "SELECT * FROM client_moodles WHERE id = '$client_moodle_id';";
+        
+        self::log($query);
+        
+        // run the query
+        $rows = $db->fetch_rows($query);
+        if (count($rows) == 0) die(); // Die immediately if no records are found
+        
+        foreach ($rows as $row) {
+            echo join(';', $row);
+            echo "\n";
+        }
+        // halt
+        die();               
+    } // function handle_request_get_moodle_client_by_id
     
 } // class server 
-
-?>

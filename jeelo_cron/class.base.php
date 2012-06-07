@@ -4,11 +4,10 @@ require_once("class.db.php");
 
 class base {
 
-    static $db;
+    static $db = false;
     //static $log_file = 'default_log.txt'; // probably not used!
     
     public static function init_db($host=false, $user=false, $pass=false, $database_name=false) {
-
         static::$db = new Database_Mysql();
         static::$db->connect($host, $user, $pass, $database_name);
     }

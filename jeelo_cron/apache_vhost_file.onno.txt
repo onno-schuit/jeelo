@@ -1,0 +1,7 @@
+<VirtualHost *:80>
+        DocumentRoot /home/jeelos/{domain}/public_html
+        ServerName {domain}
+        ServerAlias {shortcode}.solin.nl
+        CustomLog /var/log/apache2/{domain}-access.log common
+        ErrorLog /var/log/apache2/{domain}-error.log
+</VirtualHost>

@@ -1,6 +1,6 @@
 <?php
-require_once("class.base.php");
-require_once("config.php");
+require_once(dirname(__FILE__) . "/../public_html/local/cs_scripts/class.base.php");
+require_once(dirname(__FILE__) . "/config.php");
 // For debugging:
 error_reporting(E_ALL);
 ini_set('display_errors','On');
@@ -102,6 +102,7 @@ class client extends base {
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
         self::create_moodle_datadir($home_directory);
+        exit('okay so far?');
 
         self::add_to_apache($csv_line);
         

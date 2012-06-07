@@ -53,10 +53,6 @@ switch($_REQUEST['request']) {
     default:
         $method_name = 'handle_request_' . $_REQUEST['request'];
         server::$method_name($query_string);
-        /********
-        $method_call = 'handle_request_' . $_REQUEST['request'] . '($query_string);';
-        eval($str);
-         */
 }
 
 
