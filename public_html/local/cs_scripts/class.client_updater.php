@@ -27,13 +27,22 @@ class client_updater extends client {
 
     public static $client_moodle = false;
     public static $client_db = false;
+    public static $admin_user = false;
 
     // Objects in following arrays are endowed with additional properties, usually after 'processing' 
     // (performed by client_updater::process_[..]), except in the case of courses
-    public static $courses = false; // has $course->groupyear, and $course->current_category which contains foreign key pointing to mdl_course_categories.id
+    public static $courses = false; // has $course->groupyear, and $course->current_category_id which contains foreign key pointing to mdl_course_categories.id
     public static $categories = false; // has $category->current_id which contains the actual mdl_course_categories.id
     public static $school_groups = false; // has $school_group->years (array) and $school_group->name
     public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
+
+
+    public static function get_admin_user() {
+        if (static::$admin_user) return $admin_user;
+
+        global $DB;
+        static::$admin_user = $DB->get_record('user', array('username' => 'admin'));
+    } // function get_admin_user
 
 
     public static function set_client_db() {
@@ -206,6 +215,11 @@ class client_updater extends client {
 
     public static function create_course_for_group($course, $school_group, $client_moodle_id) {
         // create actual course
+        $client_moodle = static::get_client_moodle($client_moodle_id);
+        $zip_path = static::get_or_create_home_folder($client_moodle->domain) . "/courses/{$course->backup_name}";
+        $new_course = replicator::restore_course(static::$admin_user->id, $zip_path, $course->current_category_id);
+        // rename course
+        //
         // ... TODO ...
         // enrol all users in the current school_group in this course:
         // static::enrol_users($course, $school_group);
