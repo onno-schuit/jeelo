@@ -67,7 +67,6 @@ class client extends base {
             */
         }
 
-        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
     } // function process_client_from_csv
 
 
@@ -104,7 +103,7 @@ class client extends base {
         self::create_moodle_datadir($home_directory);
 
         self::add_to_apache($csv_line);
-        
+
         self::update_server_status($csv_line->id, 'first_install');
 
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
@@ -271,6 +270,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     public static function create_moodle_datadir($home_directory) {
         $dirname = $home_directory . '/moodledata';
         mkdir($dirname, 0777);
+        chmod($dirname, 0777);
     }
 
     static public function email_school_created($csv_line, $user_and_pass) {
