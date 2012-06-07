@@ -63,7 +63,7 @@ class client extends base {
             */
         }
 
-        //self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
+        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
     } // function process_client_from_csv
 
 
