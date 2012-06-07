@@ -495,11 +495,26 @@ class client_updater extends client {
             case 'needs_update':
                 self::process_groups(self::$_client_id);
                 self::remove_temp_folders($_client_id);
+                self::update_moodle_client($client_id);
         }
-
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
+
+    static public function update_moodle_client($client_moodle_id) {
+        global $DB;
+        $current_moodle = $DB->get_record( 'course', array('category' => 0, 'format' => 'site') );
+        $client_moodle = get_client_moodle($client_moodle_id);
+
+        if (isset($client_moodle->shortname) && (trim($client_moodle->shortname) == '')) $current_moodle->shortname = $client_moodle->shortname;
+        if (isset($client_moodle->fullname) && (trim($client_moodle->fullname) == '')) $current_moodle->fullname = $client_moodle->fullname;
+
+        if (isset($client_moodle->logo) && (trim($client_moodle->logo) == '')) {
+            //replicator::configure_theme($key, $value, $theme = 'theme_formal_white')          
+        }
+                
+    } // function update_moodle_client
 
 
     static public function remove_temp_folders($client_moodle_id) {

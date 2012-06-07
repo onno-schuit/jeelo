@@ -39,7 +39,7 @@ ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NU
         ADD INDEX ( `to_be_upgraded` );
 ALTER TABLE `jeelo_buffer`.`client_courses` ADD `backup_name` VARCHAR( 255 ) NOT NULL ;
 ALTER TABLE `client_moodles` ADD `logo` VARCHAR( 255 ) NULL ,
-ADD `customcss` VARCHAR( 255 ) NULL 
+ADD `customcss` VARCHAR( 255 ) NULL ;
 
 Specify connection details in config.php:
 
