@@ -38,6 +38,7 @@ class client_updater extends client {
     public static $school_groups = false; // has $school_group->years (array) and $school_group->name
     public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
     protected static $_client_id;
+    protected static $_admin_email;
 
 
     public static function get_admin_user() {
@@ -480,8 +481,9 @@ class client_updater extends client {
             'shortname' => $shortname) );
         if (!$response) die(); // empty response.. weird..
         
-        list($status, $client_id) = explode(':', $response);
+        list($client_id, $status, $email) = explode(';', $response);
         self::$_client_id = (int)$client_id;
+        self::$_admin_email = $email;
         
         if (!in_array($status, array('first_install', 'needs_update'))) {
             // we could log 'nothing to do', but if cron runs every minute, the log file will be huge..
@@ -513,7 +515,7 @@ class client_updater extends client {
     }
 
     static protected function _make_admin_password() {
-        global $DB, $CFG, $cs_admin_email;
+        global $DB, $CFG;
         require_once($CFG->dirroot . '/user/lib.php');
         $admin_user = $DB->get_record_select('user', 'id=2');
         $password = self::get_password();
@@ -530,7 +532,7 @@ Wachtwoord: $password
 --
 EOF;
 
-        mail($cs_admin_email, "Nieuw wachtwoord voor Jeelo installatie", $message);
+        mail(self::$_admin_email, "Nieuw wachtwoord voor Jeelo installatie", $message);
         self::log("Mailed new password for admin to $cs_admin_email");
         
     }

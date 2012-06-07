@@ -375,7 +375,7 @@ class server extends base {
         $shortname = str_replace("'", '', $shortname); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT id, status FROM {client_moodles} 
+        $query = sprintf("SELECT id, status, email FROM {client_moodles} 
             WHERE shortname='%s' AND is_for_client='%s'", 
             $shortname, $for);
             
@@ -390,7 +390,7 @@ class server extends base {
             $row['status'] .= '_in_queue';
         }
         
-        die($row['status'] . ':' . $row['id']); // also send id, because client might only know 'shortname'
+        die(join(';', $row)); // id, status, email
         
     } // function handle_request_set_status
     
