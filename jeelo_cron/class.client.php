@@ -85,7 +85,7 @@ class client extends base {
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
         client_upgrade::run($info);
         
-s        self::update_server_status($info->id, 'upgraded'); // all done!               
+        self::update_server_status($info->id, 'upgraded'); // all done!               
     }
 
     public static function process_new_client($csv_line) {
