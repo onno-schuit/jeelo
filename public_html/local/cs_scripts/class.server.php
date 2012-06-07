@@ -172,6 +172,16 @@ class server extends base {
     } // function handle_request_get_codebase
 
 
+    public static function handle_request_download_courses($query_string) {
+        error_reporting(0); // notices and warnings interfere with zip download...
+        // create vars: $request,$for,$hash from query_string
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+
+        $moodle_client = static::get_moodle_client_by_id($client_moodle_id);
+        static::send_file_to_client($moodle_client['courses_filename']);
+    } // function handle_request_download_courses
+
+
     public static function send_file_to_client($file) {
         if (!file_exists($file)) {
 			self::log("Failed to find codebase. File does not exist: $file");

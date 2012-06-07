@@ -21,7 +21,7 @@ require_once(dirname(__FILE__) . '/../../../jeelo_cron/class.client.php');
  * (e.g. in an array indexed by $client_moodle_id).
  *
  *
- * TODO: remove {home_folder}/csv folder after updater has run its course
+ * TODO: remove {home_folder}/csv and {home_folder}/courses folder after updater has run its course
  */
 class client_updater extends client {
 
@@ -77,11 +77,11 @@ class client_updater extends client {
         self::log("Getting csv file from server for client_moodle id {$client_moodle_id}");
         $client_moodle = static::get_client_moodle($client_moodle_id);
         $target_directory = static::get_or_create_home_folder($client_moodle->domain) . '/csv';
+        if (file_exists($target_directory)) return $target_directory;
         $request = array(
             'request' => 'get_csv_zip',
             'id'      => $client_moodle_id
         );
-        if (file_exists($target_directory)) return $target_directory;
         shell_exec("mkdir $target_directory");
         shell_exec( sprintf("wget -O {$target_directory}/csv.tgz '%s'", self::get_request_url($request)) );
         shell_exec( "cd $target_directory; tar -xzf csv.tgz");
@@ -143,7 +143,24 @@ class client_updater extends client {
     } // function get_courses_from_server 
 
 
-    // memoizes results, triggers 'static::process_categories($client_moodle_id)'
+    public static function get_and_unzip_courses_from_server($client_moodle_id) {
+        self::log("Download zip with courses from server for client_moodle id {$client_moodle_id}");
+        $client_moodle = static::get_client_moodle($client_moodle_id);
+        $target_directory = static::get_or_create_home_folder($client_moodle->domain) . '/courses';
+        if (file_exists($target_directory)) return $target_directory;
+        $request = array(
+            'request' => 'download_courses',
+            'client_moodle_id' => $client_moodle_id
+        );               
+        shell_exec("mkdir $target_directory");
+        shell_exec( $log = sprintf("wget -O {$target_directory}/courses.tgz '%s'", self::get_request_url($request)) );
+        shell_exec( "cd $target_directory; tar -xzf courses.tgz");
+        self::log($log);
+        return $target_directory;
+    } // function get_and_unzip_courses_from_server 
+
+
+    // memoizes results, triggers 'static::process_categories($client_moodle_id)', also downloads actual courses zip from server
     public static function get_courses($client_moodle_id) {
         if (static::$courses) return static::$courses;
 
@@ -160,6 +177,7 @@ class client_updater extends client {
             $course->current_category_id = static::get_current_category_id($client_moodle_id, $course->parent_category_id);
             $courses[] = $course;
         }
+        static::get_and_unzip_courses_from_server($client_moodle_id);
         return static::$courses = $courses;
     } // function get_courses
 
@@ -177,6 +195,12 @@ class client_updater extends client {
 
     public static function find_courses_by_year($year, $client_moodle_id) {
         if (! static::$courses) static::get_courses($client_moodle_id);
+        $found_courses = array();
+        foreach(static::$courses as $course) {
+            $years = explode('/', $course->groupyear);
+            if (in_array($year, $years)) $found_courses[] = $course;
+        }
+        return $found_courses;
     } // function find_courses_by_year
 
 

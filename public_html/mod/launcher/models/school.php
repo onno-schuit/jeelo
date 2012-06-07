@@ -178,20 +178,22 @@ class school extends user {
     function dump_course($course, $category_id) {
         global $USER;
 
-        $target = "{$this->dumps_location}/courses/{$course->fullname}.zip";
+        $backup_name = "course_{$course->id}.zip";
+        $target = "{$this->dumps_location}/courses/$backup_name";
 
         $stored_file = $this->backup_course($USER->id, $course->id);
         $stored_file->copy_content_to($target);
 
-        $this->save_course_in_buffer($course, $category_id);
+        $this->save_course_in_buffer($course, $category_id, $backup_name);
 
     } // function dump_course
 
-    function save_course_in_buffer($course, $category_id) {
+    function save_course_in_buffer($course, $category_id, $backup_name) {
         global $BUFFER_DB;
 
         $course->client_moodle_id = $this->buffer_id;
         $course->parent_category_id = $category_id;
+        $course->backup_name = $backup_name;
 
         return ($BUFFER_DB->insert_record('client_courses', $course));
     } // function save_course_in_buffer
