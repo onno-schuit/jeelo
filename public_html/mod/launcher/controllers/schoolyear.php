@@ -1,12 +1,15 @@
 <?php
-//require_once($CFG->dirroot.'/local/soda/class.user.php');
+require_once($CFG->dirroot.'/mod/launcher/models/school.php');
 
-class schoolyear_controller extends controller
+include_once('launcher.php');
+class schoolyear_controller extends launcher_controller
 {
 
 	function index() {
 		$this->has_access_rights();
+        $schoolyear = new school(array('fake' => 0));
 		
+        //$BUFFER_DB->get_record('client_moodles', array());
         $this->add_schoolyear();
     }
 

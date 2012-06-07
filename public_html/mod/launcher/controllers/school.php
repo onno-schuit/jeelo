@@ -1,20 +1,27 @@
 <?php
 
-class school_controller extends controller
+include_once('launcher.php');
+class school_controller extends launcher_controller
 {
 
 	function index() {
+        global $CFG;
+
 		$this->has_access_rights();
-		
-        $this->add_school();
+        
+        $school = new school(array(
+            'customcss' => static::get_theme_setting('customcss', 'theme_' . $CFG->theme),
+            'logo' => static::get_theme_setting('logo', 'theme_' . $CFG->theme)
+        ));
+        $this->add_school($school);
 	}
+
 
 	function add_school($school = false) {
 		$this->has_access_rights();
-		
 		$this->get_view(array('school'=>$school), 'add_school');
-		
 	}
+
 	
 	function create_school() {
         global $id;
@@ -30,11 +37,10 @@ class school_controller extends controller
         redirect($url);
 	}
 
-    function confirm() {
 
+    function confirm() {
         $buffer_id_hash = required_param('env', PARAM_RAW);
         $this->get_view(array('buffer_id_hash'=>$buffer_id_hash), 'confirmed');
-
     }
 }
 

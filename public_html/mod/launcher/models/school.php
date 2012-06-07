@@ -1,6 +1,6 @@
 <?php
 
-// Moodle backup scriptz
+// Moodle backup scripts
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -58,6 +58,7 @@ class school extends user {
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status
 
+
     function define_validation_rules() {
 
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
@@ -90,6 +91,7 @@ class school extends user {
 
 
     function validate() {
+
         $valid = $this->validate_upload_files();
         $valid = $valid && parent::validate();
                 
