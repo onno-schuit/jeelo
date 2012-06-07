@@ -10,7 +10,6 @@ class code_dumper {
         
         $siteroot = str_replace('/public_html', '', $CFG->dirroot);
         $cmd = "cd $siteroot ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*";
-        self::log($cmd);
         return shell_exec($cmd);
     } // function dump_codebase
 
