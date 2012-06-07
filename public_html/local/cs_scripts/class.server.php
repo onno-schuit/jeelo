@@ -347,14 +347,20 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
-        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated'))) {
+        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated', 'upgraded'))) {
             die('invalid status');
         }
         $exit_code = isset($exit_code) ? $exit_code : 0;
 
-        // use sprintf to replace variables
+        // if client is upgraded, set status to 'processed' and unflag 'to_be_upgraded'
+        $set = "status='%s', exit_code=%d";
+        if ($status == 'upgraded') {
+            $set .= ", to_be_upgraded=0";
+            $status = 'processed';
+        }
+        
         $query = sprintf("UPDATE {client_moodles} 
-            SET status='%s', exit_code=%d
+            SET $set
             WHERE id=%d AND is_for_client='%s'", 
             $status, $exit_code, $id, $for);
             

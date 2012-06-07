@@ -153,8 +153,6 @@ function xmldb_launcher_upgrade($oldversion) {
 
     if ($oldversion < 2012060600) {
 
-        $DB->execute("ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NULL ,
-        ADD INDEX ( `to_be_upgraded` ) ");
 
         upgrade_mod_savepoint(true, 2012060600, 'launcher');
     }

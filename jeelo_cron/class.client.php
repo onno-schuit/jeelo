@@ -38,6 +38,7 @@ class client extends base {
         $response = self::get_server_response( $request = array('request' => 'get_next_upgrade') );
         if (!$response) die(); // no clients available for processing.. do nothing
         self::process_upgrade($response);
+        die();
         
     } // function run
 
@@ -80,9 +81,11 @@ class client extends base {
         self::log($cmd);
         shell_exec( $cmd );
         
+        // let the client_upgrade class handle the rest
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
-
-        client_upgrade::run($info);               
+        client_upgrade::run($info);
+        
+s        self::update_server_status($info->id, 'upgraded'); // all done!               
     }
 
     public static function process_new_client($csv_line) {
