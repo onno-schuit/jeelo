@@ -250,7 +250,7 @@ global \$CFG;
 \$CFG->dataroot  = '$home_directory/moodledata';
 \$CFG->dirroot  = '$home_directory/public_html';
 \$CFG->wwwroot  = 'http://$domain';
-\$CFG->directorypermissions = 02777;
+\$CFG->directorypermissions = 0777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function get_config_content
@@ -271,6 +271,8 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         $dirname = $home_directory . '/moodledata';
         mkdir($dirname, 0777);
         chmod($dirname, 0777);
+        $dirname = $home_directory . '/moodledata/temp/backup';
+        mkdir($dirname, 0777, true); // recursive;
     }
 
     static public function email_school_created($csv_line, $user_and_pass) {

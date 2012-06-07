@@ -35,7 +35,7 @@ Specify group year for each course, in this format: 7/8 (use "course settings" t
 
 Create "buffer" database. 
 
-ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NULL ,
+ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NULL DEFAULT 0,
         ADD INDEX ( `to_be_upgraded` );
 ALTER TABLE `jeelo_buffer`.`client_courses` ADD `backup_name` VARCHAR( 255 ) NOT NULL ;
 
