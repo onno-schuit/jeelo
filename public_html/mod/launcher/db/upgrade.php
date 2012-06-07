@@ -151,6 +151,12 @@ function xmldb_launcher_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2007040200, 'launcher');
     }
 
+    if ($oldversion < 2012060600) {
+
+
+        upgrade_mod_savepoint(true, 2012060600, 'launcher');
+    }
+
     // And that's all. Please, examine and understand the 3 example blocks above. Also
     // it's interesting to look how other modules are using this script. Remember that
     // the basic idea is to have "blocks" of code (each one being executed only once,

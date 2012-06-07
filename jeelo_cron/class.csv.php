@@ -3,7 +3,7 @@
 class csv {
 
     // The elements of this array are made available as keys in a 'csv' array
-    private $client_moodles_fields = array(
+    static $client_moodles_fields = array(
         'id',
         'timecreated',
         'domain',
@@ -21,10 +21,11 @@ class csv {
         'is_for_client',
         'status',
         'exit_code',
-        'timemodified'
+        'timemodified',
+        'to_be_upgraded'
     );
 
-    private $client_categories_fields = array(
+    static $client_categories_fields = array(
         'id',
         'name',
         'description',
@@ -40,7 +41,7 @@ class csv {
         'original_id'
     );
 
-    private $client_courses_fields = array(
+    static $client_courses_fields = array(
         'id',
         'backup_name',
         'course_fullname',
@@ -63,7 +64,7 @@ class csv {
      */
     function build_csv_object($data, $table_name) {
         $this->lines = explode("\n", trim($data));
-        $columns = $this->{$table_name.'_fields'};
+        $columns = self::${$table_name.'_fields'};
 
         foreach($this->lines as $line_num=>$line) {
             if (empty($line)) continue; // Skip lines with no data
@@ -83,6 +84,21 @@ class csv {
         $csv = (isset($this->csv[$this->curr_line])) ? $this->csv[$this->curr_line] : false;
         $this->curr_line ++;
         return $csv;
+    }
+    
+    function to_object($line, $table_name) {
+        $columns = self::${$table_name.'_fields'};
+        $properties = explode(';', $line);
+        $result = new stdClass();
+        
+        // Connect properties to object
+        foreach($properties as $key_property=>$property) {
+            $column = $columns[$key_property];
+            $result->$column = trim($property);
+        }
+
+        return $result;
+        
     }
 }
 

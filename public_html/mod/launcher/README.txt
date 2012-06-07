@@ -34,6 +34,11 @@ Specify group year for each course, in this format: 7/8 (use "course settings" t
 ----
 
 Create "buffer" database. 
+
+ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NULL ,
+        ADD INDEX ( `to_be_upgraded` );
+
+
 Specify connection details in config.php:
 
 $CFG->buffer_dbhost    = 'localhost';
