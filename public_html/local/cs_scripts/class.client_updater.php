@@ -1,8 +1,8 @@
 <?php
-DEFINE('CLI_SCRIPT', true);
+
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once(dirname(__FILE__) . '/../replicator/class.replicator.php');
-require_once(dirname(__FILE__) . '/../../../jeelo_cron/class.client.php');
+require_once(dirname(__FILE__) . '/class.client.php');
 
 /**
  * This class runs on local Moodle clients. It should be invoked as a cron job.
@@ -35,6 +35,7 @@ class client_updater extends client {
     public static $categories = false; // has $category->current_id which contains the actual mdl_course_categories.id
     public static $school_groups = false; // has $school_group->years (array) and $school_group->name
     public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
+    protected static $_client_id;
 
 
     public static function get_admin_user() {
