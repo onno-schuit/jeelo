@@ -53,7 +53,7 @@ class launcher_helper extends helper {
         <tr>
             <td>".	get_string($field, 'launcher') . 
 					$this->print_help_button() . "</td>
-            <td><textarea id='$field' style='width:400px;height:100px; name='school[$field]'>$preset_value</textarea></td>";
+            <td><textarea id='$field' style='width:400px;height:100px;' name='school[$field]'>$preset_value</textarea></td>";
         if ($moodle) {
             echo "
             <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";

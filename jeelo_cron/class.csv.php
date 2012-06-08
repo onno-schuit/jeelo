@@ -22,7 +22,9 @@ class csv {
         'status',
         'exit_code',
         'timemodified',
-        'to_be_upgraded'
+        'to_be_upgraded',
+        'logo',
+        'customcss'
     );
 
     static $client_categories_fields = array(

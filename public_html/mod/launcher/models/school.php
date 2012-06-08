@@ -12,6 +12,7 @@ class school extends user {
     //static $table_name = 'launcher_moodles';
     public $global_root;
     public $dumps_location    = '/etc/moodle_clients';
+    public $domain = false;
 
 
     function __construct($properties) {
@@ -21,11 +22,13 @@ class school extends user {
         launcher_helper::set_buffer_db();
         $this->include_upload_files();
         $this->datetime_stamp = time();
-        $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
-        if (! file_exist($this->dumps_location . '/csv')) shell_exec("mkdir {$this->dumps_location}/csv");
-        if (! file_exist($this->dumps_location . '/courses')) shell_exec("mkdir {$this->dumps_location}/courses");
-        if (! file_exist($this->dumps_location . '/code')) shell_exec("mkdir {$this->dumps_location}/code");
-        if (! file_exist($this->dumps_location . '/db')) shell_exec("mkdir {$this->dumps_location}/db");
+        if ($this->domain) {
+            $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
+        }
+        if (! file_exists($this->dumps_location . '/csv')) shell_exec("mkdir {$this->dumps_location}/csv");
+        if (! file_exists($this->dumps_location . '/courses')) shell_exec("mkdir {$this->dumps_location}/courses");
+        if (! file_exists($this->dumps_location . '/code')) shell_exec("mkdir {$this->dumps_location}/code");
+        if (! file_exists($this->dumps_location . '/db')) shell_exec("mkdir {$this->dumps_location}/db");
         parent::__construct($properties);
     } // function __construct
 

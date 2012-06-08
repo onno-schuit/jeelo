@@ -517,7 +517,7 @@ class client_updater extends client {
     static public function update_moodle_client($client_moodle_id) {
         global $DB;
         $current_moodle = $DB->get_record( 'course', array('category' => 0, 'format' => 'site') );
-        $client_moodle = get_client_moodle($client_moodle_id);
+        $client_moodle = self::get_client_moodle($client_moodle_id);
 
         $to_update = false;
         if (isset($client_moodle->shortname) && (trim($client_moodle->shortname) == '')) {
@@ -530,12 +530,12 @@ class client_updater extends client {
         }
         if ($to_update) $DB->update_record('course', $current_moodle);
 
-        if (isset($client_moodle->logo) && (trim($client_moodle->logo) == '')) {
+        if (isset($client_moodle->logo) && (trim($client_moodle->logo) != '')) {
             replicator::configure_theme('logo', $client_moodle->logo);
             replicator::configure_theme('frontpagelogo', $client_moodle->logo);
         }
 
-        if (isset($client_moodle->customcss) && (trim($client_moodle->customcss) == '')) replicator::configure_theme('customcss', $client_moodle->customcss);
+        if (isset($client_moodle->customcss) && (trim($client_moodle->customcss) != '')) replicator::configure_theme('customcss', $client_moodle->customcss);
     } // function update_moodle_client
 
 
