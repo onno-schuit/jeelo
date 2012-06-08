@@ -530,7 +530,11 @@ class client_updater extends client {
         }
         if ($to_update) $DB->update_record('course', $current_moodle);
 
-        if (isset($client_moodle->logo) && (trim($client_moodle->logo) == '')) replicator::configure_theme('logo', $client_moodle->logo);
+        if (isset($client_moodle->logo) && (trim($client_moodle->logo) == '')) {
+            replicator::configure_theme('logo', $client_moodle->logo);
+            replicator::configure_theme('frontpagelogo', $client_moodle->logo);
+        }
+
         if (isset($client_moodle->customcss) && (trim($client_moodle->customcss) == '')) replicator::configure_theme('customcss', $client_moodle->customcss);
     } // function update_moodle_client
 
