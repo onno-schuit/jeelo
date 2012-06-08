@@ -1,4 +1,9 @@
 
+TODO: 
+- Client Moodle in maintenance mode during update
+- Send mail after update
+- Finetune "school" and "schoolyear" validation
+- Document statuses
 
 
 Apply hack to:

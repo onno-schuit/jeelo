@@ -14,14 +14,18 @@ class school extends user {
     public $dumps_location    = '/etc/moodle_clients';
 
 
-    function __construct($properties = false) {
+    function __construct($properties) {
         global $CFG;
 
         $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));
         launcher_helper::set_buffer_db();
         $this->include_upload_files();
         $this->datetime_stamp = time();
-
+        $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
+        if (! file_exist($this->dumps_location . '/csv')) shell_exec("mkdir {$this->dumps_location}/csv");
+        if (! file_exist($this->dumps_location . '/courses')) shell_exec("mkdir {$this->dumps_location}/courses");
+        if (! file_exist($this->dumps_location . '/code')) shell_exec("mkdir {$this->dumps_location}/code");
+        if (! file_exist($this->dumps_location . '/db')) shell_exec("mkdir {$this->dumps_location}/db");
         parent::__construct($properties);
     } // function __construct
 
@@ -93,10 +97,17 @@ class school extends user {
     function validate() {
 
         $valid = $this->validate_upload_files();
+        $valid = $valid && $this->validate_projects();
         $valid = $valid && parent::validate();
                 
         return $valid;
     } // function validate
+
+
+    // TODO
+    function validate_projects() {
+        return true;
+    } // function validate_projects
 
 
     function validate_upload_files() {
@@ -136,14 +147,17 @@ class school extends user {
         return ($DB->get_records_sql($query));
     } // function get_courses_selected
 
+
     function dump_projects() {
         global $DB;
         
         // The projects are optional
-        if (!$this->has_categories_selected()) return true;
 
+        if (!$this->has_categories_selected()) return true;
         if (!$categories = $this->get_categories_selected()) return false;
         
+        shell_exec("cd {$this->dumps_location}/courses ; rm -Rf *");
+
         // Dump category
         foreach($categories as $category) {
 
@@ -158,6 +172,7 @@ class school extends user {
 
         $this->compress_courses();
     } // function dump_projects
+
 
     function dump_category($category) {
         global $BUFFER_DB;
@@ -254,9 +269,12 @@ class school extends user {
         return ($BUFFER_DB->insert_record("client_moodles", $buffer));
     } // function add_to_buffer
 
+
     function dump_csv_files() {
 
         if (!$this->has_csv_files_received()) return true;
+
+        shell_exec("cd {$this->dumps_location}/csv ; rm -Rf *");
 
         // Move uploaded csv files to /etc/moodle_clients
         move_uploaded_file($this->upload_users['tmp_name'], "{$this->dumps_location}/csv/users.csv");

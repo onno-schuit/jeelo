@@ -1,8 +1,24 @@
 <?php
 require_once($CFG->dirroot.'/local/soda/class.user.php');
-require_once($CFG->dirroot.'/mod/launcher/class.school.php');
+require_once($CFG->dirroot.'/mod/launcher/models/school.php');
 
 class schoolyear extends school {
+
+
+    function validate_and_save() {
+        if (!$this->validate()) return false;
+        $this->prepair_school();
+        return true;
+    } // function validate_and_save
+
+
+    function prepair_school() {
+        $this->set_dump_locations();
+        $this->dump_csv_files();
+        $this->dump_projects();
+        $this->update_buffer_status('needs_update');
+    } // function prepair_school
+
 
     function define_validation_rules() {
 
@@ -19,8 +35,6 @@ class schoolyear extends school {
         });
 
     } // function define_validation_rules
-
-}
+} // class schoolyear 
 
 ?>
-

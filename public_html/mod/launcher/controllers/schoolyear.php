@@ -18,11 +18,14 @@ class schoolyear_controller extends launcher_controller
     } // function select_school
 
 
-    function add_schoolyear() {
+    function add_schoolyear($school = false) {
+        if (!$school) $school = $this->get_school();
+		$this->get_view(array('school' => $school), 'add_schoolyear');
+    }
+
+
+    function get_school() {
         global $BUFFER_DB;
-
-        //$this->model_name = 'school';
-
         $school_id = (int) $_POST['school']['environment'];
         if (!$school_id) $this->redirect_to('select_school');
 
@@ -32,9 +35,9 @@ class schoolyear_controller extends launcher_controller
         }
         $school = new school($client_moodle);
         $school->site_name = $client_moodle->fullname;
-        $school->admin_email = $client_moodle->email;
-		$this->get_view(array('school' => $school), 'add_schoolyear');
-    }
+        $school->admin_email = $client_moodle->email;               
+        return $school;
+    } // function get_school
 
 
     // this obviously needs improvement
@@ -45,20 +48,17 @@ class schoolyear_controller extends launcher_controller
 
     function create_schoolyear() {
         global $id;
-        exit(print_object($_REQUEST));
 		$this->has_access_rights();
         
-        // validate form
-
-        // get jeelo_buffer.client_moodles record
-        
-        // move uploaded groups and students
-
-        // update client_moodles record
-        
-		$this->get_view(array());
-        //if (!$schoolyear) $schoolyear = new schoolyear();
+        $school = new school($_POST['school']);
+        if (!$school->validate_and_save()) return $this->add_schoolyear($school);
+        $this->redirect_to('finished');
     }
+
+
+    function finished() {
+        echo "Het nieuwe schooljaar wordt nu aangemaakt. Dit kan enkele minuten duren.";        
+    } // function finished
 }
 
 ?>
