@@ -13,7 +13,8 @@ $string['pluginname'] = 'Launcher';
 
 $string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'U staat op het punt een nieuwe school toe te voegen. Deze actie zal een complete nieuwe moodle omgeving opbouwen.<br />
-                                Vul alstublieft de juiste gegevens hier onder in. Let op: Dit proces is <b>onomkeerbaar</b>.';
+    Vul alstublieft de juiste gegevens hier onder in. Let op: Dit proces is <b>onomkeerbaar</b>.<p>Alle velden zijn verplicht,
+    behalve die onder het kopje Uiterlijk.</p>';
 $string['add_schoolyear_header'] = 'Tijd voor het nieuwe schooljaar? Vul de gegevens hier onder in.<br />
                                 Deze actie zal een nieuw schooljaar aan de school toevoegen.';
 $string['add_upgrade_header'] = 'Some header info upgrade...';
@@ -55,7 +56,8 @@ $string['upload_groups'] = 'Upload groepen';
 $string['settings_content'] = 'Inhoud van de omgeving';
 $string['settings_layout'] = 'Uiterlijk';
 $string['navbar'] = 'Navigatiebalk kleur';
-$string['logo'] = 'Logo';
+$string['logo'] = 'Eigen logo';
+$string['customcss'] = 'Eigen CSS';
 $string['required_groups'] = 'Wanneer gebruikers geupload worden zijn de groepen verplicht.';
 $string['required_users'] = 'Wanneer groepen geupload worden zijn de gebruikers verplicht.';
 $string['error_file_extension'] = 'Alleen .csv bestanden kunnen worden geupload.';
@@ -75,5 +77,7 @@ $string['no_moodles'] = 'Er zijn nog geen scholen aangemaakt via de Launcher.<br
 // $string['mail_feedback_body_end'] = 'Sincerely,<br /><br />Solin';
 
 $string['error_key_variables'] = 'Belangrijke gegevens ontbreken. Probeer het alstublieft opnieuw over een paar minuten.';
+$string['upload_users_error'] = 'Upload a.j.b. een bestand met gebruikers';
+$string['upload_groups_error'] = 'Upload a.j.b. een bestand met groepen';
 ?>
 

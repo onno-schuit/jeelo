@@ -65,7 +65,7 @@ class client_updater extends client {
     public static function get_client_moodle($client_moodle_id) {
         if (static::$client_moodle) return static::$client_moodle;
 
-        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified');
+        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified', 'to_be_upgraded', 'logo', 'customcss');
         $data = static::get_moodle_client_from_server($client_moodle_id);
         $parsed = str_getcsv($data, ';');
         $client_moodle = new stdClass();
@@ -496,11 +496,42 @@ class client_updater extends client {
                 self::run_first_install();                
             case 'needs_update':
                 self::process_groups(self::$_client_id);
+                self::remove_temp_folders(self::$_client_id);
+                self::update_moodle_client(self::$_client_id);
         }
-        
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
+
+    static public function update_moodle_client($client_moodle_id) {
+        global $DB;
+        $current_moodle = $DB->get_record( 'course', array('category' => 0, 'format' => 'site') );
+        $client_moodle = get_client_moodle($client_moodle_id);
+
+        $to_update = false;
+        if (isset($client_moodle->shortname) && (trim($client_moodle->shortname) == '')) {
+            $current_moodle->shortname = $client_moodle->shortname;
+            $to_update = true;
+        }
+        if (isset($client_moodle->fullname) && (trim($client_moodle->fullname) == '')) {
+            $current_moodle->fullname = $client_moodle->fullname;
+            $to_update = true;
+        }
+        if ($to_update) $DB->update_record('course', $current_moodle);
+
+        if (isset($client_moodle->logo) && (trim($client_moodle->logo) == '')) replicator::configure_theme('logo', $client_moodle->logo);
+        if (isset($client_moodle->customcss) && (trim($client_moodle->customcss) == '')) replicator::configure_theme('customcss', $client_moodle->customcss);
+    } // function update_moodle_client
+
+
+    static public function remove_temp_folders($client_moodle_id) {
+        $client_moodle = static::get_client_moodle($client_moodle_id);
+        $csv_dir = static::get_or_create_home_folder($client_moodle->domain) . '/csv';
+        $courses_dir = static::get_or_create_home_folder($client_moodle->domain) . '/courses';
+        shell_exec("rm -Rf {$csv_dir}");
+        shell_exec("rm -Rf {$courses_dir}");
+    } // function remove_temp_folders
 
 
     static public function get_password($length=8) {

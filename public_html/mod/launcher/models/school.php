@@ -1,6 +1,6 @@
 <?php
 
-// Moodle backup scriptz
+// Moodle backup scripts
 require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
@@ -14,7 +14,7 @@ class school extends user {
     public $dumps_location    = '/etc/moodle_clients';
 
 
-    function __construct($properties) {
+    function __construct($properties = false) {
         global $CFG;
 
         $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));
@@ -33,6 +33,7 @@ class school extends user {
 
         return true;
     } // function validate_and_save
+
 
     function prepair_school() {
 
@@ -57,6 +58,7 @@ class school extends user {
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status
 
+
     function define_validation_rules() {
 
         $this->add_rule('site_name', get_string('required'), function($site_name) { return ( trim($site_name) != '' ); });
@@ -76,28 +78,6 @@ class school extends user {
 
         $this->add_rule('domain', get_string('required'), function($domain) { return ( trim($domain) != '' ); });
 
-        $this->validate_upload_files();
-
-    } // function define_validation_rules
-
-    function validate_upload_files() {
-
-        if (!$this->has_csv_files_received()) return;
-
-        // When groups are being uploaded the users are required
-        if (empty($this->upload_users['name'])) {
-            $this->add_rule('upload_users', get_string('required_users', 'launcher'), function($upload_users) {
-                return (!empty($upload_users['name']));
-            });
-        }
-
-        // When users are being uploaded the groups are required
-        if (empty($this->upload_groups['name'])) {
-            $this->add_rule('upload_groups', get_string('required_groups', 'launcher'), function($upload_groups) {
-                return (!empty($upload_groups['name']));
-            });
-        }
-
         // Check file extensions
         $this->add_rule('upload_users', get_string('error_file_extension', 'launcher'), function($upload_users) {
             return (end(explode(".", $upload_users['name'])) == 'csv');
@@ -106,6 +86,27 @@ class school extends user {
         $this->add_rule('upload_groups', get_string('error_file_extension', 'launcher'), function($upload_groups) {
             return (end(explode(".", $upload_groups['name'])) == 'csv');
         });
+
+    } // function define_validation_rules
+
+
+    function validate() {
+
+        $valid = $this->validate_upload_files();
+        $valid = $valid && parent::validate();
+                
+        return $valid;
+    } // function validate
+
+
+    function validate_upload_files() {
+
+        if (!$this->has_csv_files_received()) {
+            $this->add_error('upload_users', get_string('upload_users_error', 'launcher', $this));
+            $this->add_error('upload_groups', get_string('upload_groups_error', 'launcher', $this));
+            return false;
+        }
+        return true;
         
     } // function validate_upload_files
 
@@ -130,7 +131,7 @@ class school extends user {
     function get_courses_selected($category_id) {
         global $DB;
 
-        $query = "SELECT * FROM {course} WHERE id != 1 AND category = $category_id";
+        $query = "SELECT * FROM {course} WHERE id != 1 AND category = $category_id AND (groupyear IS NOT NULL) AND (groupyear != '')";
         
         return ($DB->get_records_sql($query));
     } // function get_courses_selected
@@ -244,6 +245,8 @@ class school extends user {
         $buffer->is_for_client  = 'client';
         $buffer->status         = 'prepairing';
         $buffer->exit_code      = 0;
+        $buffer->logo      = $this->logo;
+        $buffer->customcss      = $this->customcss;
 
         if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
         if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');

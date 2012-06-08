@@ -36,19 +36,14 @@
     }
 	?>
 	
-	<?php
-	/*
-	 * This might not be neccesary anymore.
-	 * 
 	<tr><td colspan='2'><hr /></td></tr>
 	<tr>
 		<td colspan='2'><b><?=get_string('settings_layout', 'launcher');?></b></td>
 	</tr>
 	<?php
-	$this->print_input_field('navbar', $school, 'class="color"');
-	$this->print_upload_field('logo', $school);
-	?>
-	*/
+	$this->print_input_field('logo', $school);
+    // TODO: fill customcss with whatever we find in Mother Moodle
+	$this->print_textarea('customcss', $school, 'class="color"');
 	?>
 	
 
