@@ -57,13 +57,21 @@ class school extends user {
         $this->update_buffer_status('prepaired_school');
     } // function prepair_school
 
-
     function update_buffer_status($status) {
         global $BUFFER_DB;
 
         $buffer = new stdClass();
         $buffer->id = $this->buffer_id;
         $buffer->status = $status;
+
+        $buffer->fullname       = $this->site_name;
+        $buffer->email          = $this->admin_email;
+        $buffer->is_for_client  = 'client';
+        $buffer->logo      = $this->logo;
+        $buffer->customcss      = $this->customcss;
+
+        if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
+        if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');
 
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status

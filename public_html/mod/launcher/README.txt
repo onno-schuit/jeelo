@@ -55,6 +55,8 @@ $CFG->buffer_dbname    = 'jeelo_buffer';
 $CFG->buffer_dbuser    = 'root';
 $CFG->buffer_dbpass    = 'menno';
 
+// temporary domain of new client Moodle
+$CFG->temporary_client_domain = 'srv1a.jeelo.nl';
 
 ----
 
