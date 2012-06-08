@@ -448,5 +448,10 @@ class server extends base {
         // halt
         die();               
     } // function handle_request_get_moodle_client_by_id
+
+
+    public static function handle_request_get_custom_css($query_string) {
+                
+    } // function handle_request_get_custom_css
     
 } // class server 
