@@ -78,6 +78,9 @@ class server extends base {
 
         foreach ($rows as $row) {
             foreach($row as $key=>$column){
+                if ($key=='customcss') {
+                    $column = '';
+                }
                 echo ($key != 'timemodified') ? "$column;" : $column;
             }
             echo "\n";
