@@ -78,6 +78,9 @@ class server extends base {
 
         foreach ($rows as $row) {
             foreach($row as $key=>$column){
+                if ($key=='customcss') {
+                    $column = '';
+                }
                 echo ($key != 'timemodified') ? "$column;" : $column;
             }
             echo "\n";
@@ -112,6 +115,7 @@ class server extends base {
         self::log($query);
 
         $row = $db->fetch_row($query);
+        $row['customcss'] = '';
         
         die(join(';', $row));
         
