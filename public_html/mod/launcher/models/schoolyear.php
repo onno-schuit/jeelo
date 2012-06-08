@@ -13,6 +13,7 @@ class schoolyear extends school {
 
 
     function prepair_school() {
+        $this->buffer_id = $this->id;
         $this->set_dump_locations();
         $this->dump_csv_files();
         $this->dump_projects();

@@ -13,7 +13,7 @@ class schoolyear_controller extends launcher_controller
 
 
     function select_school() {
-        $school = new school(array('dummy' => true)); // remove array after refreshing git submodule soda
+        $school = new schoolyear(array('dummy' => true)); // remove array after refreshing git submodule soda
 		$this->get_view(array('school' => $school), 'select_school');
     } // function select_school
 
@@ -33,7 +33,7 @@ class schoolyear_controller extends launcher_controller
         if (!$client_moodle = $BUFFER_DB->get_record('client_moodles', array('id' => $school_id))) {
             $this->redirect_to('error');
         }
-        $school = new school($client_moodle);
+        $school = new schoolyear($client_moodle);
         $school->site_name = $client_moodle->fullname;
         $school->admin_email = $client_moodle->email;               
         return $school;
@@ -50,14 +50,14 @@ class schoolyear_controller extends launcher_controller
         global $id;
 		$this->has_access_rights();
         
-        $school = new school($_POST['school']);
+        $school = new schoolyear($_POST['school']);
         if (!$school->validate_and_save()) return $this->add_schoolyear($school);
         $this->redirect_to('finished');
     }
 
 
     function finished() {
-        echo "Het nieuwe schooljaar wordt nu aangemaakt. Dit kan enkele minuten duren.";        
+        $this->get_view();
     } // function finished
 }
 

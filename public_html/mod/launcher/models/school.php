@@ -18,18 +18,20 @@ class school extends user {
     function __construct($properties) {
         global $CFG;
 
+        parent::__construct($properties);
+
+        if ($this->domain) {
+            $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
+        }
+
         $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));
         launcher_helper::set_buffer_db();
         $this->include_upload_files();
         $this->datetime_stamp = time();
-        if ($this->domain) {
-            $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
-        }
-        if (! file_exists($this->dumps_location . '/csv')) shell_exec("mkdir {$this->dumps_location}/csv");
-        if (! file_exists($this->dumps_location . '/courses')) shell_exec("mkdir {$this->dumps_location}/courses");
-        if (! file_exists($this->dumps_location . '/code')) shell_exec("mkdir {$this->dumps_location}/code");
-        if (! file_exists($this->dumps_location . '/db')) shell_exec("mkdir {$this->dumps_location}/db");
-        parent::__construct($properties);
+        if (! file_exists($this->dumps_location . '/csv')) mkdir("{$this->dumps_location}/csv", 0777, true);
+        if (! file_exists($this->dumps_location . '/courses')) mkdir("{$this->dumps_location}/courses", 0777, true); 
+        if (! file_exists($this->dumps_location . '/code')) mkdir("{$this->dumps_location}/code", 0777, true); 
+        if (! file_exists($this->dumps_location . '/db')) mkdir("{$this->dumps_location}/db", 0777, true); 
     } // function __construct
 
 
@@ -61,6 +63,15 @@ class school extends user {
         $buffer = new stdClass();
         $buffer->id = $this->buffer_id;
         $buffer->status = $status;
+
+        $buffer->fullname       = $this->site_name;
+        $buffer->email          = $this->admin_email;
+        $buffer->is_for_client  = 'client';
+        $buffer->logo      = $this->logo;
+        $buffer->customcss      = $this->customcss;
+
+        if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
+        if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');
 
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status
@@ -314,7 +325,8 @@ class school extends user {
     function set_dump_file($type, $ext = '.tgz') {
         //$this->dump->$type = "{$this->dumps_location}/$type/{$this->domain}_{$type}_" . date("Ymd") . "$ext";
         // date makes it impossible to repeatedly test the same dumps...
-        $this->dump->$type = "{$this->dumps_location}/$type/{$this->domain}_{$type}_{$this->datetime_stamp}$ext";
+        $result = "{$this->dumps_location}/$type/{$this->domain}_{$type}_{$this->datetime_stamp}$ext";
+        $this->dump->$type = $result; 
     } // function set_dump_file
 
 
