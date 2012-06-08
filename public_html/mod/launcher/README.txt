@@ -4,6 +4,8 @@ TODO:
 - Send mail after update
 - Finetune "school" and "schoolyear" validation
 - Document statuses
+- Update sitename & email through "new schoolyear"
+- Make empty before update ("new schoolyear" action): client_categories & client_courses in buffer db
 
 
 Apply hack to:
