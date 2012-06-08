@@ -520,12 +520,16 @@ class client_updater extends client {
         $client_moodle = self::get_client_moodle($client_moodle_id);
 
         $to_update = false;
-        if (isset($client_moodle->shortname) && (trim($client_moodle->shortname) == '')) {
+        if (isset($client_moodle->shortname) && (trim($client_moodle->shortname) != '')) {
             $current_moodle->shortname = $client_moodle->shortname;
             $to_update = true;
         }
-        if (isset($client_moodle->fullname) && (trim($client_moodle->fullname) == '')) {
+        if (isset($client_moodle->fullname) && (trim($client_moodle->fullname) != '')) {
             $current_moodle->fullname = $client_moodle->fullname;
+            $to_update = true;
+        }
+        if (isset($client_moodle->email) && (trim($client_moodle->email) != '')) {
+            $current_moodle->email = $client_moodle->email;
             $to_update = true;
         }
         if ($to_update) $DB->update_record('course', $current_moodle);

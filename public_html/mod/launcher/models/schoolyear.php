@@ -17,7 +17,7 @@ class schoolyear extends school {
         $this->set_dump_locations();
         $this->dump_csv_files();
         $this->dump_projects();
-        $this->update_buffer_status('needs_update');
+        $this->update_complete_buffer('needs_update');
     } // function prepair_school
 
 
@@ -36,6 +36,26 @@ class schoolyear extends school {
         });
 
     } // function define_validation_rules
+
+
+    function update_complete_buffer($status) {
+        global $BUFFER_DB;
+
+        $buffer = new stdClass();
+        $buffer->id = $this->buffer_id;
+        $buffer->status = $status;
+
+        $buffer->fullname       = $this->site_name;
+        $buffer->email          = $this->admin_email;
+        $buffer->is_for_client  = 'client';
+        $buffer->logo      = $this->logo;
+        $buffer->customcss      = $this->customcss;
+
+        if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
+        if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');
+
+        $BUFFER_DB->update_record('client_moodles', $buffer);               
+    } // function update_complete_buffer
 } // class schoolyear 
 
 ?>
