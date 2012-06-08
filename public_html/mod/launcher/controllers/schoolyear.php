@@ -11,6 +11,7 @@ class schoolyear_controller extends launcher_controller
     }
 
 
+
     function select_school() {
         $school = new school(array('dummy' => true)); // remove array after refreshing git submodule soda
 		$this->get_view(array('school' => $school), 'select_school');
@@ -19,6 +20,8 @@ class schoolyear_controller extends launcher_controller
 
     function add_schoolyear() {
         global $BUFFER_DB;
+
+        //$this->model_name = 'school';
 
         $school_id = (int) $_POST['school']['environment'];
         if (!$school_id) $this->redirect_to('select_school');
@@ -30,7 +33,7 @@ class schoolyear_controller extends launcher_controller
         $school = new school($client_moodle);
         $school->site_name = $client_moodle->fullname;
         $school->admin_email = $client_moodle->email;
-		$this->get_view(array('schoolyear'=>$school), 'add_schoolyear');
+		$this->get_view(array('school' => $school), 'add_schoolyear');
     }
 
 
@@ -42,6 +45,7 @@ class schoolyear_controller extends launcher_controller
 
     function create_schoolyear() {
         global $id;
+        exit(print_object($_REQUEST));
 		$this->has_access_rights();
         
         // validate form

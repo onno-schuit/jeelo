@@ -35,7 +35,7 @@ class launcher_helper extends helper {
         <tr>
             <td>".	get_string($field, 'launcher') . 
 					$this->print_help_button() . "</td>
-            <td><input type='text' id='$field' name='{$this->model_name}[$field]' value='$preset_value' $input_extra></td>";
+            <td><input type='text' id='$field' name='school[$field]' value='$preset_value' $input_extra></td>";
         if ($moodle) {
             echo "
             <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";
@@ -53,7 +53,7 @@ class launcher_helper extends helper {
         <tr>
             <td>".	get_string($field, 'launcher') . 
 					$this->print_help_button() . "</td>
-            <td><textarea id='$field' style='width:400px;height:100px; name='{$this->model_name}[$field]'>$preset_value</textarea></td>";
+            <td><textarea id='$field' style='width:400px;height:100px; name='school[$field]'>$preset_value</textarea></td>";
         if ($moodle) {
             echo "
             <td class='error'>".soda_error::get_first_error($moodle, $field)."</td>";
@@ -93,7 +93,7 @@ class launcher_helper extends helper {
 		global $CFG, $DB;
 		
 		// "SELECT * FROM {$CFG->prefix}course_categories WHERE visible = 1 AND sortorder != 0
-        if (!$categories = $DB->get_records_sql('SELECT * FROM {course_categories} WHERE id != 1 AND visible = 1')) {
+        if (!$categories = $DB->get_records_sql('SELECT * FROM {course_categories} WHERE visible = 1')) {
             echo get_string('no_categories', 'launcher'); // AND category != 0
             return;
         }
@@ -117,7 +117,7 @@ class launcher_helper extends helper {
 		
         echo '<tr>';
         echo "<td>
-                <input id='category_{$category->id}' type='checkbox' name='{$this->model_name}[categories][{$category->id}]' value='{$category->id}' id='{$this->model_name}_categories' $checked>
+                <input id='category_{$category->id}' type='checkbox' name='school[categories][{$category->id}]' value='{$category->id}' id='school_categories' $checked>
                 <label for='category_{$category->id}'>{$category->name}</label>
               </td>";
         echo '</tr>';
