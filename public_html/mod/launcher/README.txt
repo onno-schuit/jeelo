@@ -5,7 +5,14 @@ TODO:
 - Finetune "school" and "schoolyear" validation
 - Document statuses
 - Make empty before update ("new schoolyear" action): client_categories & client_courses in buffer db
+- Remove mod launcher from client moodle after install
+- Take site out of edit mode before doing actual database copy
 
+
+------------------------------------------------------------------------------------
+INSTALL & CONFIG
+
+* DB Action: add master DB user to buffer DB (all privileges except grant and 'lock tables and references')
 
 Apply hack to:
 course/edit_form.php
