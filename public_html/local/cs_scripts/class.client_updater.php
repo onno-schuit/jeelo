@@ -219,7 +219,18 @@ class client_updater extends client {
 
 
     public static function create_course_for_group($course, $school_group, $client_moodle_id) {
+        $new_course = static::get_or_create_course($course, $school_group, $client_moodle_id);
+
+        // enrol all users in the current school_group in this course:
+        static::enrol_users($new_course, $school_group, $client_moodle_id);
+    } // function create_course_for_group
+
+
+    public static function get_or_create_course($course, $school_group, $client_moodle_id) {
         global $DB;
+
+        $course_shortname = "$course->shortname {$school_group->name}";
+        if ($existing_course = $DB->get_record('course', array('shortname' => $course_shortname))) return $existing_course;
 
         // create actual course
         $client_moodle = static::get_client_moodle($client_moodle_id);
@@ -230,11 +241,10 @@ class client_updater extends client {
         // rename course
         $new_course->shortname = "$course->shortname {$school_group->name}";
         $new_course->fullname = "$course->fullname {$school_group->name}";
-        $DB->update_record('course', $new_course);
+        $DB->update_record('course', $new_course);               
 
-        // enrol all users in the current school_group in this course:
-        static::enrol_users($new_course, $school_group, $client_moodle_id);
-    } // function create_course_for_group
+        return $new_course;
+    } // function get_or_create_course
 
 
     public static function enrol_users($new_course, $school_group, $client_moodle_id) {
