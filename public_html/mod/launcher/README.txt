@@ -1,18 +1,21 @@
 
 TODO: 
 - Client Moodle in maintenance mode during update
-- Send mail after update
+- Send mail after update and upgrade
+- Show more feedback after submitting forms
 - Finetune "school" and "schoolyear" validation
 - Document statuses
 - Make empty before update ("new schoolyear" action): client_categories & client_courses in buffer db
 - Remove mod launcher from client moodle after install
 - Take site out of edit mode before doing actual database copy
+- Fix customcss transfer (also: allow customcss to be set to empty string) -- make explicit get_customcss request for class.server.php
 
 
 ------------------------------------------------------------------------------------
 INSTALL & CONFIG
 
 * DB Action: add master DB user to buffer DB (all privileges except grant and 'lock tables and references')
+
 
 Apply hack to:
 course/edit_form.php
@@ -53,7 +56,7 @@ ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `to_be_upgraded` INT( 1 ) NOT NU
     ADD INDEX ( `to_be_upgraded` );
 ALTER TABLE `jeelo_buffer`.`client_courses` ADD `backup_name` VARCHAR( 255 ) NOT NULL ;
 ALTER TABLE `client_moodles` ADD `logo` VARCHAR( 255 ) NULL ,
-ADD `customcss` VARCHAR( 255 ) NULL ;
+ADD `customcss` TEXT NULL ;
 
 Specify connection details in config.php:
 
