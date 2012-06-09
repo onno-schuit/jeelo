@@ -539,8 +539,20 @@ class client_updater extends client {
             replicator::configure_theme('frontpagelogo', $client_moodle->logo);
         }
 
-        if (isset($client_moodle->customcss) && (trim($client_moodle->customcss) != '')) replicator::configure_theme('customcss', $client_moodle->customcss);
+        static::update_customcss($client_moodle_id);
     } // function update_moodle_client
+
+
+    static public function update_customcss($client_moodle_id) {
+        self::log("Getting customcss from server for client_moodle id {$client_moodle_id}");
+        $request = array(
+            'request' => 'get_customcss',
+            'client_moodle_id'      => $client_moodle_id
+        );               
+        if ($customcss = self::get_server_response($request)) {
+            replicator::configure_theme('customcss', $customcss);
+        }
+    } // function update_customcss
 
 
     static public function remove_temp_folders($client_moodle_id) {

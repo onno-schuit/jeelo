@@ -450,8 +450,11 @@ class server extends base {
     } // function handle_request_get_moodle_client_by_id
 
 
-    public static function handle_request_get_custom_css($query_string) {
-                
-    } // function handle_request_get_custom_css
+    public static function handle_request_get_customcss($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+        $client_moodle = static::get_moodle_client_by_id($client_moodle_id);
+        echo $client_moodle['customcss'];
+        die();
+    } // function handle_request_get_customcss
     
 } // class server 
