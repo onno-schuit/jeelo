@@ -316,15 +316,17 @@ class replicator {
         if (! $module = $DB->get_record('modules', array('name' => $module_name))) return true;
 
         $course_modules = $DB->get_records('course_modules', array('module' => $module->id));
+        //exit(print_r($course_modules));
         foreach($course_modules as $cm) {
-            $course = $DB->get_records('course', array('course' => $cm->course));
+            if (!$course = $DB->get_record('course', array('id' => $cm->course))) continue;
+            //exit(print_r($course));
             $course->modinfo = '';
             $course_sections = $DB->get_records('course_sections', array('course' => $course->id));
             foreach($course_sections as $course_section) {
                 static::remove_course_module_from_sequence($course_section, $course_module_id = $cm->id);
             }
             $DB->update_record('course', $course);
-            $DB->delete_records('course_module', array('id' => $cm->id));
+            $DB->delete_records('course_modules', array('id' => $cm->id));
         }
     } // function remove_module
 
