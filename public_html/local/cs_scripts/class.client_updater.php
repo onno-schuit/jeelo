@@ -508,10 +508,22 @@ class client_updater extends client {
                 self::process_groups(self::$_client_id);
                 self::remove_temp_folders(self::$_client_id);
                 self::update_moodle_client(self::$_client_id);
+                self::update_coursecount_in_categories();
         }
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
+
+    // Does not work with nested categories!
+    static public function update_coursecount_in_categories() {
+        global $DB;
+        $categories = $DB->get_records('course_categories');
+        foreach($categories as $category) {
+            $category->coursecount = $DB->count_records('course', array('category' => $category->id));
+            $DB->update_record('course_categories', $category);
+        }
+    } // function update_coursecount_in_categories
 
 
     static public function update_moodle_client($client_moodle_id) {
