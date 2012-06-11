@@ -71,7 +71,7 @@ class launcher_helper extends helper {
     
     function print_special_input_field($field, $moodle) {
         global $CFG;
-		$js = 'onkeyup = \'if (this.value != "") document.getElementById("domain").value=this.value + ".' . $CFG->temporary_client_domain . '" \'';
+        $js = 'onkeyup = \'if (this.value != "") document.getElementById("domain").value=this.value.toLowerCase() + ".' . $CFG->temporary_client_domain . '" \'';
 		$this->print_input_field($field, $moodle, $js);
 	}
 	
