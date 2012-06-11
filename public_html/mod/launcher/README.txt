@@ -10,6 +10,8 @@ TODO:
 - Take site out of edit mode before doing actual database copy
 - Fix customcss transfer (also: allow customcss to be set to empty string) -- make explicit get_customcss request for class.server.php
 - Log rotation for all log files
+- Make backup of moodledata upon upgrade
+- Get new moodledata/lang dir from server upon upgrade
 
 
 ------------------------------------------------------------------------------------

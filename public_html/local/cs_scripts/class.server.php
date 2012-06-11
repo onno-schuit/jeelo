@@ -219,7 +219,7 @@ class server extends base {
 
     public static function send_file_to_client($file) {
         if (!file_exists($file)) {
-			self::log("Failed to find codebase. File does not exist: $file");
+			self::log("Failed to find file. File does not exist: $file");
 			echo "no_file";
         }
         header('Content-Description: File Transfer');
@@ -457,4 +457,18 @@ class server extends base {
         die();
     } // function handle_request_get_customcss
     
+
+    public static function handle_request_get_language_zip($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+        $current_dir = dirname(__FILE__);
+        $lang_zip = "$current_dir/../../../lang.tar.gz";
+        if (file_exists($lang_zip)) shell_exec("rm -Rf $lang_zip");
+        shell_exec("cd $current_dir/../../../moodledata/lang; tar -zcpf $current_dir/../../../lang.tar.gz *");
+        //static::send_file_to_client($moodle_client['courses_filename']);
+        /*
+        echo $client_moodle['customcss'];
+        die();
+         */
+    } // function handle_request_get_language_zip
+
 } // class server 

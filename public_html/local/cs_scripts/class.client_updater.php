@@ -509,6 +509,7 @@ class client_updater extends client {
                 self::remove_temp_folders(self::$_client_id);
                 self::update_moodle_client(self::$_client_id);
                 self::update_coursecount_in_categories();
+                replicator::remove_module('launcher');
         }
         self::update_server_status(self::$_client_id, 'processed');
         

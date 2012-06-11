@@ -100,7 +100,7 @@ class client extends base {
             $database_pass = $database_account['password'],
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
-        self::create_moodle_datadir($home_directory);
+        self::create_moodle_datadir($csv_line->id, $home_directory);
 
         self::add_to_apache($csv_line);
 
@@ -267,13 +267,30 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function create_moodle_config
 
 
-    public static function create_moodle_datadir($home_directory) {
+    public static function create_moodle_datadir($client_moodle_id, $home_directory) {
         $dirname = $home_directory . '/moodledata';
         mkdir($dirname, 0777);
         chmod($dirname, 0777);
         $dirname = $home_directory . '/moodledata/temp/backup';
         mkdir($dirname, 0777, true); // recursive;
+
+        $dirname = $home_directory . '/moodledata/lang/nl';
+        mkdir($dirname, 0777, true); // recursive;
+        static::install_language_files($client_moodle_id, $home_directory);
     }
+
+
+    public static function install_language_files($client_moodle_id, $home_directory) {
+        self::log("Installing language files into $home_directory/moodledata/lang");               
+        $request = array(
+            'client_moodle_id' => $client_moodle_id,
+            'request' => 'get_language_zip'
+        );
+        $response = self::get_server_response($request);
+        echo $response;
+    } // function install_language_files
+
+
 
     static public function email_school_created($csv_line, $user_and_pass) {
         $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
