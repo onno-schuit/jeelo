@@ -310,6 +310,36 @@ class replicator {
     } // function configure_theme 
 
 
+    // Warning: this function does not call any module 'hooks', just removes module instances 
+    public static function remove_module($module_name) {
+        global $DB;
+        if (! $module = $DB->get_record('modules', array('name' => $module_name))) return true;
+
+        $course_modules = $DB->get_records('course_modules', array('module' => $module->id));
+        foreach($course_modules as $cm) {
+            $course = $DB->get_records('course', array('course' => $cm->course));
+            $course->modinfo = '';
+            $course_sections = $DB->get_records('course_sections', array('course' => $course->id));
+            foreach($course_sections as $course_section) {
+                static::remove_course_module_from_sequence($course_section, $course_module_id = $cm->id);
+            }
+            $DB->update_record('course', $course);
+            $DB->delete_records('course_module', array('id' => $cm->id));
+        }
+    } // function remove_module
+
+
+    
+    static private function remove_course_module_from_sequence($course_section, $course_module_id) {
+        global $DB;
+        $sequence = explode(',', $course_section->sequence);
+        if (!in_array($course_module_id, $sequence)) return true;
+        $reversed = array_flip($sequence);
+        unset($sequence[$reversed[$course_module_id]]);
+        $course_section->sequence = implode(',', $sequence);
+        return $DB->update_record('course_sections', $course_section);
+    } // function remove_course_module_from_sequence
+
 
 
 } // class replicator 
