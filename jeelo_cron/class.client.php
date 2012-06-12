@@ -276,7 +276,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
 
         $dirname = $home_directory . '/moodledata/lang/nl';
         mkdir($dirname, 0777, true); // recursive;
-        static::install_language_files($client_moodle_id, $home_directory);
+        //static::install_language_files($client_moodle_id, $home_directory);
     }
 
 
