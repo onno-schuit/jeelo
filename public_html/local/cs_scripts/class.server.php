@@ -208,7 +208,6 @@ class server extends base {
 
 
     public static function handle_request_download_courses($query_string) {
-        error_reporting(0); // notices and warnings interfere with zip download...
         // create vars: $request,$for,$hash from query_string
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
 
@@ -218,6 +217,7 @@ class server extends base {
 
 
     public static function send_file_to_client($file) {
+        error_reporting(0); // notices and warnings interfere with zip download...
         if (!file_exists($file)) {
 			self::log("Failed to find file. File does not exist: $file");
 			echo "no_file";
@@ -238,7 +238,6 @@ class server extends base {
 
 
     public static function handle_request_get_csv_zip($query_string) {
-        error_reporting(0); // notices and warnings interfere with zip download...
         extract(self::_export_query_string($query_string, 'id')); // puts query string into separate variables
 
         $moodle_client = static::get_moodle_client_by_id($id);
@@ -461,14 +460,10 @@ class server extends base {
     public static function handle_request_get_language_zip($query_string) {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         $current_dir = dirname(__FILE__);
-        $lang_zip = "$current_dir/../../../lang.tar.gz";
+        $lang_zip = "$current_dir/../../../lang.tgz";
         if (file_exists($lang_zip)) shell_exec("rm -Rf $lang_zip");
-        shell_exec("cd $current_dir/../../../moodledata/lang; tar -zcpf $current_dir/../../../lang.tar.gz *");
-        //static::send_file_to_client($moodle_client['courses_filename']);
-        /*
-        echo $client_moodle['customcss'];
-        die();
-         */
+        shell_exec("cd $current_dir/../../../moodledata/lang; tar -zcpf $lang_zip *");
+        static::send_file_to_client($lang_zip);
     } // function handle_request_get_language_zip
 
 } // class server 

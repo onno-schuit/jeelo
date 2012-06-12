@@ -274,9 +274,9 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         $dirname = $home_directory . '/moodledata/temp/backup';
         mkdir($dirname, 0777, true); // recursive;
 
-        $dirname = $home_directory . '/moodledata/lang/nl';
+        $dirname = $home_directory . '/moodledata/lang';
         mkdir($dirname, 0777, true); // recursive;
-        //static::install_language_files($client_moodle_id, $home_directory);
+        static::install_language_files($client_moodle_id, $home_directory);
     }
 
 
@@ -286,8 +286,12 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
             'client_moodle_id' => $client_moodle_id,
             'request' => 'get_language_zip'
         );
-        $response = self::get_server_response($request);
-        echo $response;
+        $target_directory = $home_directory . '/moodledata/lang';
+        if (!file_exists($target_directory)) {
+            mkdir($target_directory , 0777, true); // recursive;
+        }
+        shell_exec( sprintf("wget -O {$target_directory}/lang.tgz '%s'", self::get_request_url($request)) );
+        shell_exec( "cd $target_directory; tar -xzf lang.tgz; rm lang.tgz; chmod -R 777 *");
     } // function install_language_files
 
 
