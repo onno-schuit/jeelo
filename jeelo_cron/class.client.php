@@ -292,6 +292,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         }
         shell_exec( sprintf("wget -O {$target_directory}/lang.tgz '%s'", self::get_request_url($request)) );
         shell_exec( "cd $target_directory; tar -xzf lang.tgz; rm lang.tgz; chmod -R 777 *");
+        shell_exec( "cd $home_directory; rm lang.tgz");
     } // function install_language_files
 
 
