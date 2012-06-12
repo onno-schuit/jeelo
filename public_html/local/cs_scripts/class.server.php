@@ -461,9 +461,9 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         $current_dir = dirname(__FILE__);
         $lang_zip = "$current_dir/../../../lang_$client_moodle_id.tgz";
-        shell_exec("cd $current_dir/../../../moodledata/lang; tar -zcpf $lang_zip *");
-        shell_exec("chmod 777 $lang_zip");
+        shell_exec("cd $current_dir/../../../moodledata/lang; tar -zcpf $lang_zip *; chmod 777 $lang_zip");
         static::send_file_to_client($lang_zip);
     } // function handle_request_get_language_zip
+
 
 } // class server 
