@@ -461,7 +461,7 @@ class client_updater extends client {
         $new_user->email = $user->email;
         $new_user->lastname = $user->achternaam;
         $new_user->city = $user->woonplaats;
-        $new_user->country = $user->land;
+        $new_user->country = static::map_country($user->land);
         $new_user->mnethostid = 1;
         $new_user->confirmed = 1;
         $new_user->deleted = 0;
@@ -478,6 +478,21 @@ class client_updater extends client {
         $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid));
         $user->current_user = $record;
     } // function create_user
+
+
+    public static function map_country($input) {
+        switch (trim($input)) {
+            case 'Belgie':
+            case 'belgie':
+            case 'België':
+            case 'belgië':
+                return 'be';
+                break;
+            default:
+                return 'nl';
+                break;
+        }
+    } // function map_country
 
 
     static public function run() {
