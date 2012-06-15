@@ -230,8 +230,11 @@ class client_updater extends client {
         global $DB;
 
         $course_shortname = "$course->shortname {$school_group->name}";
-        if ($existing_course = $DB->get_record('course', array('shortname' => $course_shortname))) return $existing_course;
-
+        if ($existing_course = $DB->get_record('course', array('shortname' => $course_shortname))) {
+            $existing_course->visible = 1;
+            $DB->update_record('course', $existing_course);               
+            return $existing_course;
+        }
         // create actual course
         $client_moodle = static::get_client_moodle($client_moodle_id);
         $zip_path = static::get_or_create_home_folder($client_moodle->domain) . "/courses/{$course->backup_name}";
@@ -520,15 +523,24 @@ class client_updater extends client {
             case 'first_install':
                 self::run_first_install();                
             case 'needs_update':
+                self::hide_courses();
                 self::process_groups(self::$_client_id);
                 self::remove_temp_folders(self::$_client_id);
                 self::update_moodle_client(self::$_client_id);
                 self::update_coursecount_in_categories();
                 replicator::remove_module('launcher');
+                self::clear_server_for($_client_id);
         }
         self::update_server_status(self::$_client_id, 'processed');
         
     } // function run
+
+
+    static public function hide_courses() {
+        global $DB, $CFG;
+        $sql = "UPDATE {$CFG->prefix}course SET visible = 0";
+        $DB->execute($sql);
+    } // function hide_courses
 
 
     // Does not work with nested categories!
@@ -658,6 +670,15 @@ EOF;
         $response = self::get_server_response($request);
         self::log("Updated status for record $record_id to $status: $response");
     } // function update_server_status
+
+
+    static public function clear_server_for($client_moodle_id) {
+        $request = array(
+            'request' => 'clean_buffer_db',
+            'client_moodle_id' => $client_moodle_id
+        );
+        $response = self::get_server_response($request);
+    } // function clear_server_for
 
     
     public static function get_server_response($request, $debug = false) {

@@ -43,14 +43,13 @@ class server extends base {
      * To be called after an update has been succesfull */
     public static function handle_request_clean_buffer_db($query_string) {
 
-        extract(self::_export_query_string($query_string, 'for')); // puts query string into separate variables
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         
         $db = self::$db; // makes it easier to use
-        $for = str_replace("'", '', $for); // sanitize user input
 
-        $query = "DELETE FROM jeelo_buffer.client_courses WHERE client_moodle_id = '$id'";
+        $query = "DELETE FROM client_courses WHERE client_moodle_id = '$client_moodle_id'";
         $db->query($query);
-        $query = "DELETE FROM jeelo_buffer.client_categories WHERE client_moodle_id = '$id'";
+        $query = "DELETE FROM client_categories WHERE client_moodle_id = '$client_moodle_id'";
         $db->query($query);
 
         return true;
@@ -466,7 +465,6 @@ class server extends base {
         shell_exec("cd $lang_dir; tar -zcpf $lang_zip *; chmod 777 $lang_zip");
         static::send_file_to_client($lang_zip);
     } // function handle_request_get_language_zip
-
 
 
 } // class server 
