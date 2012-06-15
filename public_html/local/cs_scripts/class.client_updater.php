@@ -626,17 +626,32 @@ EOF;
         
     }
     
+
     static protected function _remove_all_courses() {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/course/lib.php');
         
         $categories = $DB->get_records_select('course_categories', 1); 
         foreach ($categories as $category) {
+            if ($category->id == 1) continue;
             self::log(sprintf("Deleting category %d recursively", $category->id));
             category_delete_full($category);
         }
-        
+        static::_remove_remaining_courses();
     }
+
+
+    static protected function _remove_all_remaining_courses() {
+        global $DB, $CFG;
+
+        $courses = $DB->get_records_select('course', 1);
+        foreach ($courses as $course) {
+            if ($course->id == 1) continue;
+            self::log(sprintf("Deleting course %d", $course->id));
+            delete_course($course->id, false);
+        }
+    } // function _remove_all_remaining_courses
+
 
     static public function run_first_install() {
         self::log("Updating installation after first install");

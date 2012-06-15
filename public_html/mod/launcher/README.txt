@@ -129,3 +129,14 @@ RUN
 1. Use Launcher to specify school, course, users and groups
 2. Call jeelo_cron/client.php to actually create new Moodle or upgrade or New schoolyear
     - client.php outputs messages in a browser-specific format
+3. Call newclient/public_html/local/cs_scripts/client_updater.php
+
+
+DELETE FOR TESTING PURPOSES
+
+Remove newclient database and database user newclient
+Remove /etc/moodle_clients/newclient.domainname
+Remove /home/jeelos/newclient.domainname
+
+
+
