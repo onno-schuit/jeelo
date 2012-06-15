@@ -486,10 +486,10 @@ class client_updater extends client {
             case 'belgie':
             case 'België':
             case 'belgië':
-                return 'be';
+                return 'BE';
                 break;
             default:
-                return 'nl';
+                return 'NL';
                 break;
         }
     } // function map_country
