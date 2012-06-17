@@ -20,18 +20,9 @@ class upgrade_controller extends controller
 {
 
 	function index() {
-		$this->has_access_rights();
-		
-        $this->add_upgrade();
-    }
-
-    function add_upgrade($upgrade = false) {
         global $DB;
-        
-        if (isset($_POST['confirm'])) {
-            $DB->execute("UPDATE jeelo_buffer.client_moodles SET to_be_upgraded=1");
-            code_dumper::dump_codebase();
-        }
+
+		$this->has_access_rights($upgrade = false);
         $this->get_view(array(
             'upgrade' => $upgrade,
             'to_be_upgraded' => $DB->get_field_sql("SELECT COUNT(id) FROM jeelo_buffer.client_moodles
@@ -41,8 +32,19 @@ class upgrade_controller extends controller
             'total_clients' => $DB->get_field_sql("SELECT COUNT(id) FROM jeelo_buffer.client_moodles
                 WHERE 1"),
             'upgrade_site_shortname' => $DB->get_field_sql("SELECT shortname FROM jeelo_buffer.client_moodles
-                WHERE status='being_upgraded'")
-        ), 'upgrade');
+                WHERE status='being_upgraded'")));
+        //$this->add_upgrade();
+    }
+
+    function save($upgrade = false) {
+        global $DB;
+		$this->has_access_rights();
+        if (isset($_POST['confirm'])) {
+            $DB->execute("UPDATE jeelo_buffer.client_moodles SET to_be_upgraded=1");
+            code_dumper::dump_codebase();
+        }
+        $this->redirect_to('index');
+
     }
 
 }

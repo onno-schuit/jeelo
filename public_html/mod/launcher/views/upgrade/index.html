@@ -1,0 +1,29 @@
+<? $this->form_open() ?>
+    <p>
+    Druk op de knop hieronder om alle moodle installaties te upgraden. Upgraden kan niet worden onderbroken.
+    Moodle sites worden na elkaar geupgrade, dus niet tegelijkertijd. Hieronder kan worden bekeken hoeveel
+    sites er nog klaar staan voor de upgrade en of er een site wordt geupgrade.
+    </p>
+    Statistieken:
+    <table>
+        <tr>
+            <? $background = ($to_be_upgraded) ? " style='background-color:yellow;' " : ""; ?>
+            <td <?= $background ?>><?php echo $to_be_upgraded; ?></td>
+            <td <?= $background ?>>om te upgraden</td>
+        </tr>
+        <tr>
+            <td><?php echo $being_upgraded; ?></td>
+            <td>wordt nu geupgrade (<?php echo $upgrade_site_shortname ? $upgrade_site_shortname : 'geen'; ?>)</td>
+        </tr>
+        <tr>
+            <td><?php echo $total_clients; ?></td>
+            <td>totaal aantal installaties</td>
+        </tr>
+
+    </table>
+    <p>Let op: het upgraden kan niet worden onderbroken.</p>
+    <label><input type="checkbox" name="confirm" />&nbsp; Ik zet de upgrade voor alle Moodle installaties in werking.</label>
+    <br />
+    <input type="submit" name="upgrade" value="<?=get_string("upgrade", "launcher")?>" />
+
+</form>
