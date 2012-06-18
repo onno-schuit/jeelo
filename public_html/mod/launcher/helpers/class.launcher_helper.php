@@ -94,7 +94,7 @@ class launcher_helper extends helper {
 		global $CFG, $DB;
 		
 		// "SELECT * FROM {$CFG->prefix}course_categories WHERE visible = 1 AND sortorder != 0
-        if (!$categories = $DB->get_records_sql('SELECT * FROM {course_categories} WHERE visible = 1')) {
+        if (!$categories = $DB->get_records_sql('SELECT * FROM {course_categories} WHERE visible = 1 AND coursecount > 0')) {
             echo get_string('no_categories', 'launcher'); // AND category != 0
             return;
         }
