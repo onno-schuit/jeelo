@@ -460,7 +460,9 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
         $home_dir = dirname(__FILE__) . "/../../../";
         $lang_dir = "$home_dir/moodledata/lang";
-        $lang_zip = "$lang_dir/lang_$client_moodle_id.tgz";
+        $temp_folder = "$home_dir/moodledata/temp/launcher";
+        if (! file_exists($temp_folder) ) mkdir($temp_folder, 755);
+        $lang_zip = "$temp_folder/lang_$client_moodle_id.tgz";
         if (file_exists($lang_zip)) shell_exec("rm $lang_zip");
         shell_exec("cd $lang_dir; tar -zcpf $lang_zip *; chmod 777 $lang_zip");
         static::send_file_to_client($lang_zip);
