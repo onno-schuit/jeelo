@@ -5,6 +5,12 @@ class school_controller extends launcher_controller
 {
 
 	function index() {
+		$this->has_access_rights();
+        $this->get_view(array('schools' => school::load_all()));
+	} // function index
+
+
+	function add_school($school = false) {
         global $CFG;
 
 		$this->has_access_rights();
@@ -13,12 +19,6 @@ class school_controller extends launcher_controller
             'customcss' => static::get_theme_setting('customcss', 'theme_' . $CFG->theme),
             'logo' => static::get_theme_setting('logo', 'theme_' . $CFG->theme)
         ));
-        $this->add_school($school);
-	}
-
-
-	function add_school($school = false) {
-		$this->has_access_rights();
 		$this->get_view(array('school'=>$school), 'add_school');
 	}
 

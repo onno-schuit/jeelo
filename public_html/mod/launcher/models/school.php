@@ -9,10 +9,20 @@ require_once($CFG->dirroot.'/local/soda/class.user.php');
 
 class school extends user {
 
-    //static $table_name = 'launcher_moodles';
+    static $table_name = 'client_moodles';
     public $global_root;
     public $dumps_location    = '/etc/moodle_clients';
     public $domain = false;
+
+
+    public static function get_connection_object() {
+        global $DB, $cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname;
+        if (static::$connection_object) return static::$connection_object;
+        $db_class = get_class($DB);
+        static::$connection_object = new $db_class();
+        static::$connection_object->connect($cs_dbhost, $cs_dbuser, $cs_dbpass, $cs_dbname, false);
+        return static::$connection_object;
+    } // function get_connection_object
 
 
     function __construct($properties) {

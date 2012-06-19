@@ -16,7 +16,7 @@ $string['pluginname'] = 'Launcher';
 $string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'You are about to add a new school. This action will create an entirely new moodle environment.<br />
                                 Please enter the information below. Note: This process is <b>irreversible</b>.';
-$string['add_schoolyear_header'] = 'Time to start the new school year? Fill out the information below.<br />
+$string['add_schoolyear_header'] = 'Time to start the new school year or just want to edit the school? Fill out the information below.<br />
                                 Submitting this form will create a new school year for the moodle environment.';
 $string['add_upgrade_header'] = 'Some header info upgrade...';
 $string['upgrade'] = 'Upgrade';
@@ -79,3 +79,9 @@ $string['mail_feedback_body_end'] = 'Sincerely,<br /><br />Solin';
 $string['error_key_variables'] = 'Key variables are missing. Please notify the programmers.';
 $string['upload_users_error'] = 'Please select a csv file containing users';
 $string['upload_groups_error'] = 'Please select a csv file containing groups';
+$string['edit_school'] = 'Edit School';
+$string['add_school'] = 'New School';
+$string['delete'] = 'Delete schools';
+$string['delete_explanation'] = 'This will permanently and irreversibly delete the selected schools. There will be no backups available afterwards.';
+$string['index_school_header'] = 'The Schools';
+?>

@@ -26,7 +26,7 @@ class schoolyear_controller extends launcher_controller
 
     function get_school() {
         global $BUFFER_DB;
-        $school_id = (int) $_POST['school']['environment'];
+        $school_id = (isset($_REQUEST['school_id'])) ? $_REQUEST['school_id'] : (int) $_POST['school']['environment'];
         if (!$school_id) $this->redirect_to('select_school');
 
         launcher_helper::set_buffer_db();

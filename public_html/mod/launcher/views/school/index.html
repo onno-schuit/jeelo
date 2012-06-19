@@ -1,0 +1,22 @@
+<div class="content_header">
+	<?=get_string('index_school_header', 'launcher');?>
+</div>
+
+<? $this->form_open('delete'); ?>
+<table>
+    <tr>
+        <th>School</th>
+        <th>Website</th>
+        <th>Status</th>
+    </tr>
+    <? foreach($schools as $school) { ?>
+        <tr>
+            <td><?= $school->fullname ?></td>
+            <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
+            <td><?= $school->status ?></td>
+            <td><a href='<?= $this->get_url("action=add_schoolyear&controller=schoolyear&school_id=" . $school->id) ?>'>Bewerken</a></td>
+            <td><input type='checkbox' name='schools[id]' value='<?= $school->id ?>' /></td>
+        </tr>
+    <? } ?>
+    </table>
+</form>

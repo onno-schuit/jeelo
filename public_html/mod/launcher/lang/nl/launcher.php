@@ -15,7 +15,7 @@ $string['launcher_header'] = 'Welcome to the launcher.';
 $string['add_school_header'] = 'U staat op het punt een nieuwe school toe te voegen. Deze actie zal een complete nieuwe moodle omgeving opbouwen.<br />
     Vul alstublieft de juiste gegevens hier onder in. Let op: Dit proces is <b>onomkeerbaar</b>.<p>Alle velden zijn verplicht,
     behalve die onder het kopje Uiterlijk.</p>';
-$string['add_schoolyear_header'] = 'Tijd voor het nieuwe schooljaar? Vul de gegevens hier onder in.<br />
+$string['add_schoolyear_header'] = 'Tijd voor het nieuwe schooljaar of gewoon de school bewerken? Vul de gegevens hier onder in.<br />
                                 Deze actie zal een nieuw schooljaar aan de school toevoegen.';
 $string['add_upgrade_header'] = 'Some header info upgrade...';
 $string['upgrade'] = 'Upgrade';
@@ -79,5 +79,9 @@ $string['no_moodles'] = 'Er zijn nog geen scholen aangemaakt via de Launcher.<br
 $string['error_key_variables'] = 'Belangrijke gegevens ontbreken. Probeer het alstublieft opnieuw over een paar minuten.';
 $string['upload_users_error'] = 'Upload a.j.b. een bestand met gebruikers';
 $string['upload_groups_error'] = 'Upload a.j.b. een bestand met groepen';
+$string['edit_school'] = 'School bewerken';
+$string['add_school'] = 'Nieuwe school';
+$string['delete'] = 'Scholen verwijderen';
+$string['delete_explanation'] = 'Dit proces verwijdert de gekozen scholen permanent. Er zijn nadien geen backups meer beschikbaar.';
+$string['index_school_header'] = 'De scholen';
 ?>
-

@@ -21,9 +21,10 @@ class launcher_helper extends helper {
 	
     function print_menu() {
         global $id;
-        echo "<a href='index.php?id=$id&controller=school'>Create a new school</a><br />";
-        echo "<a href='index.php?id=$id&controller=schoolyear'>Add a new school year</a><br />";
-        echo "<a href='index.php?id=$id&controller=upgrade'>Upgrade</a>";
+        echo "<a href='index.php?id=$id&controller=school&action=add_school'>" . get_string('add_school', 'launcher') ."</a><br />";
+        echo "<a href='index.php?id=$id&controller=schoolyear'>" .  get_string('edit_school', 'launcher') . "</a><br />";
+        echo "<a href='index.php?id=$id&controller=upgrade'>" .  get_string('upgrade', 'launcher') . "</a><br/>";
+        echo "<a href='index.php?id=$id&controller=school'>" .  get_string('delete', 'launcher') . "</a>";
     }
 
     function print_input_field($field, $moodle, $input_extra = '') {
