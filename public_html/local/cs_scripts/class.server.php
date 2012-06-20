@@ -42,18 +42,28 @@ class server extends base {
     /* Deletes courses and categories from database
      * To be called after an update has been succesfull */
     public static function handle_request_clean_buffer_db($query_string) {
-
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
-        
-        $db = self::$db; // makes it easier to use
-
-        $query = "DELETE FROM client_courses WHERE client_moodle_id = '$client_moodle_id'";
-        $db->query($query);
-        $query = "DELETE FROM client_categories WHERE client_moodle_id = '$client_moodle_id'";
-        $db->query($query);
-
+        self::clean_buffer(client_moodle_id);
         return true;
     } // function handle_request_clean_buffer_db
+
+
+    private static function clean_buffer($client_moodle_id) {
+        $query = "DELETE FROM client_courses WHERE client_moodle_id = '$client_moodle_id'";
+        static::$db->query($query);
+        $query = "DELETE FROM client_categories WHERE client_moodle_id = '$client_moodle_id'";
+        static::$db->query($query);               
+    } // function clean_buffer
+
+
+    // Deletes all records related to $client_moodle_id
+    public static function handle_request_remove_from_buffer($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+        self::clean_buffer(client_moodle_id);
+        $query = "DELETE FROM client_moodles WHERE id = '$client_moodle_id'";
+        static::$db->query($query);
+        return true;
+    } // function handle_request_remove_from_buffer
 
     
     /**

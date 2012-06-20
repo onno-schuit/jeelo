@@ -74,12 +74,53 @@ class client extends base {
 
 
     public static function delete_client($csv_line) {
-        $csv_line->id;
+        static::remove_all_client_folders($csv_line);
+        static::remove_from_apache($csv_line->domain);
+        static::remove_database($database_name = $csv->shortcode);
+        static::remove_database_account($username = $csv->shortcode);
+        static::remove_from_buffer($csv_line->id);
+    } // function delete_client
+
+
+    // Removes client_moodle entries from buffer_db on central server
+    public static function remove_from_buffer($client_moodle_id) {
+        $request = array(
+            'request'	=> 'remove_from_buffer',
+            'client_moodle_id'		=> $moodle_client_id
+        );
+        self::get_server_response($request);
+    } // function remove_from_buffer
+
+
+    public static function remove_database($database_name) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "DROP DATABASE `$database_name`;";
+        self::log($sql);
+        self::$db->query($sql);
+    } // function remove_database
+
+
+    public static function remove_database_account($username) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "DROP USER '$username'@'localhost';";
+        self::log($sql);
+        self::$db->query($sql);
+        $sql = "FLUSH PRIVILEGES;";
+        self::$db->query($sql);
+    } // function remove_database_account
+
+
+
+
+
+    public static function remove_all_client_folders($csv_line) {
         foreach($csv_line as $column) {
             if (strpos($column, 'filename') === false) continue;
+            shell_exec("rm -Rf $column");
         }
-
-    } // function delete_client
+        $homefolder = static::get_or_create_home_folder($csv_line->domain);
+        shell_exec("rm -Rf $homefolder");    
+    } // function remove_all_client_folders
 
 
     public static function process_upgrade($line) {
@@ -102,6 +143,7 @@ class client extends base {
         
         self::update_server_status($info->id, 'upgraded'); // all done!               
     }
+
 
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
@@ -150,23 +192,38 @@ class client extends base {
      * @return void
      */
     public static function add_to_apache($csv_line) {
-        global $cs_apache_conf_dir;
-        $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $csv_line->domain);
-        $filename = str_replace('.', '_', $filename);
-        $destination = $cs_apache_conf_dir  . '/' . $filename;
+        $destination = static::get_apache_conf_filename($csv_line->domain);
         self::log("Creating apache config file $destination");
-
         $contents = file_get_contents(dirname(__FILE__) . '/apache_vhost_file.txt');
         $contents = str_replace('{domain}', $csv_line->domain, $contents);
         $contents = str_replace('{shortcode}', $csv_line->shortcode, $contents);
 
         file_put_contents($destination, $contents);  
         self::log("File $destination created");
-        
-        self::log("Restarting apache for {$csv_line->domain}");
+        static::restart_apache($csv_line->domain);
+    } // function add_to_apache
+
+
+    public static function remove_from_apache($domain) {
+        $destination = static::get_apache_conf_filename($domain);
+        shell_exec("rm -Rf $destination");
+        static::restart_apache($domain);
+    } // function remove_from_apache
+
+
+    public static function restart_apache($domain) {
+        self::log("Restarting apache for {$domain}");
         shell_exec('apachectl graceful');
         self::log("Apache restarted");
-    } // function add_to_apache
+    } // function restart_apache
+
+
+    public static function get_apache_conf_filename($domain) {
+        global $cs_apache_conf_dir;
+        $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $domain);
+        $filename = str_replace('.', '_', $filename);
+        return $cs_apache_conf_dir  . '/' . $filename;
+    } // function get_apache_conf_filename
 
 
     /* @param   string     $zip        Filename and path of the zip containing the database dump
