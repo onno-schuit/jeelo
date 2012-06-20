@@ -65,9 +65,21 @@ class client extends base {
                 self::process_update_client($csv_line);
                 break;
             */
+            case 'to_be_delete':
+                static::delete_client($csv_line);
+                break;
         }
 
     } // function process_client_from_csv
+
+
+    public static function delete_client($csv_line) {
+        $csv_line->id;
+        foreach($csv_line as $column) {
+            if (strpos($column, 'filename') === false) continue;
+        }
+
+    } // function delete_client
 
 
     public static function process_upgrade($line) {
@@ -101,9 +113,7 @@ class client extends base {
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
         self::create_moodle_datadir($csv_line->id, $home_directory);
-
         self::add_to_apache($csv_line);
-
         self::update_server_status($csv_line->id, 'first_install');
 
         // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
@@ -111,7 +121,6 @@ class client extends base {
         self::process_update_client($csv_line);
         self::email_school_created($csv_line, $user_and_pass);
         */
-        
     } // function process_new_client
 
     
