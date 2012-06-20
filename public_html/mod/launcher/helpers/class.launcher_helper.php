@@ -4,13 +4,13 @@ include_once("{$CFG->dirroot}/local/cs_scripts/config.php");
 
 class launcher_helper extends helper {
 
- 	function has_access_rights()
-	{
+ 	function has_access_rights() {
 		global $context;
 		require_login();
         
         return (require_capability('mod/launcher:access', $context));
-	} // function has_assess_rights()
+	} // function has_access_rights
+
 
     public static function set_buffer_db() {
         global $BUFFER_DB, $DB, $CFG, $cs_dbhost, $cs_dbname, $cs_dbpass, $cs_dbuser;

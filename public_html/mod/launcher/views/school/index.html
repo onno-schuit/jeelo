@@ -8,15 +8,22 @@
         <th>School</th>
         <th>Website</th>
         <th>Status</th>
+        <th>Verwijderen</th>
     </tr>
     <? foreach($schools as $school) { ?>
         <tr>
             <td><?= $school->fullname ?></td>
             <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
             <td><?= $school->status ?></td>
+            <td><input type='checkbox' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' /></td>
             <td><a href='<?= $this->get_url("action=add_schoolyear&controller=schoolyear&school_id=" . $school->id) ?>'>Bewerken</a></td>
-            <td><input type='checkbox' name='schools[id]' value='<?= $school->id ?>' /></td>
         </tr>
     <? } ?>
+        <tr>
+            <td colspan='5' style='text-align:right'>
+                <input type='submit' value='Verwijderen' name='delete' 
+                    onclick='return confirm("Dit proces verwijdert de gekozen scholen permanent. Weet je zeker dat je de geselecteerde scholen wilt verwijderen?")'/>
+            </td>
+        </tr>
     </table>
 </form>

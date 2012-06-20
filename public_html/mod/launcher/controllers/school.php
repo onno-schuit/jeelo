@@ -6,7 +6,7 @@ class school_controller extends launcher_controller
 
 	function index() {
 		$this->has_access_rights();
-        $this->get_view(array('schools' => school::load_all()));
+        $this->get_view(array('schools' => school::load_all("status NOT LIKE '%deleted%'")));
 	} // function index
 
 
@@ -42,6 +42,16 @@ class school_controller extends launcher_controller
         $buffer_id_hash = required_param('env', PARAM_RAW);
         $this->get_view(array('buffer_id_hash'=>$buffer_id_hash), 'confirmed');
     }
+
+
+    function delete() {
+		$this->has_access_rights();
+        school::save_all_without_validation(
+            school::instantiate_all($_POST['schools']),
+            $constants = array('status' => 'to_be_deleted')
+        );
+        $this->redirect_to('index');
+    } // function delete
 }
 
 ?>

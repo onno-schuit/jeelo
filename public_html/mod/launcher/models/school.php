@@ -12,7 +12,7 @@ class school extends user {
     static $table_name = 'client_moodles';
     public $global_root;
     public $dumps_location    = '/etc/moodle_clients';
-    public $domain = false;
+    //public $domain = false;
 
 
     public static function get_connection_object() {
@@ -30,7 +30,7 @@ class school extends user {
 
         parent::__construct($properties);
 
-        if ($this->domain) {
+        if (isset($this->domain)) {
             $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
         }
 
