@@ -15,8 +15,13 @@
             <td><?= $school->fullname ?></td>
             <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
             <td><?= $school->status ?></td>
-            <td><input type='checkbox' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' /></td>
-            <td><a href='<?= $this->get_url("action=add_schoolyear&controller=schoolyear&school_id=" . $school->id) ?>'>Bewerken</a></td>
+            <? $readonly = ($school->status != 'processed') ? " readonly='readonly' disabled='disabled' " : ""; ?>
+            <td><input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' /></td>
+            <td>
+            <? if ($school->status == 'processed') { ?>
+                <a href='<?= $this->get_url("action=add_schoolyear&controller=schoolyear&school_id=" . $school->id) ?>'>Bewerken</a>
+            <? } ?>
+            </td>
         </tr>
     <? } ?>
         <tr>

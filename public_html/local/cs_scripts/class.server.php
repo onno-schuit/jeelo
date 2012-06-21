@@ -221,6 +221,7 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
 
         $moodle_client = static::get_moodle_client_by_id($client_moodle_id);
+        exit(print_r($moodle_client));
         static::send_file_to_client($moodle_client['courses_filename']);
     } // function handle_request_download_courses
 

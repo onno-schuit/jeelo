@@ -84,4 +84,5 @@ $string['add_school'] = 'New School';
 $string['delete'] = 'Delete schools';
 $string['delete_explanation'] = 'This will permanently and irreversibly delete the selected schools. There will be no backups available afterwards.';
 $string['index_school_header'] = 'The Schools';
+$string['overview'] = 'All Schools';
 ?>
