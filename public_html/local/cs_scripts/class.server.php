@@ -10,7 +10,7 @@ class server extends base {
     static $wwwroot = 'http://jeelo.debian.lcal';
      */
     static $possible_groups = array(array('1', '2'), array('3', '4'), array('5', '6'), array('7', '8'));
-    static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade');
+    static $prepaired_status_array = array('prepaired_school', 'prepaired_schoolyear', 'prepaired_upgrade', 'to_be_deleted');
     // status can also be: being_processed
     //
 

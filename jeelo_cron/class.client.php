@@ -65,7 +65,7 @@ class client extends base {
                 self::process_update_client($csv_line);
                 break;
             */
-            case 'to_be_delete':
+            case 'to_be_deleted':
                 static::delete_client($csv_line);
                 break;
         }
@@ -76,9 +76,9 @@ class client extends base {
     public static function delete_client($csv_line) {
         static::remove_all_client_folders($csv_line);
         static::remove_from_apache($csv_line->domain);
-        static::remove_database($database_name = $csv->shortcode);
-        static::remove_database_account($username = $csv->shortcode);
         static::remove_from_buffer($csv_line->id);
+        static::remove_database($database_name = $csv_line->shortcode);
+        static::remove_database_account($username = $csv_line->shortcode);
     } // function delete_client
 
 
@@ -86,7 +86,7 @@ class client extends base {
     public static function remove_from_buffer($client_moodle_id) {
         $request = array(
             'request'	=> 'remove_from_buffer',
-            'client_moodle_id'		=> $moodle_client_id
+            'client_moodle_id'		=> $client_moodle_id
         );
         self::get_server_response($request);
     } // function remove_from_buffer
