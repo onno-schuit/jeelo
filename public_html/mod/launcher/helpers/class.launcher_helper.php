@@ -124,23 +124,5 @@ class launcher_helper extends helper {
         echo '</tr>';
 	}
 
-    function get_moodle_environments() {
-        global $BUFFER_DB;
-
-        if (empty($BUFFER_DB)) launcher_helper::set_buffer_db();
-
-        return ($BUFFER_DB->get_records("client_moodles", array("status"=>"processed")));
-    }
-
-    function print_moodles_dropdown() {
-        $clients = $this->get_moodle_environments();
-        echo "<select name='school[environment]' onchange='this.form.submit()'>";
-        echo "<option value='select'>Select</option>";
-
-        foreach($clients as $client) {
-            echo "<option value='{$client->id}'>{$client->fullname}</option>";
-        }
-        echo "</select>";
-    }
-}
+} // class launcher_helper 
 ?>

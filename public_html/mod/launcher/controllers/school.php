@@ -27,7 +27,6 @@ class school_controller extends launcher_controller
         global $id;
 		$this->has_access_rights();
 		
-        require_once('models/school.php');
         $school = new school($_POST['school']);
         if (!$school->validate_and_save()) return $this->add_school($school);
         

@@ -32,16 +32,16 @@ class school extends user {
 
         if (isset($this->domain)) {
             $this->dumps_location = "/etc/moodle_clients/{$this->domain}";
+            if (! file_exists($this->dumps_location . '/csv')) mkdir("{$this->dumps_location}/csv", 0777, true);
+            if (! file_exists($this->dumps_location . '/courses')) mkdir("{$this->dumps_location}/courses", 0777, true); 
+            if (! file_exists($this->dumps_location . '/code')) mkdir("{$this->dumps_location}/code", 0777, true); 
+            if (! file_exists($this->dumps_location . '/db')) mkdir("{$this->dumps_location}/db", 0777, true); 
         }
 
         $this->global_root = substr($CFG->dirroot, 0, strrpos($CFG->dirroot, '/'));
         launcher_helper::set_buffer_db();
         $this->include_upload_files();
         $this->datetime_stamp = time();
-        if (! file_exists($this->dumps_location . '/csv')) mkdir("{$this->dumps_location}/csv", 0777, true);
-        if (! file_exists($this->dumps_location . '/courses')) mkdir("{$this->dumps_location}/courses", 0777, true); 
-        if (! file_exists($this->dumps_location . '/code')) mkdir("{$this->dumps_location}/code", 0777, true); 
-        if (! file_exists($this->dumps_location . '/db')) mkdir("{$this->dumps_location}/db", 0777, true); 
     } // function __construct
 
 
@@ -180,12 +180,11 @@ class school extends user {
             if (!$category_id = $this->dump_category($category)) print_error("launcher", "Failed to create categories.");
             
             // Dump course
-            if (!$courses = $this->get_courses_selected($category->id)) return false;
+            if (!$courses = $this->get_courses_selected($category->id)) continue;
             foreach($courses as $course) {
                 $this->dump_course($course, $category_id);
             }
         }
-
         $this->compress_courses();
     } // function dump_projects
 
@@ -257,13 +256,13 @@ class school extends user {
         return $results_array['backup_destination'];
     } // function backup_course
 
-    function compress_courses() {
 
+    function compress_courses() {
         $target = $this->get_dump_file('courses');
-        shell_exec("cd {$this->dumps_location}/courses; tar -cz -f $target *.zip");
-        shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
-         
+        $output = shell_exec("cd {$this->dumps_location}/courses; tar -cz -f $target *.zip");
+        $output = shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
     } // function compress_courses
+
 
     function add_to_buffer() {
         global $BUFFER_DB;
