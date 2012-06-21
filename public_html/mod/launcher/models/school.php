@@ -220,6 +220,7 @@ class school extends user {
 
     } // function dump_course
 
+
     function save_course_in_buffer($course, $category_id, $backup_name) {
         global $BUFFER_DB;
 
@@ -229,6 +230,7 @@ class school extends user {
 
         return ($BUFFER_DB->insert_record('client_courses', $course));
     } // function save_course_in_buffer
+
 
     /**
      * Makes a course backup without any users.
