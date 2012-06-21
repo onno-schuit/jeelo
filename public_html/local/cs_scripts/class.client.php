@@ -50,11 +50,10 @@ class client extends base {
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
         
-        // Update status FIRST
-        self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
 
         switch($csv_line->status) {
             case 'prepaired_school':
+                self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
                 self::process_new_client($csv_line);
                 break;
             /*

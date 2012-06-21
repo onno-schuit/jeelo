@@ -351,7 +351,7 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
-        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated', 'upgraded'))) {
+        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated', 'upgraded', 'to_be_deleted'))) {
             die('invalid status');
         }
         $exit_code = isset($exit_code) ? $exit_code : 0;
