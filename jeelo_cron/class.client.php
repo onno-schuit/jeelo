@@ -96,7 +96,8 @@ class client extends base {
         global $cs_dbuser, $cs_dbpass;
         $sql = "DROP DATABASE `$database_name`;";
         self::log($sql);
-        self::$db->query($sql);
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
     } // function remove_database
 
 
