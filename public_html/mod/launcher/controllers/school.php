@@ -6,7 +6,8 @@ class school_controller extends launcher_controller
 
 	function index() {
 		$this->has_access_rights();
-        $this->get_view(array('schools' => school::load_all("status NOT LIKE '%deleted%'")));
+        //$this->get_view(array('schools' => school::load_all("status NOT LIKE '%deleted%'")));
+        $this->get_view(array('schools' => school::load_all()));
 	} // function index
 
 
