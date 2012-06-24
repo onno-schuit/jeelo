@@ -531,7 +531,7 @@ class client_updater extends client {
                 replicator::remove_module('launcher');
                 self::clear_server_for(self::$_client_id);
         }
-        self::update_server_status(self::$_client_id, 'processed');
+        self::update_server_status(self::$_client_id, 'processed', $end_of_process = 1);
     } // function run
 
 
@@ -659,12 +659,13 @@ EOF;
         
     }
 
-    static public function update_server_status($record_id, $status, $exit_code=0) {
+
+    static public function update_server_status($record_id, $status, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
             'id' => $record_id,
             'status' => $status,
-            'exit_code' => $exit_code,
+            'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
         self::log("Updated status for record $record_id to $status: $response");

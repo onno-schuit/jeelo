@@ -49,27 +49,16 @@ class client extends base {
 
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
-        
-        // Update status FIRST
-        self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
-
         switch($csv_line->status) {
             case 'prepaired_school':
+                self::update_server_status($csv_line->id, 'being_processed');
                 self::process_new_client($csv_line);
                 break;
-            /*
-            case 'schoolyear_prepaired':
-                self::process_new_client($csv_line);
-                break;
-            case 'upgrade_prepaired':
-                self::process_update_client($csv_line);
-                break;
-            */
             case 'to_be_deleted':
+                self::update_server_status($csv_line->id, 'being_deleted');
                 static::delete_client($csv_line);
                 break;
         }
-
     } // function process_client_from_csv
 
 
@@ -105,9 +94,11 @@ class client extends base {
         global $cs_dbuser, $cs_dbpass;
         $sql = "DROP USER '$username'@'localhost';";
         self::log($sql);
-        self::$db->query($sql);
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
         $sql = "FLUSH PRIVILEGES;";
-        self::$db->query($sql);
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
     } // function remove_database_account
 
 
@@ -142,7 +133,7 @@ class client extends base {
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
         client_upgrade::run($info);
         
-        self::update_server_status($info->id, 'upgraded'); // all done!               
+        self::update_server_status($info->id, 'upgraded', $end_of_process = 1); // all done!               
     }
 
 
@@ -454,12 +445,12 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     }
     */
     
-    static public function update_server_status($record_id, $status, $exit_code=0) {
+    static public function update_server_status($record_id, $status, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
             'id' => $record_id,
             'status' => $status,
-            'exit_code' => $exit_code,
+            'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
         self::log("Updated status for record $record_id to $status: $response");

@@ -49,24 +49,12 @@ class client extends base {
 
     public static function process_client_from_csv($csv_line) {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
-        
-
         switch($csv_line->status) {
             case 'prepaired_school':
                 self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
                 self::process_new_client($csv_line);
                 break;
-            /*
-            case 'schoolyear_prepaired':
-                self::process_new_client($csv_line);
-                break;
-            case 'upgrade_prepaired':
-                self::process_update_client($csv_line);
-                break;
-            */
         }
-
-        self::update_server_status($csv_line->id, 'processed', 0); // everything ok! 
     } // function process_client_from_csv
 
 
@@ -88,8 +76,9 @@ class client extends base {
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
         client_upgrade::run($info);
         
-        self::update_server_status($info->id, 'upgraded'); // all done!               
+        self::update_server_status($info->id, 'upgraded', $end_of_process = 1); // all done!               
     }
+
 
     public static function process_new_client($csv_line) {
 		self::log("Starting the creation of a new moodle school.");
@@ -101,17 +90,8 @@ class client extends base {
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
         self::create_moodle_datadir($home_directory);
-
         self::add_to_apache($csv_line);
-        
         self::update_server_status($csv_line->id, 'first_install');
-
-        // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
-        /*
-        self::process_update_client($csv_line);
-        self::email_school_created($csv_line, $user_and_pass);
-        */
-        
     } // function process_new_client
 
     
@@ -362,12 +342,12 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     }
     */
     
-    static public function update_server_status($record_id, $status, $exit_code=0) {
+    static public function update_server_status($record_id, $status, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
             'id' => $record_id,
             'status' => $status,
-            'exit_code' => $exit_code,
+            'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
         self::log("Updated status for record $record_id to $status: $response");

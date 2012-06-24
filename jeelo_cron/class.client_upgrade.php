@@ -16,7 +16,7 @@ class client_upgrade {
     
     
     static function abort_upgrade() {
-        client::update_server_status(self::$info->id, 'upgraded', -1);
+        client::update_server_status(self::$info->id, 'upgraded', $end_of_process = 1);
         client::log("Upgrade aborted");
         die("Upgrade aborted");
     }

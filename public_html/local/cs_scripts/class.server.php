@@ -221,7 +221,7 @@ class server extends base {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
 
         $moodle_client = static::get_moodle_client_by_id($client_moodle_id);
-        exit(print_r($moodle_client));
+        //exit(print_r($moodle_client));
         static::send_file_to_client($moodle_client['courses_filename']);
     } // function handle_request_download_courses
 
@@ -340,7 +340,7 @@ class server extends base {
 
 
     /**
-     * Updates status and exit code of a record if criteria are met; otherwise prints error
+     * Updates status of a record if criteria are met; otherwise prints error
      * 
      * @param string $query_string
      * @return void
@@ -351,27 +351,28 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
         $for = str_replace("'", '', $for); // sanitize user input
-        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated', 'upgraded', 'to_be_deleted'))) {
+        if (!in_array($status, array('new','being_processed', 'processed','first_install', 'being_updated', 'upgraded', 'to_be_deleted', 'being_deleted'))) {
             die('invalid status');
         }
-        $exit_code = isset($exit_code) ? $exit_code : 0;
-
         // if client is upgraded, set status to 'processed' and unflag 'to_be_upgraded'
-        $set = "status='%s', exit_code=%d";
+        $set = "status='%s'";
         if ($status == 'upgraded') {
             $set .= ", to_be_upgraded=0";
             $status = 'processed';
         }
-        
+        $proc_column = (isset($end_of_process) && $end_of_process > 0) ? 'proc_endtime' : 'proc_starttime';
+        $set .= ", $proc_column = " . time() . " ";
+
         $query = sprintf("UPDATE {client_moodles} 
             SET $set
             WHERE id=%d AND is_for_client='%s'", 
-            $status, $exit_code, $id, $for);
+            $status, $id, $for);
             
         // run the query
         $db->query($query);
         die('ok');
     } // function handle_request_set_status
+
 
     /**
      * Updates status and exit code of a record if criteria are met; otherwise prints error

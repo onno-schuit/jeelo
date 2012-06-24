@@ -24,7 +24,9 @@ class csv {
         'timemodified',
         'to_be_upgraded',
         'logo',
-        'customcss'
+        'customcss',
+        'proc_starttime',
+        'proc_endtime'
     );
 
     static $client_categories_fields = array(

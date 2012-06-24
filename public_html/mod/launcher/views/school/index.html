@@ -8,6 +8,8 @@
         <th>School</th>
         <th>Website</th>
         <th>Status</th>
+        <th>proc_starttime</th>
+        <th>proc_endtime</th>
         <th>Verwijderen</th>
     </tr>
     <? foreach($schools as $school) { ?>
@@ -15,6 +17,8 @@
             <td><?= $school->fullname ?></td>
             <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
             <td><?= $school->status ?></td>
+            <td><?= date("d-m-Y H:i:s", $school->proc_starttime) ?></td>
+            <td><?= date("d-m-Y H:i:s", $school->proc_endtime) ?></td>
             <? $readonly = ($school->status != 'processed') ? " readonly='readonly' disabled='disabled' " : ""; ?>
             <td><input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' /></td>
             <td>
