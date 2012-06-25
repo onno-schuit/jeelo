@@ -473,9 +473,9 @@ class client_updater extends client {
         self::log("Create new user {$user->email}");
         $values = (array) $new_user;
         $string = join("','", $values);
-        $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES 
+        $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,lang,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES 
             ('$string')";
-        //print  "\n" . $sql . "\n";
+        print  "\nclient_updater::create_user -- " . $sql . "\n";
         // Throws error for unfathomable reason:
         //$DB->insert_record('user', $new_user);
         static::$db->query($sql);
