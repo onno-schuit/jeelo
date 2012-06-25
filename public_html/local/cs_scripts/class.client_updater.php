@@ -475,7 +475,6 @@ class client_updater extends client {
         $string = join("','", $values);
         $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,lang,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES 
             ('$string')";
-        print  "\nclient_updater::create_user -- " . $sql . "\n";
         // Throws error for unfathomable reason:
         //$DB->insert_record('user', $new_user);
         static::$db->query($sql);
