@@ -112,12 +112,6 @@ Adapt:
 public_html/local/cs_scripts/class.server.php
 
     static $log_file = './server_log.txt';
-    static $dirroot = '/home/jeelos/moeder/public_html';
-    static $wwwroot = 'http://moeder.srv1a.jeelo.nl';
-
-    * With regard to $dirroot and $wwwroot
-      the assumption is that the code base first gets copied to /etc/moodle_clients, then to a publicly accessible place
-      ('moeder' moodle)
 
 
 ----
