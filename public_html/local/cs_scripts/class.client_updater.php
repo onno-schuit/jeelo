@@ -264,7 +264,7 @@ class client_updater extends client {
                 $role_shortname = 'student';
                 break;
             case 'leerkracht':
-                $role_shortname = 'teacher';
+                $role_shortname = 'editingteacher';
                 break;
             case 'invalkracht':
                 $role_shortname = 'substitute';
@@ -465,6 +465,7 @@ class client_updater extends client {
         $new_user->lastname = $user->achternaam;
         $new_user->city = $user->woonplaats;
         $new_user->country = static::map_country($user->land);
+        $new_user->lang = 'nl';
         $new_user->mnethostid = 1;
         $new_user->confirmed = 1;
         $new_user->deleted = 0;
