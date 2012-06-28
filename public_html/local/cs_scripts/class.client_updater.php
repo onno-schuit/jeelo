@@ -231,8 +231,8 @@ class client_updater extends client {
 
         $course_shortname = "$course->shortname {$school_group->name}";
         if ($existing_course = $DB->get_record('course', array('shortname' => $course_shortname))) {
-            $existing_course->visible = 1;
-            $DB->update_record('course', $existing_course);               
+            // $existing_course->visible = 1;
+            //$DB->update_record('course', $existing_course);               
             return $existing_course;
         }
         // create actual course
@@ -422,8 +422,8 @@ class client_updater extends client {
     public static function process_categories($client_moodle_id) {
         global $CFG, $DB;
 
-        $query = "UPDATE {$CFG->prefix}course_categories SET visible = 0 WHERE id != 1";
-        $DB->execute($query);
+        //$query = "UPDATE {$CFG->prefix}course_categories SET visible = 0 WHERE id != 1";
+        //$DB->execute($query);
         $categories = static::get_categories($client_moodle_id);        
         foreach($categories as $category) {
             static::create_or_update_category($category);
@@ -439,8 +439,8 @@ class client_updater extends client {
         }
         $temp_id = $category->id;
         $category->id = $category->current_id = $existing_category->id;
-        $query = "UPDATE {$CFG->prefix}course_categories SET visible = 1 WHERE id = {$category->id}";
-        $DB->execute($query);
+        // $query = "UPDATE {$CFG->prefix}course_categories SET visible = 1 WHERE id = {$category->id}";
+        //$DB->execute($query);
         $category->id = $temp_id;
         /*
         return $DB->update_record('course_categories', $category);               
@@ -559,7 +559,7 @@ class client_updater extends client {
             case 'first_install':
                 self::run_first_install();                
             case 'needs_update':
-                self::hide_courses();
+                //self::hide_courses(); // client doesn't want this anymore, 'old' courses are now archived only on demand
                 self::process_groups(self::$_client_id);
                 self::remove_temp_folders(self::$_client_id);
                 self::update_moodle_client(self::$_client_id);
