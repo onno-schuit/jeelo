@@ -515,7 +515,7 @@ class client_updater extends client {
         global $CFG;
         $salt = (isset($CFG->passwordsaltmain)) ? $CFG->passwordsaltmain : "";
         if (($user->wachtwoord) && (trim($user->wachtwoord) != '')) return md5(trim($user->wachtwoord) . $salt);
-        return md5(trim($user->firstname) . $salt);
+        return md5(trim($user->voornaam) . $salt);
     } // function create_password
 
 
