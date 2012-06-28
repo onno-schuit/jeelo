@@ -400,8 +400,14 @@ class client_updater extends client {
 
         foreach(static::get_users($client_moodle_id) as $user) {
             static::create_or_update_user($user);
+            static::create_site_wide_role($user);
         }        
     } // function process_users
+
+
+    public static function create_site_wide_role($user) {
+        echo 'TODO!';
+    } // function create_site_wide_role
 
 
     public static function process_categories($client_moodle_id) {
@@ -459,6 +465,7 @@ class client_updater extends client {
     } // function update_user
 
 
+    // Side effect: adds property current_user to $user object
     public static function create_user($user) {
         global $CFG, $DB;
         static::set_client_db();
