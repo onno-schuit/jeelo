@@ -2,7 +2,7 @@
 	<?=get_string('index_school_header', 'launcher');?>
 </div>
 
-<? $this->form_open('delete'); ?>
+<? $this->form_open('change_status'); ?>
 <table>
     <tr>
         <th>School</th>
@@ -11,27 +11,34 @@
         <th>proc_starttime</th>
         <th>proc_endtime</th>
         <th>Verwijderen</th>
+        <th>Upgraden</th>
     </tr>
     <? foreach($schools as $school) { ?>
         <tr>
             <td><?= $school->fullname ?></td>
             <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
-            <td><?= $school->status ?></td>
+            <td><?= $school->get_status_label() ?></td>
             <td><?= date("d-m-Y H:i:s", $school->proc_starttime) ?></td>
             <td><?= date("d-m-Y H:i:s", $school->proc_endtime) ?></td>
-            <? $readonly = ($school->status != 'processed') ? " readonly='readonly' disabled='disabled' " : ""; ?>
-            <td><input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' /></td>
+            <? $readonly = ( $school->is_editable() ) ? "" : " readonly='readonly' disabled='disabled' "; ?>
             <td>
-            <? if ($school->status == 'processed') { ?>
+                <input type='hidden' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' />
+                <input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][status]' value='to_be_deleted' />
+            </td>
+            <td>
+                <input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][to_be_upgraded]' value='1' />
+            </td>
+            <td>
+            <? if ( $school->is_editable() ) { ?>
                 <a href='<?= $this->get_url("action=add_schoolyear&controller=schoolyear&school_id=" . $school->id) ?>'>Bewerken</a>
             <? } ?>
             </td>
         </tr>
     <? } ?>
         <tr>
-            <td colspan='5' style='text-align:right'>
-                <input type='submit' value='Verwijderen' name='delete' 
-                    onclick='return confirm("Dit proces verwijdert de gekozen scholen permanent. Weet je zeker dat je de geselecteerde scholen wilt verwijderen?")'/>
+            <td colspan='7' style='text-align:right'>
+                <input type='submit' value='Status wijzigen' name='change_status' 
+                    onclick='return confirm("Dit proces verwijdert of upgradet de gekozen scholen permanent. Weet je zeker dat je de geselecteerde scholen wilt verwijderen of upgraden?")'/>
             </td>
         </tr>
     </table>

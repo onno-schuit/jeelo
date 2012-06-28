@@ -45,6 +45,17 @@ class school extends user {
     } // function __construct
 
 
+    function is_editable() {
+        return ( ($this->status == 'processed') && (! $this->to_be_upgraded) );        
+    } // function is_editable
+
+
+    function get_status_label() {
+        if ($this->to_be_upgraded) return 'to_be_upgraded';
+        return $this->status;
+    } // function get_status
+
+
     function validate_and_save() {
 
         if (!$this->validate()) return false;
