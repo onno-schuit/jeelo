@@ -267,13 +267,15 @@ class client_updater extends client {
                 $role_shortname = 'editingteacher';
                 break;
             case 'invalkracht':
-                $role_shortname = 'substitute';
+            case 'leerkracht zonder bewerken':
+                $role_shortname = 'teacher';
                 break;
             case 'schoolleider':
-                $role_shortname = 'schoolleader';
+            case 'beheerder':
+                $role_shortname = 'manager';
                 break;
             default:
-                return false; // Return false if role is something else, shouldn't happen though...
+                $role_shortname = 'student';
                 break;
         }               
         return $role_shortname;
@@ -281,13 +283,18 @@ class client_updater extends client {
 
 
     public static function create_course_role_assignment($user, $course_id) {
-        global $DB, $CFG;
         if (!$role_shortname = static::map_role($user->groepsrol)) return false;
+        static::assign_role($user, $role_shortname, $context_level = 50, $instance_id = $course_id);
+        static::insert_into_user_enrolments_if_not_exists($user->current_user->id, $course_id);
+    } // function create_course_role_assignment
 
-        $context = $DB->get_record('context', array('contextlevel' => 50, 'instanceid' => $course_id));
+
+    public static function assign_role($user, $role_shortname, $context_level, $instance_id) {
+        global $DB, $CFG;
+        $context = $DB->get_record('context', array('contextlevel' => $context_level, 'instanceid' => $instance_id));
         $context_id = $context->id;
 
-        $role = $DB->get_record('role', array('shortname' => $role_shortname));
+        if (! $role = $DB->get_record('role', array('shortname' => $role_shortname))) return false;
         $role_id = $role->id;
 
 		// Check if it already exists
@@ -295,24 +302,23 @@ class client_updater extends client {
             return true;
         }
         $query = "INSERT INTO {$CFG->prefix}role_assignments (
-                    roleid, contextid, userid, timemodified, enrol
-                ) VALUES (
-                    '$role_id',
-                    '$context_id',
-                    '{$user->current_user->id}',
-                    '".time()."',
-                    'manual'
-                )";
-        //$DB->execute($query);
-        $DB->insert_record('role_assignments', array(
-                'roleid' => $role_id,
-                'contextid' => $context_id,
-                'userid' => $user->current_user->id,
-                'timemodified' => time(),
-                'enrol' => 'manual')
-        );
-        static::insert_into_user_enrolments_if_not_exists($user->current_user->id, $course_id);
-    } // function create_course_role_assignment
+                      roleid, contextid, userid, timemodified, enrol
+                  ) VALUES (
+                      '$role_id',
+                      '$context_id',
+                      '{$user->current_user->id}',
+                      '".time()."',
+                      'manual'
+                  )";
+        if (! $DB->insert_record('role_assignments', array(
+            'roleid' => $role_id,
+            'contextid' => $context_id,
+            'userid' => $user->current_user->id,
+            'timemodified' => time(),
+            'enrol' => 'manual'))
+        ) return false;
+        return true;
+    } // function assign_role
 
 
     public static function insert_into_user_enrolments_if_not_exists($user_id, $course_id) {
@@ -406,7 +412,10 @@ class client_updater extends client {
 
 
     public static function create_site_wide_role($user) {
-        echo 'TODO!';
+        global $DB, $CFG;
+        if ( (! $user->schoolrol) || trim($user->schoolrol) == '') return;
+        if (!$role_shortname = static::map_role($user->schoolrol)) return false;
+        static::assign_role($user, $role_shortname, $context_level = 10, $instance_id = 0);
     } // function create_site_wide_role
 
 
