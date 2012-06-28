@@ -130,7 +130,7 @@ class client_updater extends client {
         $csv_directory = static::get_and_unzip_csv($client_moodle_id);
         $handler = fopen($csv_directory . '/users.csv', 'r');
         $line = 0;
-        $properties = array("voornaam","achternaam","email","woonplaats","land","rol1","rol2","groep1","groep2","groep3");
+        $properties = array("voornaam","achternaam","email","gebruikersnaam","wachtwoord","woonplaats","land","schoolrol","groepsrol","groep1","groep2","groep3","groep4","groep5");
         $users = array();
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
@@ -282,7 +282,7 @@ class client_updater extends client {
 
     public static function create_course_role_assignment($user, $course_id) {
         global $DB, $CFG;
-        if (!$role_shortname = static::map_role($user->rol1)) return false;
+        if (!$role_shortname = static::map_role($user->groepsrol)) return false;
 
         $context = $DB->get_record('context', array('contextlevel' => 50, 'instanceid' => $course_id));
         $context_id = $context->id;
@@ -346,12 +346,19 @@ class client_updater extends client {
         if (! static::$users) static::process_users($client_moodle_id);
         $found_users = array();
         foreach(static::$users as $user) {
-            if (($user->groep1 == $school_group_name) || ($user->groep2 == $school_group_name) || ($user->groep3 == $school_group_name)) {
-                $found_users[] = $user;
-            }
+            if (static::user_in_group($user, $school_group_name)) $found_users[] = $user;
         }
         return $found_users;
     } // function find_users_by_group
+
+
+    public static function user_in_group($user, $school_group_name) {
+        for($i = 1; $i <= 5; $i++) {
+            $property = "groep$i";
+            if ($user->$property == $school_group_name) return true;
+        }
+        return false;
+    } // function user_in_group
 
 
     public static function get_categories_from_server($client_moodle_id) {
@@ -456,11 +463,10 @@ class client_updater extends client {
         global $CFG, $DB;
         static::set_client_db();
 
-        $salt = (isset($CFG->passwordsaltmain)) ? $CFG->passwordsaltmain : "";
         $new_user = new stdClass();
-        $new_user->username = $user->email;
+        $new_user->username = static::create_username($user);
         $new_user->firstname = $user->voornaam;
-        $new_user->password = md5(strtolower($new_user->firstname) . $salt);
+        $new_user->password = static::create_password($user);
         $new_user->email = $user->email;
         $new_user->lastname = $user->achternaam;
         $new_user->city = $user->woonplaats;
@@ -481,6 +487,20 @@ class client_updater extends client {
         $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid));
         $user->current_user = $record;
     } // function create_user
+
+
+    public static function create_username($user) {
+        if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return $user->gebruikersnaam;
+        return $user->email;
+    } // function create_username
+
+
+    public static function create_password($user) {
+        global $CFG;
+        $salt = (isset($CFG->passwordsaltmain)) ? $CFG->passwordsaltmain : "";
+        if (($user->wachtwoord) && (trim($user->wachtwoord) != '')) return md5(trim($user->wachtwoord) . $salt);
+        return md5(trim($user->firstname) . $salt);
+    } // function create_password
 
 
     public static function map_country($input) {
