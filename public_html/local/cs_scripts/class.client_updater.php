@@ -7,9 +7,8 @@ require_once(dirname(__FILE__) . '/class.client.php');
 
 /**
  * This class runs on local Moodle clients. It should be invoked as a cron job.
- * The class has two functions:
+ * The class has the following function:
  *
- * - upgrade Moodle code base
  * - 'new schoolyear' / import courses, categories, groups & users scenario
  *
  *
@@ -545,7 +544,7 @@ class client_updater extends client {
             'shortname' => $shortname) );
         if (!$response) die(); // empty response.. weird..
         
-        list($client_id, $status, $email) = explode(';', $response);
+        list($client_id, $status, $email, $archive) = explode(';', $response);
         self::$_client_id = (int)$client_id;
         self::$_admin_email = $email;
         
@@ -560,6 +559,7 @@ class client_updater extends client {
                 self::run_first_install();                
             case 'needs_update':
                 //self::hide_courses(); // client doesn't want this anymore, 'old' courses are now archived only on demand
+                self::archive_courses(self::$_client_id, $archive);
                 self::process_groups(self::$_client_id);
                 self::remove_temp_folders(self::$_client_id);
                 self::update_moodle_client(self::$_client_id);
@@ -576,6 +576,15 @@ class client_updater extends client {
         $sql = "UPDATE {$CFG->prefix}course SET visible = 0";
         $DB->execute($sql);
     } // function hide_courses
+
+
+    static public function archive_courses($client_moodle_id, $archive_name = '') {
+        global $DB, $CFG;
+        if (!$archive_name || $archive_name == '') return;
+        $category_id = static::create_category($archive_name);
+        $sql = "UPDATE {$CFG->prefix}course SET category = $category_id WHERE visible = 1";
+        $DB->execute($sql);
+    } // function archive_courses
 
 
     // Does not work with nested categories!

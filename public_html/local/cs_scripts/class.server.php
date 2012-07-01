@@ -389,7 +389,7 @@ class server extends base {
         $shortname = str_replace("'", '', $shortname); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT id, status, email FROM {client_moodles} 
+        $query = sprintf("SELECT id, status, email, archive FROM {client_moodles} 
             WHERE shortname='%s' AND is_for_client='%s'", 
             $shortname, $for);
             
