@@ -50,6 +50,7 @@ class schoolyear extends school {
         $buffer->is_for_client  = 'client';
         $buffer->logo      = $this->logo;
         $buffer->customcss      = $this->customcss;
+        $buffer->archive        = $this->get_archive();
 
         if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
         if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');

@@ -50,9 +50,9 @@ class schoolyear_controller extends launcher_controller
 		$this->has_access_rights();
 
         $school = new schoolyear($_POST['school']);
-        print_object($school);
+        //print_object($school);
         if (!$school->validate_and_save()) return $this->add_schoolyear($school);
-        //$this->redirect_to('finished');
+        $this->redirect_to('finished');
     }
 
 
