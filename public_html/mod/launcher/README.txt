@@ -62,6 +62,7 @@ ALTER TABLE `client_moodles` ADD `logo` VARCHAR( 255 ) NULL ,
 ADD `customcss` TEXT NULL ;
 ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `proc_starttime` INT( 10 ) NOT NULL DEFAULT 0 ;
 ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `proc_endtime` INT( 10 ) NOT NULL DEFAULT 0 ;
+ALTER TABLE `jeelo_buffer`.`client_moodles` ADD `archive` VARCHAR( 255 ) NOT NULL DEFAULT ''
 
 Specify connection details in config.php:
 

@@ -85,6 +85,7 @@ class school extends user {
         $buffer = new stdClass();
         $buffer->id = $this->buffer_id;
         $buffer->status = $status;
+        $buffer->archive        = $this->get_archive();
 
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status
@@ -288,14 +289,21 @@ class school extends user {
         $buffer->is_for_client  = 'client';
         $buffer->status         = 'prepairing';
         $buffer->exit_code      = 0;
-        $buffer->logo      = $this->logo;
+        $buffer->logo           = $this->logo;
         $buffer->customcss      = $this->customcss;
+        $buffer->archive        = $this->get_archive();
 
         if ($this->get_dump_file('csv')) $buffer->csv_filename   = $this->get_dump_file('csv');
         if ($this->get_dump_file('courses')) $buffer->courses_filename   = $this->get_dump_file('courses');
 
         return ($BUFFER_DB->insert_record("client_moodles", $buffer));
     } // function add_to_buffer
+
+
+    function get_archive() {
+        if (isset($this->archive_option) && ($this->archive_option)) return $this->archive;        
+        return '';
+    } // function get_archive
 
 
     function dump_csv_files() {

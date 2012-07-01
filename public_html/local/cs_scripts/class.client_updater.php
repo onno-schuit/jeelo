@@ -750,6 +750,19 @@ EOF;
         
         return $request_url; 
     } // function get_request_url
+    
+
+    static public function create_category($name) {
+        global $DB;
+        $newcategory = new stdClass();
+        $newcategory->name = $name;
+        $category_id = $DB->insert_record('course_categories', $newcategory);
+        // the unaptly named get_context_instance function will also create a new context record if no existing could be found
+        $context = get_context_instance(CONTEXT_COURSECAT, $category_id);
+        mark_context_dirty($context->path);
+        fix_course_sortorder();
+        return $category_id;               
+    } // function create_category
 
 } // class client_updater
 

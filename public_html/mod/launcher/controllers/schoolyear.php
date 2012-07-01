@@ -11,7 +11,6 @@ class schoolyear_controller extends launcher_controller
     }
 
 
-
     function select_school() {
         $school = new schoolyear(array('dummy' => true)); // remove array after refreshing git submodule soda
 		$this->get_view(array('school' => $school), 'select_school');
@@ -49,10 +48,11 @@ class schoolyear_controller extends launcher_controller
     function create_schoolyear() {
         global $id;
 		$this->has_access_rights();
-        
+
         $school = new schoolyear($_POST['school']);
+        print_object($school);
         if (!$school->validate_and_save()) return $this->add_schoolyear($school);
-        $this->redirect_to('finished');
+        //$this->redirect_to('finished');
     }
 
 
