@@ -88,4 +88,5 @@ $string['delete'] = 'Scholen verwijderen';
 $string['delete_explanation'] = 'Dit proces verwijdert de gekozen scholen permanent. Er zijn nadien geen backups meer beschikbaar.';
 $string['index_school_header'] = 'De scholen';
 $string['overview'] = 'Alle scholen';
+$string['archive_name'] = 'Archief';
 ?>

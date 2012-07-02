@@ -36,6 +36,7 @@ class client_updater extends client {
     public static $categories = false; // has $category->current_id which contains the actual mdl_course_categories.id
     public static $school_groups = false; // has $school_group->years (array) and $school_group->name
     public static $users = false; // has $user->current_user which contains the corresponding mdl_user object
+    public static $parent_archive_name = 'Archief'; // All 'old' categories are archived to this category
     protected static $_client_id;
     protected static $_admin_email;
 
@@ -64,7 +65,7 @@ class client_updater extends client {
     public static function get_client_moodle($client_moodle_id) {
         if (static::$client_moodle) return static::$client_moodle;
 
-        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified', 'to_be_upgraded', 'logo', 'customcss');
+        $properties = array('id', 'timecreated', 'domain', 'shortname', 'fullname', 'email', 'sql_filename', 'codebase_filename', 'csv_filename', 'courses_filename', 'is_for_client', 'status', 'exit_code', 'timemodified', 'to_be_upgraded', 'logo', 'customcss', 'archive');
         $data = static::get_moodle_client_from_server($client_moodle_id);
         $parsed = str_getcsv($data, ';');
         $client_moodle = new stdClass();
@@ -580,11 +581,66 @@ class client_updater extends client {
 
     static public function archive_courses($client_moodle_id, $archive_name = '') {
         global $DB, $CFG;
-        if (!$archive_name || $archive_name == '') return;
-        $category_id = static::create_category($archive_name);
-        $sql = "UPDATE {$CFG->prefix}course SET category = $category_id WHERE visible = 1";
-        $DB->execute($sql);
+        if (!$archive_name || trim($archive_name) == '') return;
+        static::reset_archive_on_server($client_moodle_id);
+
+        $parent_category = static::get_or_create_category(static::$parent_archive_name);
+        $category = static::get_or_create_category($archive_name, $parent_category->id);
+        if (! $unarchived_categories = static::get_unarchived_categories($parent_category->id)) return;
+        static::archive_categories_to($unarchived_categories, $category->id, $archive_name);
+        static::postfix_courses_in($unarchived_categories, $archive_name);
     } // function archive_courses
+
+
+    static public function archive_categories_to($unarchived_categories, $archive_id, $postfix) {
+        global $DB, $CFG;
+        $spaced_postfix = ' ' . trim($postfix);
+        foreach($unarchived_categories as $category) {
+            $sql = "UPDATE {$CFG->prefix}course_categories
+                    SET parent = $archive_id, name = CONCAT(name, '$spaced_postfix')
+                    WHERE id = {$category->id}";
+            $DB->execute($sql);
+        }               
+        fix_course_sortorder();
+    } // function archive_categories_to
+
+
+    static public function get_unarchived_categories($parent_archive_id) {
+        global $DB;
+        return $DB->get_records_select('course_categories', "path NOT LIKE '%/{$parent_archive_id}/%' AND id <> {$parent_archive_id}");
+    } // function get_unarchived_categories
+
+
+    // Adds postfix (e.g. ' schoolyear 2011/12' to course name. Also sets course to invisible.
+    static public function postfix_courses_in($categories, $postfix) {
+        global $DB, $CFG;
+        $spaced_postfix = ' ' . trim($postfix);
+        foreach($categories as $category) {
+            $sql = "UPDATE {$CFG->prefix}course
+                    SET fullname = CONCAT(fullname, '$spaced_postfix'),
+                        shortname = CONCAT(shortname, '$spaced_postfix'),
+                        visible = 0
+                    WHERE category = {$category->id}";
+            $DB->execute($sql);
+        }
+    } // function postfix_courses_in
+
+
+    static public function reset_archive_on_server($client_moodle_id) {
+        $request = array(
+            'request' => 'reset_archive',
+            'client_moodle_id' => $client_moodle_id
+        );
+        $response = self::get_server_response($request);
+    } // function update_server_status
+
+
+    static public function get_or_create_category($category_name, $parent_id = false) {
+        global $DB;
+        if ($category = $DB->get_record('course_categories', array('name' => $category_name)) ) return $category;
+        return static::create_category($category_name, $parent_id);
+                
+    } // function get_or_create_category
 
 
     // Does not work with nested categories!
@@ -595,6 +651,7 @@ class client_updater extends client {
             $category->coursecount = $DB->count_records('course', array('category' => $category->id));
             $DB->update_record('course_categories', $category);
         }
+        fix_course_sortorder();
     } // function update_coursecount_in_categories
 
 
@@ -761,16 +818,17 @@ EOF;
     } // function get_request_url
     
 
-    static public function create_category($name) {
+    static public function create_category($name, $parent_id = false) {
         global $DB;
         $newcategory = new stdClass();
         $newcategory->name = $name;
+        if ($parent_id) $newcategory->parent = $parent_id;
         $category_id = $DB->insert_record('course_categories', $newcategory);
         // the unaptly named get_context_instance function will also create a new context record if no existing could be found
         $context = get_context_instance(CONTEXT_COURSECAT, $category_id);
         mark_context_dirty($context->path);
         fix_course_sortorder();
-        return $category_id;               
+        return $DB->get_record('course_categories', array('id' => $category_id));
     } // function create_category
 
 } // class client_updater

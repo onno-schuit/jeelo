@@ -298,8 +298,7 @@ class server extends base {
         
         $db = self::$db; // makes it easier to use
 
-        // use sprintf to replace variables
-        $query = "SELECT * FROM client_courses WHERE client_moodle_id = '$client_moodle_id';";
+        $query = sprintf("SELECT * FROM client_courses WHERE client_moodle_id = %d;", $client_moodle_id);
         
         self::log($query);
         
@@ -323,7 +322,7 @@ class server extends base {
         $db = self::$db; // makes it easier to use
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT * FROM {client_categories} WHERE client_moodle_id = '%s'", $client_moodle_id);
+        $query = sprintf("SELECT * FROM {client_categories} WHERE client_moodle_id = %d", $client_moodle_id);
         self::log($query);
 
         // run the query
@@ -443,7 +442,7 @@ class server extends base {
         $db = self::$db; // makes it easier to use
 
         // use sprintf to replace variables
-        $query = "SELECT * FROM client_moodles WHERE id = '$client_moodle_id';";
+        $query = sprintf("SELECT * FROM client_moodles WHERE id = %d;", $client_moodle_id);
         
         self::log($query);
         
@@ -479,6 +478,17 @@ class server extends base {
         shell_exec("cd $lang_dir; tar -zcpf $lang_zip *; chmod 777 $lang_zip");
         static::send_file_to_client($lang_zip);
     } // function handle_request_get_language_zip
+
+
+
+    function handle_request_reset_archive($query_string) {
+        extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
+
+        $query = sprintf("UPDATE client_moodles SET archive = '' WHERE id = %d;", $client_moodle_id);
+        self::log($query);
+        static::$db->query($query);
+        die();
+    } // function handle_request_reset_archive
 
 
 } // class server 

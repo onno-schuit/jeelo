@@ -25,6 +25,7 @@ class csv {
         'to_be_upgraded',
         'logo',
         'customcss',
+        'archive',
         'proc_starttime',
         'proc_endtime'
     );
