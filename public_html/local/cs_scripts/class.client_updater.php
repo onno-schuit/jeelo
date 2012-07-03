@@ -119,7 +119,7 @@ class client_updater extends client {
             $school_group->years = array_filter(explode('/', $data[1]));
             $school_groups[] = $school_group;
         }
-        return static::$school_groups = $school_groups;
+        return static::$school_groups = array_reverse($school_groups);
     } // function get_school_groups
 
 
