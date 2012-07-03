@@ -23,7 +23,7 @@
             <? $readonly = ( $school->is_editable() ) ? "" : " readonly='readonly' disabled='disabled' "; ?>
             <td>
                 <input type='hidden' name='schools[<?= $school->id ?>][id]' value='<?= $school->id ?>' />
-                <input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][status]' value='to_be_deleted' />
+                <input type='checkbox' name='schools[<?= $school->id ?>][status]' value='to_be_deleted' />
             </td>
             <td>
                 <input <?= $readonly ?> type='checkbox' name='schools[<?= $school->id ?>][to_be_upgraded]' value='1' />
