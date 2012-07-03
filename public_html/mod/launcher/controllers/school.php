@@ -44,7 +44,6 @@ class school_controller extends launcher_controller
     }
 
 
-
     function delete() {
 		$this->has_access_rights();
         school::save_all_without_validation(
@@ -57,7 +56,8 @@ class school_controller extends launcher_controller
 
     function change_status() {
         $this->has_access_rights();
-        school::save_all_without_validation( school::instantiate_all($_POST['schools']) );
+        $schools = school::find_all( function ($item) {return property_exists($item, 'status');}, school::instantiate_all($_POST['schools']) );
+        school::save_all_without_validation($schools);
         $this->redirect_to('index');            
     } // function change_status
 }
