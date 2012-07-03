@@ -46,9 +46,15 @@ $mform->setType('groupyear', PARAM_RAW);
 
 ALTER TABLE `mdl_course` ADD `groupyear` VARCHAR( 255 )
 
-
 Specify group year for each course, in this format: 7/8 (use "course settings" to get there)
 
+
+To enable copying (backup and restore) of groupyear, in:
+
+backup/moodle2/backup_stepslib.php
+on line 400:
+            'enablecompletion', 'completionstartonenrol', 'completionnotify', 'groupyear'));
+- add groupyear
 
 ----
 
