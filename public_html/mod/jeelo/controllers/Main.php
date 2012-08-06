@@ -67,7 +67,7 @@ class Main extends Soda2_Controller {
   }
 
   public function index() {
-    $courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC");
+    $courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 ORDER BY id ASC");
 
     $this->set('heading', 'Courses');
 
@@ -99,14 +99,14 @@ class Main extends Soda2_Controller {
 
     $default = $this->_mod_settings('access', 0); // defaults to false
 
-    $this->set('expanded', explode(',', $this->_mod_settings('expanded', 'quiz')));
+
 
     $users = $this->_get_users($id);
 
     $course = $this->db->record('course', array('id'=>$id));
     $this->set('course_id', $course['id']);
 
-
+    $this->set('expanded', array());
     $table = array();
     if (count($users) > 0) {
       foreach($users as $user) {
@@ -141,6 +141,7 @@ class Main extends Soda2_Controller {
 	
 	$table[] = $_user;
       }
+      $this->set('expanded', array($modname));
     }
 
     $this->set('table', $table);
@@ -363,7 +364,7 @@ WHERE cm.course = '%s' AND cm.module = m.id AND m.name = 'jeelo'", $id));
       if ($section->sequence !== NULL) {
 	$_instances = explode(',', $section->sequence);
 
-	if (is_null($section->name) && count($_instances) == 0) {
+	if (is_null($section->name) || empty($section->name) || empty($section->sequence)) {
 	  // Skip section without title or instances
 	  continue;
 	}
