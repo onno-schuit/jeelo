@@ -117,13 +117,16 @@ class Main extends Soda2_Controller {
 	    $_user['mods'][$modname] = array();
 	  }
 
-	  $access = $this->db->sql(sprintf("SELECT activity, level FROM {jeelo_access}
+	  $access = NULL;
+	  if (count($mod['instances']) > 0) {
+	    $access = $this->db->sql(sprintf("SELECT activity, level FROM {jeelo_access}
                                         WHERE type = '%s'
                                             AND activity IN (%s)
                                             AND userid = '%s'",
-					   $modname,
-					   implode(',', $mod['instances']),
-					   $user['id']));
+					     $modname,
+					     implode(',', $mod['instances']),
+					     $user['id']));
+	  }
 
 	  foreach($mod['instances'] as $instance) {
 	    if (!is_null($access) && array_key_exists($instance, $access)) {
@@ -358,23 +361,28 @@ WHERE cm.course = '%s' AND cm.module = m.id AND m.name = 'jeelo'", $id));
 
     foreach ($sections as $section) {
       if ($section->sequence !== NULL) {
+	$_instances = explode(',', $section->sequence);
+
+	if (is_null($section->name) && count($_instances) == 0) {
+	  // Skip section without title or instances
+	  continue;
+	}
 	$sect = get_course_section($section->id, $id); 
 
-	$name = '#' . $sect->section . '. ' . ((!is_null($sect->name)) ? $sect->name : '');
+	$name = ((!is_null($section->name)) ? $section->name : ('#' . $sect->section));
 
-	$_instances = explode(',', $section->sequence);
 	$instances = array();
 	$psects[$section->id] = array();
 
 	foreach($_instances as $instance) {
-	  if (array_key_exists($instance, $pm)) {
+	  if ($instance !== '' && array_key_exists($instance, $pm)) {
 	    $instances[] = $instance;
 	    $psects[$section->id][$instance] = $pm[$instance];
 	  }
 	}
 
 	$sects[$section->id] = array('plural'=>$name,
-				  'instances'=>explode(',', $section->sequence));
+				  'instances'=>$instances);
 
       }
     }
