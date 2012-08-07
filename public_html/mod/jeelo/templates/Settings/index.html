@@ -1,0 +1,14 @@
+<span>Note: leave empty to use defaults</span>
+<form action="" method="POST">
+  <table>
+  {loop="settings"}
+  <tr>
+    <th>{$key}:</th>
+    <td><input type="text" name="{$key}" value="{$value}" /></td>
+  </tr>
+  {/loop}
+  <tr>
+    <td>&nbsp;</td><td><input type="submit" value="Save" /> | <a href="/mod/jeelo/">Go back</a></td>
+  </tr>
+  </table>
+</form>
