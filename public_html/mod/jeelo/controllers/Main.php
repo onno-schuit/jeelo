@@ -76,7 +76,7 @@ class Main extends Soda2_Controller {
   }
 
   public function index() {
-    $courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 ORDER BY id ASC");
+    $courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC");
 
     $this->set('heading', 'Courses');
 
@@ -84,6 +84,7 @@ class Main extends Soda2_Controller {
 
     $this->set('settings_heading', 'Settings');
     $this->set('root_url', $this->base_url);
+
   }
 
   public function course_view($id) {
@@ -101,6 +102,12 @@ class Main extends Soda2_Controller {
     $this->course_id = $id;
 
     $this->_get_context();
+
+    $context = get_context_instance(CONTEXT_COURSE, $id);
+    if (!has_capability('moodle/course:update', $context)) {
+      $this->raw = True;
+      return 'Sorry, you do not have an access to modify anything here';
+    }
 
     $mod_data = $this->_get_mods($id);
     $my_mods = $mod_data[0];
@@ -191,6 +198,7 @@ class Main extends Soda2_Controller {
     $course = $this->db->record('course', array('id'=>$id));
     if ($this->request->post('userid', false)) {
       $user = $this->db->record('user', array('id'=>$this->request->post('userid')));
+      $status = $this->request->post('status', 1);
       
       $mods = $this->_get_mods($id);
 
@@ -200,7 +208,7 @@ class Main extends Soda2_Controller {
 	  $this->_save_access($key,
 			      $instance,
 			      $this->request->post('userid'),
-			      1);
+			      $status);
 
 	}
       }
@@ -216,12 +224,13 @@ class Main extends Soda2_Controller {
     $this->json = true;
     $course = $this->db->record('course', array('id'=>$id));
     if ($this->request->post('activity', false) && $this->request->post('type', false)) {
+      $status = $this->request->post('status', 1);
       $users = $this->db->sql("SELECT id FROM {user}");
       foreach ($users as $user) {
         $this->_save_access($this->request->post('type', 'quiz'),
                             $this->request->post('activity', 0),
                             $user['id'],
-                            1);
+                            $status);
       }
       return array('status' => 'ok');
     }
@@ -233,6 +242,7 @@ class Main extends Soda2_Controller {
     $this->json = true;
     if ($this->request->post('type', false)) {
       $users = $this->db->sql("SELECT id FROM {user}");
+      $status = $this->request->post('status', 1);
 
       $mods = $this->_get_mods($id);
 
@@ -245,7 +255,7 @@ class Main extends Soda2_Controller {
 	    $this->_save_access($this->request->post('type', 'quiz'),
 				$item,
 				$user['id'],
-				1);
+				$status);
 	  }
 	}
 
