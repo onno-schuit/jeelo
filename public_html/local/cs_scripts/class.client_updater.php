@@ -263,7 +263,8 @@ class client_updater extends client {
 
 
     static public function map_role($user_role) {
-         switch($user_role) {
+        $user_role = trim($user_role);
+        switch($user_role) {
             case 'leerling':
                 $role_shortname = 'student';
                 break;
