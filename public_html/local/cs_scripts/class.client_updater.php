@@ -132,6 +132,10 @@ class client_updater extends client {
         $line = 0;
         $properties = array("voornaam","achternaam","email","gebruikersnaam","wachtwoord","woonplaats","land","schoolrol","groepsrol","groep1","groep2","groep3","groep4","groep5");
         $users = array();
+
+	// Encoding fix
+	setlocale(LC_ALL, 'nl_NL');
+
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
             if ($line == 1) continue;
