@@ -1,0 +1,11 @@
+assign_role called in:
+
+
+create_site_wide_role
+create_course_role_assignment
+
+
+process_groups -> create_course_for_group -> enrol_users -> create_course_role_assignment -> assign_role 
+
+enrol_users calls find_users_by_group to get $user
+

@@ -133,8 +133,8 @@ class client_updater extends client {
         $properties = array("voornaam","achternaam","email","gebruikersnaam","wachtwoord","woonplaats","land","schoolrol","groepsrol","groep1","groep2","groep3","groep4","groep5");
         $users = array();
 
-	// Encoding fix
-	setlocale(LC_ALL, 'nl_NL');
+        // Encoding fix
+        setlocale(LC_ALL, 'nl_NL');
 
         while($data = fgetcsv($handler, 0, ';')) {
             $line ++;
@@ -289,13 +289,18 @@ class client_updater extends client {
 
     public static function create_course_role_assignment($user, $course_id) {
         if (!$role_shortname = static::map_role($user->groepsrol)) return false;
-        static::assign_role($user, $role_shortname, $context_level = 50, $instance_id = $course_id);
+        if (! static::assign_role($user, $role_shortname, $context_level = 50, $instance_id = $course_id) ) return false;
         static::insert_into_user_enrolments_if_not_exists($user->current_user->id, $course_id);
     } // function create_course_role_assignment
 
 
     public static function assign_role($user, $role_shortname, $context_level, $instance_id) {
         global $DB, $CFG;
+
+        if (! property_exists($user, "current_user") ) {
+            echo "\nCould not find Moodle record for {$user->voornaam} {$user->achternaam} (assign_role)\n";
+            return false;
+        }
         $context = $DB->get_record('context', array('contextlevel' => $context_level, 'instanceid' => $instance_id));
         $context_id = $context->id;
 
@@ -500,12 +505,13 @@ class client_updater extends client {
         self::log("Create new user {$user->email}");
         $values = (array) $new_user;
         $string = join("','", $values);
-        $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,lang,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES 
-            ('$string')";
+        $sql = "INSERT INTO {$CFG->prefix}user (username,firstname,password,email,lastname,city,country,lang,mnethostid,confirmed,deleted,timecreated,timemodified) VALUES ('$string')";
         // Throws error for unfathomable reason:
         //$DB->insert_record('user', $new_user);
         static::$db->query($sql);
-        $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid));
+        if (! $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid)) ) {
+            exit("Could not find record for {$new_user->username} in create_user");
+        }
         $user->current_user = $record;
     } // function create_user
 
