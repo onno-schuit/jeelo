@@ -473,7 +473,8 @@ class client_updater extends client {
         // Encoding fix
         setlocale(LC_ALL, 'nl_NL');
 
-        if (! $existing_user = $DB->get_record('user', array('username' => static::create_username($user))) ) {
+        // utf8_encode is necessary because DB contains utf8, but $user contains data derived from latin1 csv
+        if (! $existing_user = $DB->get_record('user', array('username' => utf8_encode(static::create_username($user)))) ) {
             return static::create_user($user);
         }
         return static::update_user($existing_user, $user);
@@ -516,7 +517,8 @@ class client_updater extends client {
         // Throws error for unfathomable reason:
         //$DB->insert_record('user', $new_user);
         static::$db->query($sql);
-        if (! $record = $DB->get_record('user', array('username' => $new_user->username, 'mnethostid' => $new_user->mnethostid)) ) {
+        // utf8_encode is necessary because DB contains utf8, but $user contains data derived from latin1 csv
+        if (! $record = $DB->get_record('user', array('username' => utf8_encode($new_user->username), 'mnethostid' => $new_user->mnethostid)) ) {
             exit("Could not find record for {$new_user->username} in create_user");
         }
         $user->current_user = $record;
@@ -526,8 +528,8 @@ class client_updater extends client {
     public static function create_username($user) {
         // Encoding fix
         setlocale(LC_ALL, 'nl_NL');
-        if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return utf8_encode($user->gebruikersnaam);
-        return utf8_encode($user->email);
+        if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return $user->gebruikersnaam;
+        return $user->email;
     } // function create_username
 
 
