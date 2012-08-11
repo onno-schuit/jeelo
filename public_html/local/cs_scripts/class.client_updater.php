@@ -469,7 +469,11 @@ class client_updater extends client {
 
     public static function create_or_update_user($user) {
         global $CFG, $DB;
-        if (! $existing_user = $DB->get_record('user', array('username' => $user->email)) ) {
+
+        // Encoding fix
+        setlocale(LC_ALL, 'nl_NL');
+
+        if (! $existing_user = $DB->get_record('user', array('username' => static::create_username($user))) ) {
             return static::create_user($user);
         }
         return static::update_user($existing_user, $user);
@@ -488,6 +492,9 @@ class client_updater extends client {
     public static function create_user($user) {
         global $CFG, $DB;
         static::set_client_db();
+
+        // Encoding fix
+        setlocale(LC_ALL, 'nl_NL');
 
         $new_user = new stdClass();
         $new_user->username = static::create_username($user);
@@ -517,6 +524,8 @@ class client_updater extends client {
 
 
     public static function create_username($user) {
+        // Encoding fix
+        setlocale(LC_ALL, 'nl_NL');
         if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return $user->gebruikersnaam;
         return $user->email;
     } // function create_username
