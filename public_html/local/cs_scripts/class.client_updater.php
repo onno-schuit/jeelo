@@ -526,8 +526,8 @@ class client_updater extends client {
     public static function create_username($user) {
         // Encoding fix
         setlocale(LC_ALL, 'nl_NL');
-        if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return $user->gebruikersnaam;
-        return $user->email;
+        if (($user->gebruikersnaam) && (trim($user->gebruikersnaam) != '')) return utf8_encode($user->gebruikersnaam);
+        return utf8_encode($user->email);
     } // function create_username
 
 
