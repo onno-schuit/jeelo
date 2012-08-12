@@ -56,7 +56,8 @@ class school_controller extends launcher_controller
 
     function change_status() {
         $this->has_access_rights();
-        $schools = school::find_all( function ($item) {return property_exists($item, 'status');}, school::instantiate_all($_POST['schools']) );
+        //exit(print_object($_POST['schools']));
+        $schools = school::find_all( function ($item) {return (property_exists($item, 'status') || property_exists($item, 'to_be_upgraded')) ;}, school::instantiate_all($_POST['schools']) );
         //exit(print_object($schools));
         school::save_all_without_validation($schools);
         $this->redirect_to('index');            
