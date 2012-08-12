@@ -1,22 +1,9 @@
 <?php
 
-class code_dumper {
-    
-    static $_path = '/etc/moodle_clients';
-    
-    function dump_codebase() {
-        global $CFG;
-        $target = self::$_path . '/upgrade_codebase.tgz';
-        
-        $siteroot = str_replace('/public_html', '', $CFG->dirroot);
-        $cmd = "cd $siteroot ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*";
-        return shell_exec($cmd);
-    } // function dump_codebase
 
-    
-}
+include_once('launcher.php');
 
-class upgrade_controller extends controller
+class upgrade_controller extends launcher_controller
 {
 
 	function index() {
@@ -41,7 +28,7 @@ class upgrade_controller extends controller
 		$this->has_access_rights();
         if (isset($_POST['confirm'])) {
             $DB->execute("UPDATE jeelo_buffer.client_moodles SET to_be_upgraded=1");
-            code_dumper::dump_codebase();
+            static::dump_codebase();
         }
         $this->redirect_to('index');
 

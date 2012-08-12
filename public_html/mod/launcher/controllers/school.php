@@ -56,9 +56,12 @@ class school_controller extends launcher_controller
 
     function change_status() {
         $this->has_access_rights();
-        //exit(print_object($_POST['schools']));
+        // Only look at schools whose status has changes, or whose Moodle should be upgraded
         $schools = school::find_all( function ($item) {return (property_exists($item, 'status') || property_exists($item, 'to_be_upgraded')) ;}, school::instantiate_all($_POST['schools']) );
-        //exit(print_object($schools));
+        // If there are any schools to be upgraded, dump the Master Moodle code base 
+        if (school::find_by_to_be_upgraded(1, $schools)) {
+            static::dump_codebase();
+        }
         school::save_all_without_validation($schools);
         $this->redirect_to('index');            
     } // function change_status
