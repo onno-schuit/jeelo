@@ -335,6 +335,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         $dirname = $home_directory . '/moodledata/lang';
         mkdir($dirname, 0777, true); // recursive;
         static::install_language_files($client_moodle_id, $home_directory);
+        shell_exec("chmod -R 777 $home_directory/moodledata");
     }
 
 
