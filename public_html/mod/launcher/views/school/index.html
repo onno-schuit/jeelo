@@ -3,6 +3,11 @@
 </div>
 
 <? $this->form_open('change_status'); ?>
+<style>
+.highlight {
+    background-color:#d3d3d3;
+}
+</style>
 <table>
     <tr>
         <th>School</th>
@@ -13,8 +18,9 @@
         <th>Verwijderen</th>
         <th>Upgraden</th>
     </tr>
+    <? $class = ''; ?>
     <? foreach($schools as $school) { ?>
-        <tr>
+        <tr <?= $class ?>>
             <td><?= $school->fullname ?></td>
             <td><a href='http://<?= $school->domain ?>' target='_blank'><?= $school->domain ?></a></td>
             <td><?= $school->get_status_label() ?></td>
@@ -34,6 +40,7 @@
             <? } ?>
             </td>
         </tr>
+        <? $class = ($class == '') ? "class='highlight'" : ""; ?>
     <? } ?>
         <tr>
             <td colspan='7' style='text-align:right'>
