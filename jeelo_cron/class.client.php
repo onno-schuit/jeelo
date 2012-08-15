@@ -162,8 +162,16 @@ class client extends base {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->sql_filename);
         self::get_database_from_server($csv_line->id, $target_path);
         self::install_database($csv_line->shortcode, $target_path);
+        self::truncate_logs($csv_line->shortcode);
         return self::create_database_account($csv_line->shortcode);
     } // function create_database 
+
+
+    public static function truncate_logs($database_name) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "TRUNCATE TABLE `" . self::$prefix . "log`;";
+        shell_exec(sprintf("mysql -u%s -p%s -e '$sql' {$database_name}", $cs_dbuser, $cs_dbpass));
+    } // function truncate_logs
 
 
     public static function get_database_from_server($client_moodle_id, $target) {
@@ -303,7 +311,7 @@ global \$CFG;
 \$CFG->dbname    = '$database_name';    
 \$CFG->dbuser    = '$database_user';
 \$CFG->dbpass    = '$database_pass';   
-\$CFG->prefix    = 'mdl_';     
+\$CFG->prefix    = '" . self::$prefix . "'
 \$CFG->dboptions = array( 'dbpersist' => false, 'dbsocket'  => false, 'dbport'    => '',   );
 \$CFG->dataroot  = '$home_directory/moodledata';
 \$CFG->dirroot  = '$home_directory/public_html';
