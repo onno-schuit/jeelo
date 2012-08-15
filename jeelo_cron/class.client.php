@@ -311,7 +311,7 @@ global \$CFG;
 \$CFG->dbname    = '$database_name';    
 \$CFG->dbuser    = '$database_user';
 \$CFG->dbpass    = '$database_pass';   
-\$CFG->prefix    = '" . self::$prefix . "'
+\$CFG->prefix    = '" . self::$prefix . "';
 \$CFG->dboptions = array( 'dbpersist' => false, 'dbsocket'  => false, 'dbport'    => '',   );
 \$CFG->dataroot  = '$home_directory/moodledata';
 \$CFG->dirroot  = '$home_directory/public_html';
