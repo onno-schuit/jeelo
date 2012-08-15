@@ -6,6 +6,8 @@ TODO:
 - Finetune "school" and "schoolyear" validation
 - Document statuses
 - Make empty before update ("new schoolyear" action): client_categories & client_courses in buffer db
+  * Also, just to be sure, check whether course*.zip actually exists before attempting the restore action (log failure silently, 
+    but continue the update).
 - Remove mod launcher from client moodle after install
 - Take site out of edit mode before doing actual database copy
 - Fix customcss transfer (also: allow customcss to be set to empty string) -- make explicit get_customcss request for class.server.php

@@ -223,10 +223,10 @@ class client_updater extends client {
 
 
     public static function create_course_for_group($course, $school_group, $client_moodle_id) {
-        $new_course = static::get_or_create_course($course, $school_group, $client_moodle_id);
+        if (!$new_course = static::get_or_create_course($course, $school_group, $client_moodle_id)) return false;
 
         // enrol all users in the current school_group in this course:
-        static::enrol_users($new_course, $school_group, $client_moodle_id);
+        return static::enrol_users($new_course, $school_group, $client_moodle_id);
     } // function create_course_for_group
 
 
@@ -242,6 +242,11 @@ class client_updater extends client {
         // create actual course
         $client_moodle = static::get_client_moodle($client_moodle_id);
         $zip_path = static::get_or_create_home_folder($client_moodle->domain) . "/courses/{$course->backup_name}";
+        if (!file_exists($zip_path)) {
+            self::log("Could not find file {$zip_path} in function get_or_create_course. Course $course_shortname not created.");
+            return false;
+        }
+
         $admin_user = static::get_admin_user();
         $new_course = replicator::restore_course(static::$admin_user->id, $zip_path, $course->current_category_id);
 
@@ -258,6 +263,7 @@ class client_updater extends client {
         foreach(static::find_users_by_group($school_group->name, $client_moodle_id) as $user) {
             static::create_course_role_assignment($user, $new_course->id);
         }
+        return true;
     } // function enrol_users
 
 
