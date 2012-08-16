@@ -814,7 +814,9 @@ EOF;
             'request' => 'clean_buffer_db',
             'client_moodle_id' => $client_moodle_id
         );
+        echo "\n about to call server with clean_buffer_db request (from clear_server_for, with client_moodle_id = $client_moodle_id)";
         $response = self::get_server_response($request);
+        echo "\n just called  server with clean_buffer_db request (from clear_server_for, with client_moodle_id = $client_moodle_id)";
     } // function clear_server_for
 
     
