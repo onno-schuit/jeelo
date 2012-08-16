@@ -184,6 +184,10 @@ class school extends user {
         if (!$this->has_categories_selected()) return true;
         if (!$categories = $this->get_categories_selected()) return false;
         
+        // Delete existing courses and categories from buffer DB, for this client
+        $BUFFER_DB->delete_records_select('client_courses', " client_moodle_id = {$this->buffer_id} ");
+        $BUFFER_DB->delete_records_select('client_categories', " client_moodle_id = {$this->buffer_id} ");
+
         shell_exec("cd {$this->dumps_location}/courses ; rm -Rf *");
 
         // Dump category
