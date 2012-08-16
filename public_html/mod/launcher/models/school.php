@@ -177,7 +177,7 @@ class school extends user {
 
 
     function dump_projects() {
-        global $DB;
+        global $DB, $BUFFER_DB;
         
         // The projects are optional
 
