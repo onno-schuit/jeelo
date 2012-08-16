@@ -43,7 +43,7 @@ class server extends base {
      * To be called after an update has been succesfull */
     public static function handle_request_clean_buffer_db($query_string) {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
-        self::clean_buffer(client_moodle_id);
+        self::clean_buffer($client_moodle_id);
         return true;
     } // function handle_request_clean_buffer_db
 
