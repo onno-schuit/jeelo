@@ -569,8 +569,7 @@ class client_updater extends client {
         
         self::log(sprintf("Checking update status for current installation (%s)", $shortname));
         
-        $response = self::get_server_response( $request = array('request' => 'get_status',
-            'shortname' => $shortname) );
+        $response = self::get_server_response( $request = array('request' => 'get_status', 'shortname' => $shortname) );
         if (!$response) die(); // empty response.. weird..
         
         list($client_id, $status, $email, $archive) = explode(';', $response);
@@ -586,18 +585,26 @@ class client_updater extends client {
         switch($status) {
             case 'first_install':
                 self::run_first_install();                
+                self::run_update($_client_id, $archive);
+                break;
             case 'needs_update':
-                //self::hide_courses(); // client doesn't want this anymore, 'old' courses are now archived only on demand
-                self::archive_courses(self::$_client_id, $archive);
-                self::process_groups(self::$_client_id);
-                self::remove_temp_folders(self::$_client_id);
-                self::update_moodle_client(self::$_client_id);
-                self::update_coursecount_in_categories();
-                replicator::remove_module('launcher');
-                self::clear_server_for(self::$_client_id);
+                self::run_update($_client_id, $archive);
+                break;
         }
         self::update_server_status(self::$_client_id, 'processed', $end_of_process = 1);
     } // function run
+
+
+    static function run_update($_client_id, $archive) {
+        //self::hide_courses(); // client doesn't want this anymore, 'old' courses are now archived only on demand
+        self::archive_courses(self::$_client_id, $archive);
+        self::process_groups(self::$_client_id);
+        self::remove_temp_folders(self::$_client_id);
+        self::update_moodle_client(self::$_client_id);
+        self::update_coursecount_in_categories();
+        replicator::remove_module('launcher');
+        self::clear_server_for(self::$_client_id);               
+    } // function run_update
 
 
     static public function hide_courses() {
@@ -660,7 +667,7 @@ class client_updater extends client {
             'client_moodle_id' => $client_moodle_id
         );
         $response = self::get_server_response($request);
-    } // function update_server_status
+    } // function reset_archive_on_server 
 
 
     static public function get_or_create_category($category_name, $parent_id = false) {

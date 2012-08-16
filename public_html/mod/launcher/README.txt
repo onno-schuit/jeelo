@@ -145,3 +145,8 @@ Remove /home/jeelos/newclient.domainname
 
 
 
+CONTROL / FLOW, as seen by status:
+
+1. User creates new school, status is set to 'prepaired_school' by mod Launcher
+2. cronjob /home/jeelo2/domains/jeelo2.nl/subdomains/master/jeelo_cron/client.php sets status to 'being_processed' and then 'first_install'
+3. cronjob /home/jeelos/[domain_name_of_new_moodle]/public_html/local/cs_scripts/client_updater.php sets status to 'being_updated' and then 'processed'
