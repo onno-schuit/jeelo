@@ -585,17 +585,17 @@ class client_updater extends client {
         switch($status) {
             case 'first_install':
                 self::run_first_install();                
-                self::run_update($_client_id, $archive);
+                self::run_update($archive);
                 break;
             case 'needs_update':
-                self::run_update($_client_id, $archive);
+                self::run_update($archive);
                 break;
         }
         self::update_server_status(self::$_client_id, 'processed', $end_of_process = 1);
     } // function run
 
 
-    static function run_update($_client_id, $archive) {
+    static function run_update($archive) {
         //self::hide_courses(); // client doesn't want this anymore, 'old' courses are now archived only on demand
         self::archive_courses(self::$_client_id, $archive);
         self::process_groups(self::$_client_id);
