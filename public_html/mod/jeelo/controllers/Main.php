@@ -118,6 +118,10 @@ class Main extends Soda2_Controller {
   public function course($id) {
     $this->course_id = $id;
 
+    $course = $this->db->record('course', array('id'=>$id));
+    $this->navbar_add($course['fullname'], '/course/view.php?id=' . $id);
+    $this->set('course_name', $course['fullname']);
+
     $this->_get_context();
 
     $context = get_context_instance(CONTEXT_COURSE, $id);
@@ -185,7 +189,7 @@ class Main extends Soda2_Controller {
     $this->set('mods', $my_mods);
     $this->set('plural_mods', $plural_mods);
     $this->set('root_url', $this->base_url);
-  }
+  } // function course
 
   public function save_one($id) {
     // Enable raw output
