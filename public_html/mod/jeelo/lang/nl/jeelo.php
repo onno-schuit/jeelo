@@ -10,4 +10,8 @@
   $string['pluginadministration'] = 'Beheer Toegang leerlingen';
   $string['pluginname'] = 'Toegang leerlingen';
   $string['access_required'] = "Je hebt geen toegang tot deze pagina";
+
+
+$string['status_ok'] = "<strong>OK!</strong> Bewaard";
+$string['status_err'] = "<strong>Waarschuwing!</strong> Wijzigingen niet bewaard.";
 ?>
