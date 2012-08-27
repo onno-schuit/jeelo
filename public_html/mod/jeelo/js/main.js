@@ -1,11 +1,13 @@
 
+var savedTimer;
+
 function set_status(item, status) {
   if (status == 1) {
-    item.innerHTML = '<i class="icon icon-ok icon-green"></i>';
+    item.innerHTML = '<span class="icon icon-ok icon-green">&nbsp; &nbsp;</span>';
   } else if (status == 0) {
-    item.innerHTML = '<i class="icon icon-remove icon-red"></i>';
+    item.innerHTML = '<span class="icon icon-remove icon-red">&nbsp; &nbsp;</span>';
   } else {
-    item.innerHTML = '<i class="icon icon-adjust icon-yellow"></i>';
+    item.innerHTML = '<span class="icon icon-adjust icon-yellow">&nbsp; &nbsp;</span>';
   }
   $(item).attr('status', status);
 }
@@ -14,7 +16,7 @@ function check_group_status(item, status) {
     var user = $(item).attr('user');
     var type = $(item).attr('type');
 
-    var arrs = [];
+    var arrs = Array();
     $('.toggler[user="' + user + '"][type="' + type + '"]').each(function(i, item) {
 	arrs.push(parseInt($(item).attr('status')));
     });
@@ -40,8 +42,21 @@ function save(action, params, callback) {
     data: params,
     dataType: 'json',
 
-    success: callback
+    success: function(response, textStatus, jqXHR) {
+	$('#saved').css({'display': 'block'});
+	savedTimer = setTimeout('close_alert("saved")', 5000);
+	callback(response, textStatus, jqXHR);
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+	$('#err').css({'display': 'block'});
+	savedTimer = setTimeout('close_alert("err")', 5000);
+    }
   });
+}
+
+function close_alert(id) {
+    clearTimeout(savedTimer);
+    $('#' + id).css({'display': 'none'});
 }
 
 $(function(){
@@ -77,19 +92,18 @@ $(function(){
     $('.tip').tooltip();
 
     $('.global-toggler').live('click', function(e) {
-        if (this.innerHTML == '<i class="icon icon-ok icon-white"></i>') {
-            this.innerHTML = '<i class="icon icon-remove icon-white"></i>';
+        if (this.innerHTML.toLowerCase() == '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>') {
+            this.innerHTML = '<span class="icon icon-remove icon-white">&nbsp; &nbsp;</span>';
         } else { // None and Part cases
-            this.innerHTML = '<i class="icon icon-ok icon-white"></i>';
+            this.innerHTML = '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>';
         }
     });
 
     $('.row-toggler').live('click', function(e) {
         var status = 0;
-        if (this.innerHTML == '<i class="icon icon-ok icon-white"></i>') {
+        if (this.innerHTML.toLowerCase() == '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>') {
             status = 1;
         }
-        console.log(this.innerHTML);
 
         var userid = $(this).attr('user');
         var ith = this;
@@ -97,9 +111,9 @@ $(function(){
              {'userid': userid, 'status': status},
              function(response, textStatus, jqXHR) {
                if (status == 1) {
-                   ith.innerHTML = '<i class="icon icon-remove icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-remove icon-white">&nbsp; &nbsp;</span>';
                } else {
-                   ith.innerHTML = '<i class="icon icon-ok icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>';
                }
 
                $('a[user="' + userid + '"]').each(function(i, item) {
@@ -111,7 +125,7 @@ $(function(){
 
     $('.col-toggler').live('click', function(e) {
         var status = 0;
-        if (this.innerHTML == '<i class="icon icon-ok icon-white"></i>') {
+        if (this.innerHTML.toLowerCase() == '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>') {
             status = 1;
         }
 
@@ -121,9 +135,9 @@ $(function(){
              {'activity': $(this).attr('gid'), 'type': $(this).attr('itype'), 'status': status},
              function(response, textStatus, jqXHR) {
                if (status == 1) {
-                   ith.innerHTML = '<i class="icon icon-remove icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-remove icon-white">&nbsp; &nbsp;</span>';
                } else {
-                   ith.innerHTML = '<i class="icon icon-ok icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>';
                }
 
                $('a.toggler[gid="' + id + '"]').each(function(i, item) {
@@ -134,7 +148,7 @@ $(function(){
 
     $('.group-toggler').live('click', function(e) {
         var status = 0;
-        if (this.innerHTML == '<i class="icon icon-ok icon-white"></i>') {
+        if (this.innerHTML.toLowerCase() == '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>') {
             status = 1;
         }
 
@@ -144,9 +158,9 @@ $(function(){
              {'type': type, 'status': status},
              function(response, textStatus, jqXHR) {
                if (status == 1) {
-                   ith.innerHTML = '<i class="icon icon-remove icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-remove icon-white">&nbsp; &nbsp;</span>';
                } else {
-                   ith.innerHTML = '<i class="icon icon-ok icon-white"></i>';
+                   ith.innerHTML = '<span class="icon icon-ok icon-white">&nbsp; &nbsp;</span>';
                }
 
                $('a.toggler[type="' + type + '"]').each(function(i, item) {
@@ -181,13 +195,13 @@ $(function(){
             // Subform is open, close
             this.className = 'show-all';
             $('.sub.' + this.id).hide();
-            this.innerHTML = 'Toon <i class="icon-arrow-right icon-white"></i>';
+            this.innerHTML = 'Toon <span class="icon-arrow-right icon-white">&nbsp; &nbsp;</span>';
         } else {
             // Subform is closed, open
             this.className = 'show-all open';
             $('.sub.' + this.id).show();
 
-            this.innerHTML = '<i class="icon-arrow-left icon-white"></i> Verberg';
+            this.innerHTML = '<span class="icon-arrow-left icon-white">&nbsp; &nbsp;</span> Verberg';
         }
     });
 
