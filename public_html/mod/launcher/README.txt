@@ -1,5 +1,7 @@
 
 TODO: 
+- Include admin/cron.php of freshly installed site into cron job
+- Turn off course backup on Moodle clients?
 - Client Moodle in maintenance mode during update
 - Send mail after update and upgrade
 - Show more feedback after submitting forms
