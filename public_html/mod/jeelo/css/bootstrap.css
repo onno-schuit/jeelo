@@ -793,6 +793,13 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
+
+.divTableWithFloatingHeader {
+  max-width: 100%;
+  overflow:auto;
+}
+
 .table {
   width: 100%;
   margin-bottom: 20px;
