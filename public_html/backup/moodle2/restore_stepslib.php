@@ -1117,12 +1117,14 @@ class restore_course_structure_step extends restore_structure_step {
         $data->fullname = $fullname;
         $data->shortname= $shortname;
 
+        /*
         $context = get_context_instance_by_id($this->task->get_contextid());
         if (has_capability('moodle/course:changeidnumber', $context, $this->task->get_userid())) {
             $data->idnumber = '';
         } else {
             unset($data->idnumber);
         }
+        */
 
         // Any empty value for course->hiddensections will lead to 0 (default, show collapsed).
         // It has been reported that some old 1.9 courses may have it null leading to DB error. MDL-31532

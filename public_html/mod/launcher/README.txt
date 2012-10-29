@@ -39,14 +39,7 @@ HACK
 $mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100"  size="10"');
 $mform->addHelpButton('groupyear', 'groupyear', 'launcher');
 $mform->setType('groupyear', PARAM_RAW);
-HACK
-$mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100"  size="10"');
-$mform->addHelpButton('groupyear', 'groupyear', 'launcher');
-$mform->setType('groupyear', PARAM_RAW);
-HACK
-$mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100"  size="10"');
-$mform->addHelpButton('groupyear', 'groupyear', 'launcher');
-$mform->setType('groupyear', PARAM_RAW);
+
 
 ALTER TABLE `mdl_course` ADD `groupyear` VARCHAR( 255 )
 
@@ -59,6 +52,23 @@ backup/moodle2/backup_stepslib.php
 on line 400:
             'enablecompletion', 'completionstartonenrol', 'completionnotify', 'groupyear'));
 - add groupyear
+
+
+
+To enable copying of mdl_course.idnumber (as per client's request of 20121029):
+
+backup/moodle2/restore_stepslib.php
+- comment out line 1120 - 1125:
+
+        /*
+        $context = get_context_instance_by_id($this->task->get_contextid());
+        if (has_capability('moodle/course:changeidnumber', $context, $this->task->get_userid())) {
+            $data->idnumber = '';
+        } else {
+            unset($data->idnumber);
+        }
+        */
+
 
 ----
 
