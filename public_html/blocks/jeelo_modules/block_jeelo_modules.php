@@ -15,6 +15,7 @@ class block_jeelo_modules extends block_list
     public function get_content() 
 	{
         global $CFG, $DB, $OUTPUT, $USER, $COURSE, $CONTEXT;
+        $adminseesall = true;
 		
 		//require_login() ;
 		
@@ -33,7 +34,9 @@ class block_jeelo_modules extends block_list
 		
         $course 	= $this->page->course;
         require_once($CFG->dirroot.'/course/lib.php');
-        $context 	= get_context_instance(CONTEXT_COURSE, $course->id);	
+        //$context 	= get_context_instance(CONTEXT_COURSE, $course->id);	
+        $context 	= context_course::instance($course->id);	
+        $system_context 	= context_system::instance();	
 		
 		//$this->content->items[] = 'Course = '.$course->id;
 		//$this->content->items[] = 'Gebruiker = '. $USER->id;	
@@ -43,12 +46,13 @@ class block_jeelo_modules extends block_list
 		//$routeteamsA    = $DB->get_record("course", "'shortname' LIKE 'routeteams%'") ;
 		$routeteamsA 			= $DB->get_record('course', array('shortname'	=>	'routeteams')) ;
 		$course 				= $this->page->course;
-		$urlJeelo2						= 'http://content.jeelo2.nl/extern/'.md5($USER->email).'__'.$USER->password.'__'.$course->idnumber ;
+        $user = $DB->get_record('user', array('id' => $USER->id));
+		$urlJeelo2						= 'http://content.jeelo2.nl/extern/'.md5($user->email).'__'.$user->password.'__'.$course->idnumber ;
 		//----- ALGEMEEN
 		
 			
 		if (has_capability('moodle/course:viewhiddencourses',context_course::instance($course->id))) {    // SHOW ALGEMEEN	
-			if (empty($CFG->disablemycourses) and isloggedin() and !isguestuser() and !(has_capability('moodle/course:update', get_context_instance(CONTEXT_SYSTEM)) and $adminseesall)) {
+			if (empty($CFG->disablemycourses) and isloggedin() and !isguestuser() and !(has_capability('moodle/course:update', $system_context) and $adminseesall)) {
 				$this->content->items[] = '<br><span style="font-size: large; color: #BBBBBB;">Algemeen</span>';
 				
 				if( $course->id > '1' && $course->id !=  $kalenderA->id && $course->format ==  'jeelo')
@@ -140,7 +144,7 @@ class block_jeelo_modules extends block_list
 		
         $this->content->items[] = '<br><span style="font-size: large; color: #CC04CC;">Mijn projecten</span>';
 		
-		if (empty($CFG->disablemycourses) and isloggedin() and !isguestuser() and !(has_capability('moodle/course:update', get_context_instance(CONTEXT_SYSTEM)) and $adminseesall)) {    // Just print My Courses
+		if (empty($CFG->disablemycourses) and isloggedin() and !isguestuser() and !(has_capability('moodle/course:update', $system_context) and $adminseesall)) {    // Just print My Courses
 			if ($courses = enrol_get_my_courses(NULL, 'visible DESC, fullname ASC')) {
 					foreach ($courses as $course) {
 						if($course->visible == '1' && $course->id !=  $kalenderA->id) {		

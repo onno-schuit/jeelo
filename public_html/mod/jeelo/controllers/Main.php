@@ -85,12 +85,17 @@ class Main extends Soda2_Controller {
    */
   public function index() {
     # Get list of available courses with correct format
-    $courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC");
+    global $DB;
+    //if (!$courses = $DB->get_records_sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC")) {
+    if (!$courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC")) {
+        exit('Problem in mod/jeelo/controllers/Main.php: No courses found');
+    }
 
     # Check if this user is able to view courses
     $can_view = false;
     foreach($courses as $course) {
-      $context = get_context_instance(CONTEXT_COURSE, $course['id']);
+      //$context = get_context_instance(CONTEXT_COURSE, $course['id']);
+      $context = context_course::instance($course['id']);
       if (has_capability('moodle/course:update', $context)) {
         $can_view = true;
       }
@@ -159,10 +164,13 @@ class Main extends Soda2_Controller {
     $this->set('course_name', $course['fullname']);
 
     # Soda2 internal function, collects context for moodle use
-    $this->_get_context();
+    //$this->_get_context(); // OFFENDER! This actually doesn't work: 
+    // 1. _get_context is a setter instead of a getter
+    // 2. it tries to get the context of the module for a given course, but the module is only
+    //    installed in the main course...
 
     # Get CONTEXT_COURSE and check if this user is able to update('moodle/course:update') course
-    $context = get_context_instance(CONTEXT_COURSE, $id);
+    $context = context_course::instance($id);
     if (!has_capability('moodle/course:update', $context)) {
       @include_once('lib/weblib.php');
       print_error('nopermissions', '', '', 'moodle/course:update');
@@ -609,7 +617,8 @@ WHERE cm.course = '%s' AND cm.module = m.id AND m.name = 'jeelo'", $id));
     FROM {modules} m, {course_modules} cm
     WHERE cm.module = m.id AND cm.course = %s AND m.name = 'jeelo'", $this->course_id), true);
 
-    $this->_context = get_context_instance(CONTEXT_MODULE, $module['id']);
+
+    $this->_context = context_module::instance($module['id']);
   }
 
   /**
