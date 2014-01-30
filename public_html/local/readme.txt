@@ -39,8 +39,8 @@ are supported. There may be some extra files with special meaning in /local/.
 Sample /local/ directory listing:
 /local/nicehack/         - first customisation plugin
 /local/otherhack/        - other customisation plugin
-/local/upgrade_pre20.php - one time upgrade and migration script which is
-                           executed before main 2.0 upgrade starts
+/local/preupgrade.php    - executed before each core upgrade, use $version and $CFG->version
+                           if you need to tweak specific local hacks
 /local/defaults.php      - custom admin setting defaults
 
 
@@ -65,6 +65,7 @@ Standard plugin features:
 * /local/pluginname/db/events.php - event handlers and subscripts
 * /local/pluginname/db/messages.php - messaging registration
 * /local/pluginname/db/services.php - definition of web services and web service functions
+* /local/pluginname/db/subplugins.php - list of subplugins types supported by this local plugin
 * /local/pluginname/lang/en/local_pluginname.php - language file
 * /local/pluginname/settings.php - admin settings
 
@@ -205,6 +206,26 @@ You will need to write the /local/nicehack/externallib.php - external functions
 description and code. See some examples from the core files (/user/externallib.php,
 /group/externallib.php...).
 
+Local plugin navigation hooks
+-----------------------------
+There are two functions that your plugin can define that allow it to extend the main
+navigation and the settings navigation.
+These two functions both need to be defined within /local/nicehack/lib.php.
+
+sample code
+<?php
+function local_nicehack_extends_navigation(global_navigation $nav) {
+    // $nav is the global navigation instance.
+    // Here you can add to and manipulate the navigation structure as you like.
+    // This callback was introduced in 2.0 as nicehack_extends_navigation(global_navigation $nav)
+    // In 2.3 support was added for the now preferred local_nicehack_extends_navigation(global_navigation $nav).
+}
+function local_nicehack_extends_settings_navigation(settings_navigation $nav, context $context) {
+    // $nav is the settings navigation instance.
+    // $context is the context the settings have been loaded for (settings is context specific)
+    // Here you can add to and manipulate the settings structure as you like.
+    // This callback was introduced in 2.3
+}
 
 Other local customisation files
 ===============================

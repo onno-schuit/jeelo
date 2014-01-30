@@ -17,12 +17,10 @@
 /**
  * Strings for component 'quiz_statistics', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package    quiz
- * @subpackage statistics
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   quiz_statistics
+ * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 $string['actualresponse'] = 'Actual response';
 $string['allattempts'] = 'all attempts';
@@ -42,7 +40,7 @@ $string['coursename'] = 'Course name';
 $string['detailedanalysis'] = 'More detailed analysis of the responses to this question';
 $string['discrimination_index'] = 'Discrimination index';
 $string['discriminative_efficiency'] = 'Discriminative efficiency';
-$string['downloadeverything'] = 'Download full report as';
+$string['downloadeverything'] = 'Download full report as {$a->formatsmenu} {$a->downloadbutton}';
 $string['duration'] = 'Open for';
 $string['effective_weight'] = 'Effective weight';
 $string['errordeleting'] = 'Error deleting old {$a} records.';
@@ -58,8 +56,12 @@ $string['firstattempts'] = 'first attempts';
 $string['firstattemptsavg'] = 'Average grade of first attempts';
 $string['firstattemptscount'] = 'Number of complete graded first attempts';
 $string['frequency'] = 'Frequency';
+$string['highestattempts'] = 'highest graded attempt';
+$string['highestattemptsavg'] = 'Average grade of highest graded attempts';
 $string['intended_weight'] = 'Intended weight';
 $string['kurtosis'] = 'Score distribution kurtosis (for {$a})';
+$string['lastattempts'] = 'last attempt';
+$string['lastattemptsavg'] = 'Average grade of last attempts';
 $string['lastcalculated'] = 'Last calculated {$a->lastcalculated} ago there have been {$a->count} attempts since then.';
 $string['median'] = 'Median grade (for {$a})';
 $string['modelresponse'] = 'Model response';
@@ -71,6 +73,7 @@ Our equation for effective question weight cannot be calculated in this case. Th
 If you edit a quiz and give these question(s) with negative covariance a max grade of zero then the effective question weight of these questions will be zero and the real effective question weight of other questions will be as calculated now.';
 $string['nostudentsingroup'] = 'There are no students in this group yet';
 $string['optiongrade'] = 'Partial credit';
+$string['partofquestion'] = 'Part of question';
 $string['pluginname'] = 'Statistics';
 $string['position'] = 'Position';
 $string['positions'] = 'Position(s)';
@@ -86,6 +89,7 @@ $string['quizoverallstatistics'] = 'Quiz overall statistics';
 $string['quizstructureanalysis'] = 'Quiz structure analysis';
 $string['random_guess_score'] = 'Random guess score';
 $string['recalculatenow'] = 'Recalculate now';
+$string['reportsettings'] = 'Statistics calculation settings';
 $string['response'] = 'Response';
 $string['skewness'] = 'Score distribution skewness (for {$a})';
 $string['standarddeviation'] = 'Standard deviation (for {$a})';

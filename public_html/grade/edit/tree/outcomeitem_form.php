@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,6 +13,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * A moodleform to allow the creation and editing of outcome grade items
+ *
+ * @package   core_grades
+ * @copyright 2007 Petr Skoda
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
@@ -32,12 +39,15 @@ class edit_outcomeitem_form extends moodleform {
 
         $mform->addElement('text', 'itemname', get_string('itemname', 'grades'));
         $mform->addRule('itemname', get_string('required'), 'required', null, 'client');
+        $mform->setType('itemname', PARAM_TEXT);
 
         $mform->addElement('text', 'iteminfo', get_string('iteminfo', 'grades'));
         $mform->addHelpButton('iteminfo', 'iteminfo', 'grades');
+        $mform->setType('iteminfo', PARAM_TEXT);
 
         $mform->addElement('text', 'idnumber', get_string('idnumbermod'));
         $mform->addHelpButton('idnumber', 'idnumbermod');
+        $mform->setType('idnumber', PARAM_RAW);
 
         // allow setting of outcomes on module items too
         $options = array();

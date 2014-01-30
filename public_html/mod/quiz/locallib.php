@@ -43,12 +43,35 @@ require_once($CFG->libdir . '/filelib.php');
 
 
 /**
- * We show the countdown timer if there is less than this amount of time left before the
+ * @var int We show the countdown timer if there is less than this amount of time left before the
  * the quiz close date. (1 hour)
  */
 define('QUIZ_SHOW_TIME_BEFORE_DEADLINE', '3600');
 
-/// Functions related to attempts /////////////////////////////////////////
+/**
+ * @var int If there are fewer than this many seconds left when the student submits
+ * a page of the quiz, then do not take them to the next page of the quiz. Instead
+ * close the quiz immediately.
+ */
+define('QUIZ_MIN_TIME_TO_CONTINUE', '2');
+
+/**
+ * @var int We show no image when user selects No image from dropdown menu in quiz settings.
+ */
+define('QUIZ_SHOWIMAGE_NONE', 0);
+
+/**
+ * @var int We show small image when user selects small image from dropdown menu in quiz settings.
+ */
+define('QUIZ_SHOWIMAGE_SMALL', 1);
+
+/**
+ * @var int We show Large image when user selects Large image from dropdown menu in quiz settings.
+ */
+define('QUIZ_SHOWIMAGE_LARGE', 2);
+
+
+// Functions related to attempts ///////////////////////////////////////////////
 
 /**
  * Creates an object to represent a new attempt at a quiz
@@ -57,18 +80,24 @@ define('QUIZ_SHOW_TIME_BEFORE_DEADLINE', '3600');
  * user starting at the current time. The ->id field is not set. The object is
  * NOT written to the database.
  *
- * @param object $quiz the quiz to create an attempt for.
+ * @param object $quizobj the quiz object to create an attempt for.
  * @param int $attemptnumber the sequence number for the attempt.
  * @param object $lastattempt the previous attempt by this user, if any. Only needed
  *         if $attemptnumber > 1 and $quiz->attemptonlast is true.
  * @param int $timenow the time the attempt was started at.
  * @param bool $ispreview whether this new attempt is a preview.
+ * @param int $userid  the id of the user attempting this quiz.
  *
  * @return object the newly created attempt object.
  */
-function quiz_create_attempt($quiz, $attemptnumber, $lastattempt, $timenow, $ispreview = false) {
+function quiz_create_attempt(quiz $quizobj, $attemptnumber, $lastattempt, $timenow, $ispreview = false, $userid = null) {
     global $USER;
 
+    if ($userid === null) {
+        $userid = $USER->id;
+    }
+
+    $quiz = $quizobj->get_quiz();
     if ($quiz->sumgrades < 0.000005 && $quiz->grade > 0.000005) {
         throw new moodle_exception('cannotstartgradesmismatch', 'quiz',
                 new moodle_url('/mod/quiz/view.php', array('q' => $quiz->id)),
@@ -79,7 +108,7 @@ function quiz_create_attempt($quiz, $attemptnumber, $lastattempt, $timenow, $isp
         // We are not building on last attempt so create a new attempt.
         $attempt = new stdClass();
         $attempt->quiz = $quiz->id;
-        $attempt->userid = $USER->id;
+        $attempt->userid = $userid;
         $attempt->preview = 0;
         $attempt->layout = quiz_clean_layout($quiz->questions, true);
         if ($quiz->shufflequestions) {
@@ -97,13 +126,180 @@ function quiz_create_attempt($quiz, $attemptnumber, $lastattempt, $timenow, $isp
     $attempt->timestart = $timenow;
     $attempt->timefinish = 0;
     $attempt->timemodified = $timenow;
+    $attempt->state = quiz_attempt::IN_PROGRESS;
 
     // If this is a preview, mark it as such.
     if ($ispreview) {
         $attempt->preview = 1;
     }
 
+    $timeclose = $quizobj->get_access_manager($timenow)->get_end_time($attempt);
+    if ($timeclose === false || $ispreview) {
+        $attempt->timecheckstate = null;
+    } else {
+        $attempt->timecheckstate = $timeclose;
+    }
+
     return $attempt;
+}
+/**
+ * Start a normal, new, quiz attempt.
+ *
+ * @param quiz      $quizobj            the quiz object to start an attempt for.
+ * @param question_usage_by_activity $quba
+ * @param object    $attempt
+ * @param integer   $attemptnumber      starting from 1
+ * @param integer   $timenow            the attempt start time
+ * @param array     $questionids        slot number => question id. Used for random questions, to force the choice
+ *                                        of a particular actual question. Intended for testing purposes only.
+ * @param array     $forcedvariantsbyslot slot number => variant. Used for questions with variants,
+ *                                          to force the choice of a particular variant. Intended for testing
+ *                                          purposes only.
+ * @throws moodle_exception
+ * @return object   modified attempt object
+ */
+function quiz_start_new_attempt($quizobj, $quba, $attempt, $attemptnumber, $timenow,
+                                $questionids = array(), $forcedvariantsbyslot = array()) {
+    // Fully load all the questions in this quiz.
+    $quizobj->preload_questions();
+    $quizobj->load_questions();
+
+    // Add them all to the $quba.
+    $idstoslots = array();
+    $questionsinuse = array_keys($quizobj->get_questions());
+    foreach ($quizobj->get_questions() as $i => $questiondata) {
+        if ($questiondata->qtype != 'random') {
+            if (!$quizobj->get_quiz()->shuffleanswers) {
+                $questiondata->options->shuffleanswers = false;
+            }
+            $question = question_bank::make_question($questiondata);
+
+        } else {
+            if (!isset($questionids[$quba->next_slot_number()])) {
+                $forcequestionid = null;
+            } else {
+                $forcequestionid = $questionids[$quba->next_slot_number()];
+            }
+
+            $question = question_bank::get_qtype('random')->choose_other_question(
+                $questiondata, $questionsinuse, $quizobj->get_quiz()->shuffleanswers, $forcequestionid);
+            if (is_null($question)) {
+                throw new moodle_exception('notenoughrandomquestions', 'quiz',
+                                           $quizobj->view_url(), $questiondata);
+            }
+        }
+
+        $idstoslots[$i] = $quba->add_question($question, $questiondata->maxmark);
+        $questionsinuse[] = $question->id;
+    }
+
+    // Start all the questions.
+    if ($attempt->preview) {
+        $variantoffset = rand(1, 100);
+    } else {
+        $variantoffset = $attemptnumber;
+    }
+    $variantstrategy = new question_variant_pseudorandom_no_repeats_strategy(
+            $variantoffset, $attempt->userid, $quizobj->get_quizid());
+
+    if (!empty($forcedvariantsbyslot)) {
+        $forcedvariantsbyseed = question_variant_forced_choices_selection_strategy::prepare_forced_choices_array(
+            $forcedvariantsbyslot, $quba);
+        $variantstrategy = new question_variant_forced_choices_selection_strategy(
+            $forcedvariantsbyseed, $variantstrategy);
+    }
+
+    $quba->start_all_questions($variantstrategy, $timenow);
+
+    // Update attempt layout.
+    $newlayout = array();
+    foreach (explode(',', $attempt->layout) as $qid) {
+        if ($qid != 0) {
+            $newlayout[] = $idstoslots[$qid];
+        } else {
+            $newlayout[] = 0;
+        }
+    }
+    $attempt->layout = implode(',', $newlayout);
+    return $attempt;
+}
+
+/**
+ * Start a subsequent new attempt, in each attempt builds on last mode.
+ *
+ * @param question_usage_by_activity    $quba         this question usage
+ * @param object                        $attempt      this attempt
+ * @param object                        $lastattempt  last attempt
+ * @return object                       modified attempt object
+ *
+ */
+function quiz_start_attempt_built_on_last($quba, $attempt, $lastattempt) {
+    $oldquba = question_engine::load_questions_usage_by_activity($lastattempt->uniqueid);
+
+    $oldnumberstonew = array();
+    foreach ($oldquba->get_attempt_iterator() as $oldslot => $oldqa) {
+        $newslot = $quba->add_question($oldqa->get_question(), $oldqa->get_max_mark());
+
+        $quba->start_question_based_on($newslot, $oldqa);
+
+        $oldnumberstonew[$oldslot] = $newslot;
+    }
+
+    // Update attempt layout.
+    $newlayout = array();
+    foreach (explode(',', $lastattempt->layout) as $oldslot) {
+        if ($oldslot != 0) {
+            $newlayout[] = $oldnumberstonew[$oldslot];
+        } else {
+            $newlayout[] = 0;
+        }
+    }
+    $attempt->layout = implode(',', $newlayout);
+    return $attempt;
+}
+
+/**
+ * The save started question usage and quiz attempt in db and log the started attempt.
+ *
+ * @param quiz                       $quizobj
+ * @param question_usage_by_activity $quba
+ * @param object                     $attempt
+ * @return object                    attempt object with uniqueid and id set.
+ */
+function quiz_attempt_save_started($quizobj, $quba, $attempt) {
+    global $DB;
+    // Save the attempt in the database.
+    question_engine::save_questions_usage_by_activity($quba);
+    $attempt->uniqueid = $quba->get_id();
+    $attempt->id = $DB->insert_record('quiz_attempts', $attempt);
+    // Log the new attempt.
+    if ($attempt->preview) {
+        add_to_log($quizobj->get_courseid(), 'quiz', 'preview', 'view.php?id='.$quizobj->get_cmid(),
+                   $quizobj->get_quizid(), $quizobj->get_cmid());
+    } else {
+        add_to_log($quizobj->get_courseid(), 'quiz', 'attempt', 'review.php?attempt='.$attempt->id,
+                   $quizobj->get_quizid(), $quizobj->get_cmid());
+    }
+    return $attempt;
+}
+
+/**
+ * Fire an event to tell the rest of Moodle a quiz attempt has started.
+ *
+ * @param object $attempt
+ * @param quiz   $quizobj
+ */
+function quiz_fire_attempt_started_event($attempt, $quizobj) {
+    // Trigger event.
+    $eventdata = array();
+    $eventdata['context'] = $quizobj->get_context();
+    $eventdata['courseid'] = $quizobj->get_courseid();
+    $eventdata['relateduserid'] = $attempt->userid;
+    $eventdata['objectid'] = $attempt->id;
+    $event = \mod_quiz\event\attempt_started::create($eventdata);
+    $event->add_record_snapshot('quiz', $quizobj->get_quiz());
+    $event->add_record_snapshot('quiz_attempts', $attempt);
+    $event->trigger();
 }
 
 /**
@@ -149,7 +345,7 @@ function quiz_delete_attempt($attempt, $quiz) {
 
     // Search quiz_attempts for other instances by this user.
     // If none, then delete record for this quiz, this user from quiz_grades
-    // else recalculate best grade
+    // else recalculate best grade.
     $userid = $attempt->userid;
     if (!$DB->record_exists('quiz_attempts', array('userid' => $userid, 'quiz' => $quiz->id))) {
         $DB->delete_records('quiz_grades', array('userid' => $userid, 'quiz' => $quiz->id));
@@ -187,7 +383,7 @@ function quiz_has_attempts($quizid) {
     return $DB->record_exists('quiz_attempts', array('quiz' => $quizid, 'preview' => 0));
 }
 
-/// Functions to do with quiz layout and pages ////////////////////////////////
+// Functions to do with quiz layout and pages //////////////////////////////////
 
 /**
  * Returns a comma separated list of question ids for the quiz
@@ -268,7 +464,7 @@ function quiz_repaginate($layout, $perpage, $shuffle = false) {
     return implode(',', $layout);
 }
 
-/// Functions to do with quiz grades //////////////////////////////////////////
+// Functions to do with quiz grades ////////////////////////////////////////////
 
 /**
  * Creates an array of maximum grades for a quiz
@@ -437,8 +633,9 @@ function quiz_update_all_attempt_sumgrades($quiz) {
                 sumgrades = (
                     {$dm->sum_usage_marks_subquery('uniqueid')}
                 )
-            WHERE quiz = :quizid AND timefinish <> 0";
-    $DB->execute($sql, array('timenow' => $timenow, 'quizid' => $quiz->id));
+            WHERE quiz = :quizid AND state = :finishedstate";
+    $DB->execute($sql, array('timenow' => $timenow, 'quizid' => $quiz->id,
+            'finishedstate' => quiz_attempt::FINISHED));
 }
 
 /**
@@ -461,28 +658,33 @@ function quiz_set_grade($newgrade, $quiz) {
         return true;
     }
 
+    $oldgrade = $quiz->grade;
+    $quiz->grade = $newgrade;
+
     // Use a transaction, so that on those databases that support it, this is safer.
     $transaction = $DB->start_delegated_transaction();
 
     // Update the quiz table.
     $DB->set_field('quiz', 'grade', $newgrade, array('id' => $quiz->instance));
 
-    // Rescaling the other data is only possible if the old grade was non-zero.
-    if ($quiz->grade > 1e-7) {
-        global $CFG;
+    if ($oldgrade < 1) {
+        // If the old grade was zero, we cannot rescale, we have to recompute.
+        // We also recompute if the old grade was too small to avoid underflow problems.
+        quiz_update_all_final_grades($quiz);
 
-        $factor = $newgrade/$quiz->grade;
-        $quiz->grade = $newgrade;
-
-        // Update the quiz_grades table.
+    } else {
+        // We can rescale the grades efficiently.
         $timemodified = time();
         $DB->execute("
                 UPDATE {quiz_grades}
                 SET grade = ? * grade, timemodified = ?
                 WHERE quiz = ?
-        ", array($factor, $timemodified, $quiz->id));
+        ", array($newgrade/$oldgrade, $timemodified, $quiz->id));
+    }
 
+    if ($oldgrade > 1e-7) {
         // Update the quiz_feedback table.
+        $factor = $newgrade/$oldgrade;
         $DB->execute("
                 UPDATE {quiz_feedback}
                 SET mingrade = ? * mingrade, maxgrade = ? * maxgrade
@@ -490,7 +692,7 @@ function quiz_set_grade($newgrade, $quiz) {
         ", array($factor, $factor, $quiz->id));
     }
 
-    // update grade item and send all grades to gradebook
+    // Update grade item and send all grades to gradebook.
     quiz_grade_item_update($quiz);
     quiz_update_grades($quiz);
 
@@ -516,15 +718,15 @@ function quiz_save_best_grade($quiz, $userid = null, $attempts = array()) {
     }
 
     if (!$attempts) {
-        // Get all the attempts made by the user
+        // Get all the attempts made by the user.
         $attempts = quiz_get_user_attempts($quiz->id, $userid);
     }
 
-    // Calculate the best grade
+    // Calculate the best grade.
     $bestgrade = quiz_calculate_best_grade($quiz, $attempts);
     $bestgrade = quiz_rescale_grade($bestgrade, $quiz, false);
 
-    // Save the best grade in the database
+    // Save the best grade in the database.
     if (is_null($bestgrade)) {
         $DB->delete_records('quiz_grades', array('quiz' => $quiz->id, 'userid' => $userid));
 
@@ -535,6 +737,7 @@ function quiz_save_best_grade($quiz, $userid = null, $attempts = array()) {
         $DB->update_record('quiz_grades', $grade);
 
     } else {
+        $grade = new stdClass();
         $grade->quiz = $quiz->id;
         $grade->userid = $userid;
         $grade->grade = $bestgrade;
@@ -605,7 +808,7 @@ function quiz_update_all_final_grades($quiz) {
         return;
     }
 
-    $param = array('iquizid' => $quiz->id);
+    $param = array('iquizid' => $quiz->id, 'istatefinished' => quiz_attempt::FINISHED);
     $firstlastattemptjoin = "JOIN (
             SELECT
                 iquiza.userid,
@@ -615,7 +818,7 @@ function quiz_update_all_final_grades($quiz) {
             FROM {quiz_attempts} iquiza
 
             WHERE
-                iquiza.timefinish <> 0 AND
+                iquiza.state = :istatefinished AND
                 iquiza.preview = 0 AND
                 iquiza.quiz = :iquizid
 
@@ -662,13 +865,15 @@ function quiz_update_all_final_grades($quiz) {
     $param['quizid2'] = $quiz->id;
     $param['quizid3'] = $quiz->id;
     $param['quizid4'] = $quiz->id;
+    $param['statefinished'] = quiz_attempt::FINISHED;
+    $param['statefinished2'] = quiz_attempt::FINISHED;
     $finalgradesubquery = "
             SELECT quiza.userid, $finalgrade AS newgrade
             FROM {quiz_attempts} quiza
             $join
             WHERE
                 $where
-                quiza.timefinish <> 0 AND
+                quiza.state = :statefinished AND
                 quiza.preview = 0 AND
                 quiza.quiz = :quizid3
             GROUP BY quiza.userid";
@@ -684,7 +889,7 @@ function quiz_update_all_final_grades($quiz) {
                 SELECT DISTINCT userid
                 FROM {quiz_attempts} quiza2
                 WHERE
-                    quiza2.timefinish <> 0 AND
+                    quiza2.state = :statefinished2 AND
                     quiza2.preview = 0 AND
                     quiza2.quiz = :quizid2
             ) users
@@ -737,6 +942,158 @@ function quiz_update_all_final_grades($quiz) {
 }
 
 /**
+ * Efficiently update check state time on all open attempts
+ *
+ * @param array $conditions optional restrictions on which attempts to update
+ *                    Allowed conditions:
+ *                      courseid => (array|int) attempts in given course(s)
+ *                      userid   => (array|int) attempts for given user(s)
+ *                      quizid   => (array|int) attempts in given quiz(s)
+ *                      groupid  => (array|int) quizzes with some override for given group(s)
+ *
+ */
+function quiz_update_open_attempts(array $conditions) {
+    global $DB;
+
+    foreach ($conditions as &$value) {
+        if (!is_array($value)) {
+            $value = array($value);
+        }
+    }
+
+    $params = array();
+    $wheres = array("quiza.state IN ('inprogress', 'overdue')");
+    $iwheres = array("iquiza.state IN ('inprogress', 'overdue')");
+
+    if (isset($conditions['courseid'])) {
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['courseid'], SQL_PARAMS_NAMED, 'cid');
+        $params = array_merge($params, $inparams);
+        $wheres[] = "quiza.quiz IN (SELECT q.id FROM {quiz} q WHERE q.course $incond)";
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['courseid'], SQL_PARAMS_NAMED, 'icid');
+        $params = array_merge($params, $inparams);
+        $iwheres[] = "iquiza.quiz IN (SELECT q.id FROM {quiz} q WHERE q.course $incond)";
+    }
+
+    if (isset($conditions['userid'])) {
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['userid'], SQL_PARAMS_NAMED, 'uid');
+        $params = array_merge($params, $inparams);
+        $wheres[] = "quiza.userid $incond";
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['userid'], SQL_PARAMS_NAMED, 'iuid');
+        $params = array_merge($params, $inparams);
+        $iwheres[] = "iquiza.userid $incond";
+    }
+
+    if (isset($conditions['quizid'])) {
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['quizid'], SQL_PARAMS_NAMED, 'qid');
+        $params = array_merge($params, $inparams);
+        $wheres[] = "quiza.quiz $incond";
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['quizid'], SQL_PARAMS_NAMED, 'iqid');
+        $params = array_merge($params, $inparams);
+        $iwheres[] = "iquiza.quiz $incond";
+    }
+
+    if (isset($conditions['groupid'])) {
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['groupid'], SQL_PARAMS_NAMED, 'gid');
+        $params = array_merge($params, $inparams);
+        $wheres[] = "quiza.quiz IN (SELECT qo.quiz FROM {quiz_overrides} qo WHERE qo.groupid $incond)";
+        list ($incond, $inparams) = $DB->get_in_or_equal($conditions['groupid'], SQL_PARAMS_NAMED, 'igid');
+        $params = array_merge($params, $inparams);
+        $iwheres[] = "iquiza.quiz IN (SELECT qo.quiz FROM {quiz_overrides} qo WHERE qo.groupid $incond)";
+    }
+
+    // SQL to compute timeclose and timelimit for each attempt:
+    $quizausersql = quiz_get_attempt_usertime_sql(
+            implode("\n                AND ", $iwheres));
+
+    // SQL to compute the new timecheckstate
+    $timecheckstatesql = "
+          CASE WHEN quizauser.usertimelimit = 0 AND quizauser.usertimeclose = 0 THEN NULL
+               WHEN quizauser.usertimelimit = 0 THEN quizauser.usertimeclose
+               WHEN quizauser.usertimeclose = 0 THEN quiza.timestart + quizauser.usertimelimit
+               WHEN quiza.timestart + quizauser.usertimelimit < quizauser.usertimeclose THEN quiza.timestart + quizauser.usertimelimit
+               ELSE quizauser.usertimeclose END +
+          CASE WHEN quiza.state = 'overdue' THEN quiz.graceperiod ELSE 0 END";
+
+    // SQL to select which attempts to process
+    $attemptselect = implode("\n                         AND ", $wheres);
+
+   /*
+    * Each database handles updates with inner joins differently:
+    *  - mysql does not allow a FROM clause
+    *  - postgres and mssql allow FROM but handle table aliases differently
+    *  - oracle requires a subquery
+    *
+    * Different code for each database.
+    */
+
+    $dbfamily = $DB->get_dbfamily();
+    if ($dbfamily == 'mysql') {
+        $updatesql = "UPDATE {quiz_attempts} quiza
+                        JOIN {quiz} quiz ON quiz.id = quiza.quiz
+                        JOIN ( $quizausersql ) quizauser ON quizauser.id = quiza.id
+                         SET quiza.timecheckstate = $timecheckstatesql
+                       WHERE $attemptselect";
+    } else if ($dbfamily == 'postgres') {
+        $updatesql = "UPDATE {quiz_attempts} quiza
+                         SET timecheckstate = $timecheckstatesql
+                        FROM {quiz} quiz, ( $quizausersql ) quizauser
+                       WHERE quiz.id = quiza.quiz
+                         AND quizauser.id = quiza.id
+                         AND $attemptselect";
+    } else if ($dbfamily == 'mssql') {
+        $updatesql = "UPDATE quiza
+                         SET timecheckstate = $timecheckstatesql
+                        FROM {quiz_attempts} quiza
+                        JOIN {quiz} quiz ON quiz.id = quiza.quiz
+                        JOIN ( $quizausersql ) quizauser ON quizauser.id = quiza.id
+                       WHERE $attemptselect";
+    } else {
+        // oracle, sqlite and others
+        $updatesql = "UPDATE {quiz_attempts} quiza
+                         SET timecheckstate = (
+                           SELECT $timecheckstatesql
+                             FROM {quiz} quiz, ( $quizausersql ) quizauser
+                            WHERE quiz.id = quiza.quiz
+                              AND quizauser.id = quiza.id
+                         )
+                         WHERE $attemptselect";
+    }
+
+    $DB->execute($updatesql, $params);
+}
+
+/**
+ * Returns SQL to compute timeclose and timelimit for every attempt, taking into account user and group overrides.
+ *
+ * @param string $redundantwhereclauses extra where clauses to add to the subquery
+ *      for performance. These can use the table alias iquiza for the quiz attempts table.
+ * @return string SQL select with columns attempt.id, usertimeclose, usertimelimit.
+ */
+function quiz_get_attempt_usertime_sql($redundantwhereclauses = '') {
+    if ($redundantwhereclauses) {
+        $redundantwhereclauses = 'WHERE ' . $redundantwhereclauses;
+    }
+    // The multiple qgo JOINS are necessary because we want timeclose/timelimit = 0 (unlimited) to supercede
+    // any other group override
+    $quizausersql = "
+          SELECT iquiza.id,
+           COALESCE(MAX(quo.timeclose), MAX(qgo1.timeclose), MAX(qgo2.timeclose), iquiz.timeclose) AS usertimeclose,
+           COALESCE(MAX(quo.timelimit), MAX(qgo3.timelimit), MAX(qgo4.timelimit), iquiz.timelimit) AS usertimelimit
+
+           FROM {quiz_attempts} iquiza
+           JOIN {quiz} iquiz ON iquiz.id = iquiza.quiz
+      LEFT JOIN {quiz_overrides} quo ON quo.quiz = iquiza.quiz AND quo.userid = iquiza.userid
+      LEFT JOIN {groups_members} gm ON gm.userid = iquiza.userid
+      LEFT JOIN {quiz_overrides} qgo1 ON qgo1.quiz = iquiza.quiz AND qgo1.groupid = gm.groupid AND qgo1.timeclose = 0
+      LEFT JOIN {quiz_overrides} qgo2 ON qgo2.quiz = iquiza.quiz AND qgo2.groupid = gm.groupid AND qgo2.timeclose > 0
+      LEFT JOIN {quiz_overrides} qgo3 ON qgo3.quiz = iquiza.quiz AND qgo3.groupid = gm.groupid AND qgo3.timelimit = 0
+      LEFT JOIN {quiz_overrides} qgo4 ON qgo4.quiz = iquiza.quiz AND qgo4.groupid = gm.groupid AND qgo4.timelimit > 0
+          $redundantwhereclauses
+       GROUP BY iquiza.id, iquiz.id, iquiz.timeclose, iquiz.timelimit";
+    return $quizausersql;
+}
+
+/**
  * Return the attempt with the best grade for a quiz
  *
  * Which attempt is the best depends on $quiz->grademethod. If the grade
@@ -755,7 +1112,7 @@ function quiz_calculate_best_attempt($quiz, $attempts) {
             }
             break;
 
-        case QUIZ_GRADEAVERAGE: // need to do something with it :-)
+        case QUIZ_GRADEAVERAGE: // We need to do something with it.
         case QUIZ_ATTEMPTLAST:
             foreach ($attempts as $attempt) {
                 $final = $attempt;
@@ -776,7 +1133,8 @@ function quiz_calculate_best_attempt($quiz, $attempts) {
 }
 
 /**
- * @return the options for calculating the quiz grade from the individual attempt grades.
+ * @return array int => lang string the options for calculating the quiz grade
+ *      from the individual attempt grades.
  */
 function quiz_get_grading_options() {
     return array(
@@ -797,7 +1155,38 @@ function quiz_get_grading_option_name($option) {
     return $strings[$option];
 }
 
-/// Other quiz functions ////////////////////////////////////////////////////
+/**
+ * @return array string => lang string the options for handling overdue quiz
+ *      attempts.
+ */
+function quiz_get_overdue_handling_options() {
+    return array(
+        'autosubmit'  => get_string('overduehandlingautosubmit', 'quiz'),
+        'graceperiod' => get_string('overduehandlinggraceperiod', 'quiz'),
+        'autoabandon' => get_string('overduehandlingautoabandon', 'quiz'),
+    );
+}
+
+/**
+ * @param string $state one of the state constants like IN_PROGRESS.
+ * @return string the human-readable state name.
+ */
+function quiz_attempt_state_name($state) {
+    switch ($state) {
+        case quiz_attempt::IN_PROGRESS:
+            return get_string('stateinprogress', 'quiz');
+        case quiz_attempt::OVERDUE:
+            return get_string('stateoverdue', 'quiz');
+        case quiz_attempt::FINISHED:
+            return get_string('statefinished', 'quiz');
+        case quiz_attempt::ABANDONED:
+            return get_string('stateabandoned', 'quiz');
+        default:
+            throw new coding_exception('Unknown quiz attempt state.');
+    }
+}
+
+// Other quiz functions ////////////////////////////////////////////////////////
 
 /**
  * @param object $quiz the quiz.
@@ -848,7 +1237,7 @@ function quiz_question_edit_button($cmid, $question, $returnurl, $contentafteric
     // Build the icon.
     if ($action) {
         if ($returnurl instanceof moodle_url) {
-            $returnurl = str_replace($CFG->wwwroot, '', $returnurl->out(false));
+            $returnurl = $returnurl->out_as_local_url(false);
         }
         $questionparams = array('returnurl' => $returnurl, 'cmid' => $cmid, 'id' => $question->id);
         $questionurl = new moodle_url("$CFG->wwwroot/question/question.php", $questionparams);
@@ -929,14 +1318,15 @@ function quiz_get_flag_option($attempt, $context) {
 }
 
 /**
- * Work out what state this quiz attempt is in.
+ * Work out what state this quiz attempt is in - in the sense used by
+ * quiz_get_review_options, not in the sense of $attempt->state.
  * @param object $quiz the quiz settings
  * @param object $attempt the quiz_attempt database row.
  * @return int one of the mod_quiz_display_options::DURING,
  *      IMMEDIATELY_AFTER, LATER_WHILE_OPEN or AFTER_CLOSE constants.
  */
 function quiz_attempt_state($quiz, $attempt) {
-    if ($attempt->timefinish == 0) {
+    if ($attempt->state == quiz_attempt::IN_PROGRESS) {
         return mod_quiz_display_options::DURING;
     } else if (time() < $attempt->timefinish + 120) {
         return mod_quiz_display_options::IMMEDIATELY_AFTER;
@@ -967,8 +1357,8 @@ function quiz_get_review_options($quiz, $attempt, $context) {
                 array('attempt' => $attempt->id));
     }
 
-    // Show a link to the comment box only for closed attempts
-    if (!empty($attempt->id) && $attempt->timefinish && !$attempt->preview &&
+    // Show a link to the comment box only for closed attempts.
+    if (!empty($attempt->id) && $attempt->state == quiz_attempt::FINISHED && !$attempt->preview &&
             !is_null($context) && has_capability('mod/quiz:grade', $context)) {
         $options->manualcomment = question_display_options::VISIBLE;
         $options->manualcommentlink = new moodle_url('/mod/quiz/comment.php',
@@ -1050,7 +1440,7 @@ function quiz_clean_layout($layout, $removeemptypages = false) {
     // id to relink to.
     $layout = preg_replace('/,{2,}/', ',', trim($layout, ','));
 
-    // Remove duplicate question ids
+    // Remove duplicate question ids.
     $layout = explode(',', $layout);
     $cleanerlayout = array();
     $seen = array();
@@ -1064,7 +1454,7 @@ function quiz_clean_layout($layout, $removeemptypages = false) {
     }
 
     if ($removeemptypages) {
-        // Avoid duplicate page breaks
+        // Avoid duplicate page breaks.
         $layout = $cleanerlayout;
         $cleanerlayout = array();
         $stripfollowingbreaks = true; // Ensure breaks are stripped from the start.
@@ -1077,7 +1467,7 @@ function quiz_clean_layout($layout, $removeemptypages = false) {
         }
     }
 
-    // Add a page break at the end if there is none
+    // Add a page break at the end if there is none.
     if (end($cleanerlayout) !== '0') {
         $cleanerlayout[] = '0';
     }
@@ -1101,7 +1491,7 @@ function quiz_get_slot_for_question($quiz, $questionid) {
     return null;
 }
 
-/// FUNCTIONS FOR SENDING NOTIFICATION MESSAGES ///////////////////////////////
+// Functions for sending notification messages /////////////////////////////////
 
 /**
  * Sends a confirmation message to the student confirming that the attempt was processed.
@@ -1113,18 +1503,18 @@ function quiz_get_slot_for_question($quiz, $questionid) {
  */
 function quiz_send_confirmation($recipient, $a) {
 
-    // Add information about the recipient to $a
+    // Add information about the recipient to $a.
     // Don't do idnumber. we want idnumber to be the submitter's idnumber.
     $a->username     = fullname($recipient);
     $a->userusername = $recipient->username;
 
-    // Prepare message
+    // Prepare the message.
     $eventdata = new stdClass();
     $eventdata->component         = 'mod_quiz';
     $eventdata->name              = 'confirmation';
     $eventdata->notification      = 1;
 
-    $eventdata->userfrom          = get_admin();
+    $eventdata->userfrom          = core_user::get_noreply_user();
     $eventdata->userto            = $recipient;
     $eventdata->subject           = get_string('emailconfirmsubject', 'quiz', $a);
     $eventdata->fullmessage       = get_string('emailconfirmbody', 'quiz', $a);
@@ -1149,12 +1539,12 @@ function quiz_send_confirmation($recipient, $a) {
  */
 function quiz_send_notification($recipient, $submitter, $a) {
 
-    // Recipient info for template
+    // Recipient info for template.
     $a->useridnumber = $recipient->idnumber;
     $a->username     = fullname($recipient);
     $a->userusername = $recipient->username;
 
-    // Prepare message
+    // Prepare the message.
     $eventdata = new stdClass();
     $eventdata->component         = 'mod_quiz';
     $eventdata->name              = 'submission';
@@ -1189,14 +1579,14 @@ function quiz_send_notification($recipient, $submitter, $a) {
 function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm) {
     global $CFG, $DB;
 
-    // Do nothing if required objects not present
+    // Do nothing if required objects not present.
     if (empty($course) or empty($quiz) or empty($attempt) or empty($context)) {
         throw new coding_exception('$course, $quiz, $attempt, $context and $cm must all be set.');
     }
 
     $submitter = $DB->get_record('user', array('id' => $attempt->userid), '*', MUST_EXIST);
 
-    // Check for confirmation required
+    // Check for confirmation required.
     $sendconfirm = false;
     $notifyexcludeusers = '';
     if (has_capability('mod/quiz:emailconfirmsubmission', $context, $submitter, false)) {
@@ -1204,9 +1594,9 @@ function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm
         $sendconfirm = true;
     }
 
-    // check for notifications required
-    $notifyfields = 'u.id, u.username, u.firstname, u.lastname, u.idnumber, u.email, u.emailstop, ' .
-            'u.lang, u.timezone, u.mailformat, u.maildisplay';
+    // Check for notifications required.
+    $notifyfields = 'u.id, u.username, u.idnumber, u.email, u.emailstop, u.lang, u.timezone, u.mailformat, u.maildisplay, ';
+    $notifyfields .= get_all_user_name_fields(true, 'u');
     $groups = groups_get_all_groups($course->id, $submitter->id);
     if (is_array($groups) && count($groups) > 0) {
         $groups = array_keys($groups);
@@ -1226,30 +1616,30 @@ function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm
     }
 
     $a = new stdClass();
-    // Course info
+    // Course info.
     $a->coursename      = $course->fullname;
     $a->courseshortname = $course->shortname;
-    // Quiz info
+    // Quiz info.
     $a->quizname        = $quiz->name;
     $a->quizreporturl   = $CFG->wwwroot . '/mod/quiz/report.php?id=' . $cm->id;
     $a->quizreportlink  = '<a href="' . $a->quizreporturl . '">' .
             format_string($quiz->name) . ' report</a>';
+    $a->quizurl         = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cm->id;
+    $a->quizlink        = '<a href="' . $a->quizurl . '">' . format_string($quiz->name) . '</a>';
+    // Attempt info.
+    $a->submissiontime  = userdate($attempt->timefinish);
+    $a->timetaken       = format_time($attempt->timefinish - $attempt->timestart);
     $a->quizreviewurl   = $CFG->wwwroot . '/mod/quiz/review.php?attempt=' . $attempt->id;
     $a->quizreviewlink  = '<a href="' . $a->quizreviewurl . '">' .
             format_string($quiz->name) . ' review</a>';
-    $a->quizurl         = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cm->id;
-    $a->quizlink        = '<a href="' . $a->quizurl . '">' . format_string($quiz->name) . '</a>';
-    // Attempt info
-    $a->submissiontime  = userdate($attempt->timefinish);
-    $a->timetaken       = format_time($attempt->timefinish - $attempt->timestart);
-    // Student who sat the quiz info
+    // Student who sat the quiz info.
     $a->studentidnumber = $submitter->idnumber;
     $a->studentname     = fullname($submitter);
     $a->studentusername = $submitter->username;
 
     $allok = true;
 
-    // Send notifications if required
+    // Send notifications if required.
     if (!empty($userstonotify)) {
         foreach ($userstonotify as $recipient) {
             $allok = $allok && quiz_send_notification($recipient, $submitter, $a);
@@ -1268,6 +1658,82 @@ function quiz_send_notification_messages($course, $quiz, $attempt, $context, $cm
 }
 
 /**
+ * Send the notification message when a quiz attempt becomes overdue.
+ *
+ * @param object $course the course
+ * @param object $quiz the quiz
+ * @param object $attempt this attempt just finished
+ * @param object $context the quiz context
+ * @param object $cm the coursemodule for this quiz
+ */
+function quiz_send_overdue_message($course, $quiz, $attempt, $context, $cm) {
+    global $CFG, $DB;
+
+    // Do nothing if required objects not present.
+    if (empty($course) or empty($quiz) or empty($attempt) or empty($context)) {
+        throw new coding_exception('$course, $quiz, $attempt, $context and $cm must all be set.');
+    }
+
+    $submitter = $DB->get_record('user', array('id' => $attempt->userid), '*', MUST_EXIST);
+
+    if (!has_capability('mod/quiz:emailwarnoverdue', $context, $submitter, false)) {
+        return; // Message not required.
+    }
+
+    // Prepare lots of useful information that admins might want to include in
+    // the email message.
+    $quizname = format_string($quiz->name);
+
+    $deadlines = array();
+    if ($quiz->timelimit) {
+        $deadlines[] = $attempt->timestart + $quiz->timelimit;
+    }
+    if ($quiz->timeclose) {
+        $deadlines[] = $quiz->timeclose;
+    }
+    $duedate = min($deadlines);
+    $graceend = $duedate + $quiz->graceperiod;
+
+    $a = new stdClass();
+    // Course info.
+    $a->coursename         = $course->fullname;
+    $a->courseshortname    = $course->shortname;
+    // Quiz info.
+    $a->quizname           = $quizname;
+    $a->quizurl            = $CFG->wwwroot . '/mod/quiz/view.php?id=' . $cm->id;
+    $a->quizlink           = '<a href="' . $a->quizurl . '">' . $quizname . '</a>';
+    // Attempt info.
+    $a->attemptduedate    = userdate($duedate);
+    $a->attemptgraceend    = userdate($graceend);
+    $a->attemptsummaryurl  = $CFG->wwwroot . '/mod/quiz/summary.php?attempt=' . $attempt->id;
+    $a->attemptsummarylink = '<a href="' . $a->attemptsummaryurl . '">' . $quizname . ' review</a>';
+    // Student's info.
+    $a->studentidnumber    = $submitter->idnumber;
+    $a->studentname        = fullname($submitter);
+    $a->studentusername    = $submitter->username;
+
+    // Prepare the message.
+    $eventdata = new stdClass();
+    $eventdata->component         = 'mod_quiz';
+    $eventdata->name              = 'attempt_overdue';
+    $eventdata->notification      = 1;
+
+    $eventdata->userfrom          = core_user::get_noreply_user();
+    $eventdata->userto            = $submitter;
+    $eventdata->subject           = get_string('emailoverduesubject', 'quiz', $a);
+    $eventdata->fullmessage       = get_string('emailoverduebody', 'quiz', $a);
+    $eventdata->fullmessageformat = FORMAT_PLAIN;
+    $eventdata->fullmessagehtml   = '';
+
+    $eventdata->smallmessage      = get_string('emailoverduesmall', 'quiz', $a);
+    $eventdata->contexturl        = $a->quizurl;
+    $eventdata->contexturlname    = $a->quizname;
+
+    // Send the message.
+    return message_send($eventdata);
+}
+
+/**
  * Handle the quiz_attempt_submitted event.
  *
  * This sends the confirmation and notification messages, if required.
@@ -1278,9 +1744,9 @@ function quiz_attempt_submitted_handler($event) {
     global $DB;
 
     $course  = $DB->get_record('course', array('id' => $event->courseid));
-    $quiz    = $DB->get_record('quiz', array('id' => $event->quizid));
-    $cm      = get_coursemodule_from_id('quiz', $event->cmid, $event->courseid);
-    $attempt = $DB->get_record('quiz_attempts', array('id' => $event->attemptid));
+    $attempt = $event->get_record_snapshot('quiz_attempts', $event->objectid);
+    $quiz    = $event->get_record_snapshot('quiz', $attempt->quiz);
+    $cm      = get_coursemodule_from_id('quiz', $event->get_context()->instanceid, $event->courseid);
 
     if (!($course && $quiz && $cm && $attempt)) {
         // Something has been deleted since the event was raised. Therefore, the
@@ -1289,9 +1755,117 @@ function quiz_attempt_submitted_handler($event) {
     }
 
     return quiz_send_notification_messages($course, $quiz, $attempt,
-            get_context_instance(CONTEXT_MODULE, $cm->id), $cm);
+            context_module::instance($cm->id), $cm);
 }
 
+/**
+ * Handle the quiz_attempt_overdue event.
+ *
+ * For quizzes with applicable settings, this sends a message to the user, reminding
+ * them that they forgot to submit, and that they have another chance to do so.
+ *
+ * @param object $event the event object.
+ */
+function quiz_attempt_overdue_handler($event) {
+    global $DB;
+
+    $course  = $DB->get_record('course', array('id' => $event->courseid));
+    $attempt = $event->get_record_snapshot('quiz_attempts', $event->objectid);
+    $quiz    = $event->get_record_snapshot('quiz', $attempt->quiz);
+    $cm      = get_coursemodule_from_id('quiz', $event->get_context()->instanceid, $event->courseid);
+
+    if (!($course && $quiz && $cm && $attempt)) {
+        // Something has been deleted since the event was raised. Therefore, the
+        // event is no longer relevant.
+        return true;
+    }
+
+    return quiz_send_overdue_message($course, $quiz, $attempt,
+            context_module::instance($cm->id), $cm);
+}
+
+/**
+ * Handle groups_member_added event
+ *
+ * @param object $event the event object.
+ * @deprecated since 2.6, see {@link \mod_quiz\group_observers::group_member_added()}.
+ */
+function quiz_groups_member_added_handler($event) {
+    debugging('quiz_groups_member_added_handler() is deprecated, please use ' .
+        '\mod_quiz\group_observers::group_member_added() instead.', DEBUG_DEVELOPER);
+    quiz_update_open_attempts(array('userid'=>$event->userid, 'groupid'=>$event->groupid));
+}
+
+/**
+ * Handle groups_member_removed event
+ *
+ * @param object $event the event object.
+ * @deprecated since 2.6, see {@link \mod_quiz\group_observers::group_member_removed()}.
+ */
+function quiz_groups_member_removed_handler($event) {
+    debugging('quiz_groups_member_removed_handler() is deprecated, please use ' .
+        '\mod_quiz\group_observers::group_member_removed() instead.', DEBUG_DEVELOPER);
+    quiz_update_open_attempts(array('userid'=>$event->userid, 'groupid'=>$event->groupid));
+}
+
+/**
+ * Handle groups_group_deleted event
+ *
+ * @param object $event the event object.
+ * @deprecated since 2.6, see {@link \mod_quiz\group_observers::group_deleted()}.
+ */
+function quiz_groups_group_deleted_handler($event) {
+    global $DB;
+    debugging('quiz_groups_group_deleted_handler() is deprecated, please use ' .
+        '\mod_quiz\group_observers::group_deleted() instead.', DEBUG_DEVELOPER);
+    quiz_process_group_deleted_in_course($event->courseid);
+}
+
+/**
+ * Logic to happen when a/some group(s) has/have been deleted in a course.
+ *
+ * @param int $courseid The course ID.
+ * @return void
+ */
+function quiz_process_group_deleted_in_course($courseid) {
+    global $DB;
+
+    // It would be nice if we got the groupid that was deleted.
+    // Instead, we just update all quizzes with orphaned group overrides.
+    $sql = "SELECT o.id, o.quiz
+              FROM {quiz_overrides} o
+              JOIN {quiz} quiz ON quiz.id = o.quiz
+         LEFT JOIN {groups} grp ON grp.id = o.groupid
+             WHERE quiz.course = :courseid AND grp.id IS NULL";
+    $params = array('courseid' => $courseid);
+    $records = $DB->get_records_sql_menu($sql, $params);
+    if (!$records) {
+        return; // Nothing to do.
+    }
+    $DB->delete_records_list('quiz_overrides', 'id', array_keys($records));
+    quiz_update_open_attempts(array('quizid' => array_unique(array_values($records))));
+}
+
+/**
+ * Handle groups_members_removed event
+ *
+ * @param object $event the event object.
+ * @deprecated since 2.6, see {@link \mod_quiz\group_observers::group_member_removed()}.
+ */
+function quiz_groups_members_removed_handler($event) {
+    debugging('quiz_groups_members_removed_handler() is deprecated, please use ' .
+        '\mod_quiz\group_observers::group_member_removed() instead.', DEBUG_DEVELOPER);
+    if ($event->userid == 0) {
+        quiz_update_open_attempts(array('courseid'=>$event->courseid));
+    } else {
+        quiz_update_open_attempts(array('courseid'=>$event->courseid, 'userid'=>$event->userid));
+    }
+}
+
+/**
+ * Get the information about the standard quiz JavaScript module.
+ * @return array a standard jsmodule structure.
+ */
 function quiz_get_js_module() {
     global $PAGE;
 
@@ -1299,13 +1873,14 @@ function quiz_get_js_module() {
         'name' => 'mod_quiz',
         'fullpath' => '/mod/quiz/module.js',
         'requires' => array('base', 'dom', 'event-delegate', 'event-key',
-                'core_question_engine'),
+                'core_question_engine', 'moodle-core-formchangechecker'),
         'strings' => array(
             array('cancel', 'moodle'),
             array('flagged', 'question'),
             array('functiondisabledbysecuremode', 'quiz'),
             array('startattempt', 'quiz'),
             array('timesup', 'quiz'),
+            array('changesmadereallygoaway', 'moodle'),
         ),
     );
 }
@@ -1392,14 +1967,17 @@ class mod_quiz_display_options extends question_display_options {
 class qubaids_for_quiz extends qubaid_join {
     public function __construct($quizid, $includepreviews = true, $onlyfinished = false) {
         $where = 'quiza.quiz = :quizaquiz';
+        $params = array('quizaquiz' => $quizid);
+
         if (!$includepreviews) {
             $where .= ' AND preview = 0';
         }
+
         if ($onlyfinished) {
-            $where .= ' AND timefinish <> 0';
+            $where .= ' AND state == :statefinished';
+            $params['statefinished'] = quiz_attempt::FINISHED;
         }
 
-        parent::__construct('{quiz_attempts} quiza', 'quiza.uniqueid', $where,
-                array('quizaquiz' => $quizid));
+        parent::__construct('{quiz_attempts} quiza', 'quiza.uniqueid', $where, $params);
     }
 }

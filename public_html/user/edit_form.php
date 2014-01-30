@@ -10,13 +10,23 @@ class user_edit_form extends moodleform {
 
     // Define the form
     function definition () {
-        global $CFG, $COURSE;
+        global $CFG, $COURSE, $USER;
 
         $mform =& $this->_form;
-        if (is_array($this->_customdata) && array_key_exists('editoroptions', $this->_customdata)) {
-            $editoroptions = $this->_customdata['editoroptions'];
-        } else {
-            $editoroptions = null;
+        $editoroptions = null;
+        $filemanageroptions = null;
+        $userid = $USER->id;
+
+        if (is_array($this->_customdata)) {
+            if (array_key_exists('editoroptions', $this->_customdata)) {
+                $editoroptions = $this->_customdata['editoroptions'];
+            }
+            if (array_key_exists('filemanageroptions', $this->_customdata)) {
+                $filemanageroptions = $this->_customdata['filemanageroptions'];
+            }
+            if (array_key_exists('userid', $this->_customdata)) {
+                $userid = $this->_customdata['userid'];
+            }
         }
         //Accessibility: "Required" is bad legend text.
         $strgeneral  = get_string('general');
@@ -32,17 +42,17 @@ class user_edit_form extends moodleform {
         $mform->addElement('header', 'moodle', $strgeneral);
 
         /// shared fields
-        useredit_shared_definition($mform, $editoroptions);
+        useredit_shared_definition($mform, $editoroptions, $filemanageroptions);
 
         /// extra settigs
-        if (!empty($CFG->gdversion) and !empty($CFG->disableuserimages)) {
+        if (!empty($CFG->disableuserimages)) {
             $mform->removeElement('deletepicture');
             $mform->removeElement('imagefile');
             $mform->removeElement('imagealt');
         }
 
         /// Next the customisable profile fields
-        profile_definition($mform);
+        profile_definition($mform, $userid);
 
         $this->add_action_buttons(false, get_string('updatemyprofile'));
     }
@@ -72,21 +82,19 @@ class user_edit_form extends moodleform {
             }
 
             // print picture
-            if (!empty($CFG->gdversion)) {
-                $context = get_context_instance(CONTEXT_USER, $user->id, MUST_EXIST);
-                $fs = get_file_storage();
-                $hasuploadedpicture = ($fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.png') || $fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.jpg'));
-                if (!empty($user->picture) && $hasuploadedpicture) {
-                    $imagevalue = $OUTPUT->user_picture($user, array('courseid' => SITEID, 'size'=>64));
-                } else {
-                    $imagevalue = get_string('none');
-                }
-                $imageelement = $mform->getElement('currentpicture');
-                $imageelement->setValue($imagevalue);
+            $context = context_user::instance($user->id, MUST_EXIST);
+            $fs = get_file_storage();
+            $hasuploadedpicture = ($fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.png') || $fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.jpg'));
+            if (!empty($user->picture) && $hasuploadedpicture) {
+                $imagevalue = $OUTPUT->user_picture($user, array('courseid' => SITEID, 'size'=>64));
+            } else {
+                $imagevalue = get_string('none');
+            }
+            $imageelement = $mform->getElement('currentpicture');
+            $imageelement->setValue($imagevalue);
 
-                if ($mform->elementExists('deletepicture') && !$hasuploadedpicture) {
-                    $mform->removeElement('deletepicture');
-                }
+            if ($mform->elementExists('deletepicture') && !$hasuploadedpicture) {
+                $mform->removeElement('deletepicture');
             }
 
             /// disable fields that are locked by auth plugins
@@ -137,7 +145,7 @@ class user_edit_form extends moodleform {
             $errors['email'] = get_string('toomanybounces');
         }
 
-        if (isset($usernew->email) and !empty($CFG->verifychangedemail) and !isset($errors['email']) and !has_capability('moodle/user:update', get_context_instance(CONTEXT_SYSTEM))) {
+        if (isset($usernew->email) and !empty($CFG->verifychangedemail) and !isset($errors['email']) and !has_capability('moodle/user:update', context_system::instance())) {
             $errorstr = email_is_not_allowed($usernew->email);
             if ($errorstr !== false) {
                 $errors['email'] = $errorstr;

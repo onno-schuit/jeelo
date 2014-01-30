@@ -67,6 +67,17 @@ abstract class base_task implements checksumable, executable, loggable {
         return $this->settings;
     }
 
+    /**
+     * Returns the weight of this task, an approximation of the amount of time
+     * it will take. By default this value is 1. It can be increased for longer
+     * tasks.
+     *
+     * @return int Weight
+     */
+    public function get_weight() {
+        return 1;
+    }
+
     public function get_setting($name) {
         // First look in task settings
         $result = null;
@@ -111,6 +122,16 @@ abstract class base_task implements checksumable, executable, loggable {
         return $this->plan->get_logger();
     }
 
+    /**
+     * Gets the progress reporter, which can be used to report progress within
+     * the backup or restore process.
+     *
+     * @return core_backup_progress Progress reporting object
+     */
+    public function get_progress() {
+        return $this->plan->get_progress();
+    }
+
     public function log($message, $level, $a = null, $depth = null, $display = false) {
         backup_helper::log($message, $level, $a, $depth, $display, $this->get_logger());
     }
@@ -149,18 +170,30 @@ abstract class base_task implements checksumable, executable, loggable {
         if ($this->executed) {
             throw new base_task_exception('base_task_already_executed', $this->name);
         }
+
+        // Starts progress based on the weight of this task and number of steps.
+        $progress = $this->get_progress();
+        $progress->start_progress($this->get_name(), count($this->steps), $this->get_weight());
+        $done = 0;
+
+        // Execute all steps.
         foreach ($this->steps as $step) {
             $result = $step->execute();
             // If step returns array, it will be forwarded to plan
             // (TODO: shouldn't be array but proper result object)
             if (is_array($result) and !empty($result)) {
-                $this->plan->add_result($result);
+                $this->add_result($result);
             }
+            $done++;
+            $progress->progress($done);
         }
         // Mark as executed if any step has been executed
         if (!empty($this->steps)) {
             $this->executed = true;
         }
+
+        // Finish progress for this task.
+        $progress->end_progress();
     }
 
     /**
@@ -189,6 +222,34 @@ abstract class base_task implements checksumable, executable, loggable {
         return md5($this->name . '-' .
                    backup_general_helper::array_checksum_recursive($this->settings) .
                    backup_general_helper::array_checksum_recursive($this->steps));
+    }
+
+    /**
+     * Add the given info to the current plan's results.
+     *
+     * @see base_plan::add_result()
+     * @param array $result associative array describing a result of a task/step
+     */
+    public function add_result($result) {
+        if (!is_null($this->plan)) {
+            $this->plan->add_result($result);
+        } else {
+            debugging('Attempting to add a result of a task not binded with a plan', DEBUG_DEVELOPER);
+        }
+    }
+
+    /**
+     * Return the current plan's results
+     *
+     * @return array|null
+     */
+    public function get_results() {
+        if (!is_null($this->plan)) {
+            return $this->plan->get_results();
+        } else {
+            debugging('Attempting to get results of a task not binded with a plan', DEBUG_DEVELOPER);
+            return null;
+        }
     }
 
 // Protected API starts here

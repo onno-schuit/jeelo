@@ -28,13 +28,19 @@ $string['allowupdate'] = 'Allow choice to be updated';
 $string['answered'] = 'Answered';
 $string['completionsubmit'] = 'Show as complete when user makes a choice';
 $string['displayhorizontal'] = 'Display horizontally';
-$string['displaymode'] = 'Display mode';
+$string['displaymode'] = 'Display mode for the options';
 $string['displayvertical'] = 'Display vertically';
+$string['event_answer_created'] = 'Choice made';
+$string['event_answer_updated'] = 'Choice updated';
+$string['event_choice_viewed'] = 'Choice viewed';
+$string['event_report_viewed'] = 'Choice report viewed';
+$string['event_instances_list_viewed'] = 'Instances list viewed';
 $string['expired'] = 'Sorry, this activity closed on {$a} and is no longer available';
 $string['atleastoneoption'] = 'You need to provide at least one possible answer.';
 $string['full'] = '(Full)';
 $string['havetologin'] = 'You have to log in before you can submit your choice';
 $string['choice'] = 'Choice';
+$string['choice:addinstance'] = 'Add a new choice';
 $string['choiceclose'] = 'Until';
 $string['choice:deleteresponses'] = 'Delete responses';
 $string['choice:downloadresponses'] = 'Download responses';
@@ -54,17 +60,32 @@ $string['choicesaved'] = 'Your choice has been saved';
 $string['choicetext'] = 'Choice text';
 $string['chooseaction'] = 'Choose an action ...';
 $string['limit'] = 'Limit';
+$string['limitno'] = 'Limit {no}';
 $string['limitanswers'] = 'Limit the number of responses allowed';
 $string['modulename'] = 'Choice';
-$string['modulename_help'] = 'The choice module enables the teacher to ask a question and specify a choice of multiple responses.';
+$string['modulename_help'] = 'The choice activity module enables a teacher to ask a single question and offer a selection of possible responses.
+
+Choice results may be published after students have answered, after a certain date, or not at all. Results may be published with student names or anonymously.
+
+A choice activity may be used
+
+* As a quick poll to stimulate thinking about a topic
+* To quickly test students\' understanding
+* To facilitate student decision-making, for example allowing students to vote on a direction for the course';
+$string['modulename_link'] = 'mod/choice/view';
 $string['modulenameplural'] = 'Choices';
+$string['moveselectedusersto'] = 'Move selected users to...';
 $string['mustchooseone'] = 'You must choose an answer before saving.  Nothing was saved.';
 $string['noguestchoose'] = 'Sorry, guests are not allowed to make choices.';
 $string['noresultsviewable'] = 'The results are not currently viewable.';
 $string['notanswered'] = 'Not answered yet';
 $string['notenrolledchoose'] = 'Sorry, only enrolled users are allowed to make choices.';
 $string['notopenyet'] = 'Sorry, this activity is not available until {$a}';
+$string['numberofuser'] = 'Number of participants';
+$string['numberofuserinpercentage'] = 'Percentage of participants';
 $string['option'] = 'Option';
+$string['optionno'] = 'Option {no}';
+$string['options'] = 'Options';
 $string['page-mod-choice-x'] = 'Any choice module page';
 $string['pluginadministration'] = 'Choice administration';
 $string['pluginname'] = 'Choice';
@@ -79,7 +100,9 @@ $string['publishnot'] = 'Do not publish results to students';
 $string['removemychoice'] = 'Remove my choice';
 $string['removeresponses'] = 'Remove all responses';
 $string['responses'] = 'Responses';
+$string['responsesresultgraphheader'] = 'Graph display';
 $string['responsesto'] = 'Responses to {$a}';
+$string['results'] = 'Results';
 $string['savemychoice'] = 'Save my choice';
 $string['showunanswered'] = 'Show column for unanswered';
 $string['spaceleft'] = 'space available';
@@ -88,7 +111,6 @@ $string['taken'] = 'Taken';
 $string['timerestrict'] = 'Restrict answering to this time period';
 $string['viewallresponses'] = 'View {$a} responses';
 $string['withselected'] = 'With selected';
+$string['userchoosethisoption'] = 'User choose this option';
 $string['yourselection'] = 'Your selection';
 $string['skipresultgraph'] = 'Skip result graph';
-$string['moveselectedusersto'] = 'Move selected users to...';
-$string['numberofuser'] = 'The number of user';

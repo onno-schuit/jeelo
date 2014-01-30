@@ -17,8 +17,7 @@
 /**
  * Displays different views of the logs.
  *
- * @package    report
- * @subpackage log
+ * @package    report_log
  * @copyright  1999 onwards Martin Dougiamas (http://dougiamas.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +42,7 @@ if (empty($host_course)) {
 
 $group       = optional_param('group', 0, PARAM_INT); // Group to display
 $user        = optional_param('user', 0, PARAM_INT); // User to display
-$date        = optional_param('date', 0, PARAM_FILE); // Date to display - number or some string
+$date        = optional_param('date', 0, PARAM_INT); // Date to display
 $modname     = optional_param('modname', '', PARAM_PLUGIN); // course_module->id
 $modid       = optional_param('modid', 0, PARAM_FILE); // number or 'site_errors'
 $modaction   = optional_param('modaction', '', PARAM_PATH); // an action as recorded in the logs
@@ -112,17 +111,31 @@ if ($hostid == $CFG->mnet_localhost_id) {
 
 require_login($course);
 
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id);
 
 require_capability('report/log:view', $context);
 
-add_to_log($course->id, "course", "report log", "report/log/index.php?id=$course->id", $course->id);
+// Trigger a content view event.
+$event = \report_log\event\content_viewed::create(array('courseid' => $course->id,
+                                                        'other'    => array('content' => 'logs')));
+$event->set_page_detail();
+$event->set_legacy_logdata(array($course->id, "course", "report log", "report/log/index.php?id=$course->id", $course->id));
+$event->trigger();
 
-$strlogs = get_string('logs');
+if (!empty($page)) {
+    $strlogs = get_string('logs'). ": ". get_string('page', 'report_log', $page+1);
+} else {
+    $strlogs = get_string('logs');
+}
 $stradministration = get_string('administration');
 $strreports = get_string('reports');
 
-session_get_instance()->write_close();
+// Before we close session, make sure we have editing information in session.
+$adminediting = optional_param('adminedit', -1, PARAM_BOOL);
+if ($PAGE->user_allowed_editing() && $adminediting != -1) {
+    $USER->editing = $adminediting;
+}
+\core\session\manager::write_close();
 
 if (!empty($chooselog)) {
     $userinfo = get_string('allparticipants');
@@ -140,6 +153,7 @@ if (!empty($chooselog)) {
         case 'showashtml':
             if ($hostid != $CFG->mnet_localhost_id || $course->id == SITEID) {
                 admin_externalpage_setup('reportlog');
+                $PAGE->set_title($course->shortname .': '. $strlogs);
                 echo $OUTPUT->header();
 
             } else {

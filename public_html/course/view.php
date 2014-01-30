@@ -4,7 +4,7 @@
 
     require_once('../config.php');
     require_once('lib.php');
-    require_once($CFG->dirroot.'/mod/forum/lib.php');
+    require_once($CFG->libdir.'/conditionlib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
     $id          = optional_param('id', 0, PARAM_INT);
@@ -13,35 +13,44 @@
     $hide        = optional_param('hide', 0, PARAM_INT);
     $show        = optional_param('show', 0, PARAM_INT);
     $idnumber    = optional_param('idnumber', '', PARAM_RAW);
+    $sectionid   = optional_param('sectionid', 0, PARAM_INT);
     $section     = optional_param('section', 0, PARAM_INT);
     $move        = optional_param('move', 0, PARAM_INT);
     $marker      = optional_param('marker',-1 , PARAM_INT);
-    $switchrole  = optional_param('switchrole',-1, PARAM_INT);
+    $switchrole  = optional_param('switchrole',-1, PARAM_INT); // Deprecated, use course/switchrole.php instead.
+    $modchooser  = optional_param('modchooser', -1, PARAM_BOOL);
+    $return      = optional_param('return', 0, PARAM_LOCALURL);
 
-    if (empty($id) && empty($name) && empty($idnumber)) {
+    $params = array();
+    if (!empty($name)) {
+        $params = array('shortname' => $name);
+    } else if (!empty($idnumber)) {
+        $params = array('idnumber' => $idnumber);
+    } else if (!empty($id)) {
+        $params = array('id' => $id);
+    }else {
         print_error('unspecifycourseid', 'error');
     }
 
-    if (!empty($name)) {
-        if (! ($course = $DB->get_record('course', array('shortname'=>$name)))) {
-            print_error('invalidcoursenameshort', 'error');
-        }
-    } else if (!empty($idnumber)) {
-        if (! ($course = $DB->get_record('course', array('idnumber'=>$idnumber)))) {
-            print_error('invalidcourseid', 'error');
-        }
-    } else {
-        if (! ($course = $DB->get_record('course', array('id'=>$id)))) {
-            print_error('invalidcourseid', 'error');
-        }
+    $course = $DB->get_record('course', $params, '*', MUST_EXIST);
+
+    $urlparams = array('id' => $course->id);
+
+    // Sectionid should get priority over section number
+    if ($sectionid) {
+        $section = $DB->get_field('course_sections', 'section', array('id' => $sectionid, 'course' => $course->id), MUST_EXIST);
+    }
+    if ($section) {
+        $urlparams['section'] = $section;
     }
 
-    $PAGE->set_url('/course/view.php', array('id' => $course->id)); // Defined here to avoid notices on errors etc
+    $PAGE->set_url('/course/view.php', $urlparams); // Defined here to avoid notices on errors etc
 
-    preload_course_contexts($course->id);
-    if (!$context = get_context_instance(CONTEXT_COURSE, $course->id)) {
-        print_error('nocontext');
-    }
+    // Prevent caching of this page to stop confusion when changing page after making AJAX changes
+    $PAGE->set_cacheable(false);
+
+    context_helper::preload_course($course->id);
+    $context = context_course::instance($course->id, MUST_EXIST);
 
     // Remove any switched roles before checking login
     if ($switchrole == 0 && confirm_sesskey()) {
@@ -60,7 +69,7 @@
         if (is_array($aroles) && isset($aroles[$switchrole])) {
             role_switch($switchrole, $context);
             // Double check that this role is allowed here
-            require_login($course->id);
+            require_login($course);
         }
         // reset course page state - this prevents some weird problems ;-)
         $USER->activitycopy = false;
@@ -85,16 +94,52 @@
 
     require_once($CFG->dirroot.'/calendar/lib.php');    /// This is after login because it needs $USER
 
-    add_to_log($course->id, 'course', 'view', "view.php?id=$course->id", "$course->id");
+    $logparam = 'id='. $course->id;
+    $loglabel = 'view';
+    $infoid = $course->id;
+    if ($section and $section > 0) {
+        $loglabel = 'view section';
 
-    $course->format = clean_param($course->format, PARAM_ALPHA);
-    if (!file_exists($CFG->dirroot.'/course/format/'.$course->format.'/format.php')) {
-        $course->format = 'weeks';  // Default format is weeks
+        // Get section details and check it exists.
+        $modinfo = get_fast_modinfo($course);
+        $coursesections = $modinfo->get_section_info($section, MUST_EXIST);
+
+        // Check user is allowed to see it.
+        if (!$coursesections->uservisible) {
+            // Note: We actually already know they don't have this capability
+            // or uservisible would have been true; this is just to get the
+            // correct error message shown.
+            require_capability('moodle/course:viewhiddensections', $context);
+        }
+        $infoid = $coursesections->id;
+        $logparam .= '&sectionid='. $infoid;
     }
+    add_to_log($course->id, 'course', $loglabel, "view.php?". $logparam, $infoid);
+
+    // Fix course format if it is no longer installed
+    $course->format = course_get_format($course)->get_format();
 
     $PAGE->set_pagelayout('course');
     $PAGE->set_pagetype('course-view-' . $course->format);
+    $PAGE->set_other_editing_capability('moodle/course:update');
     $PAGE->set_other_editing_capability('moodle/course:manageactivities');
+    $PAGE->set_other_editing_capability('moodle/course:activityvisibility');
+    if (course_format_uses_sections($course->format)) {
+        $PAGE->set_other_editing_capability('moodle/course:sectionvisibility');
+        $PAGE->set_other_editing_capability('moodle/course:movesections');
+    }
+
+    // Preload course format renderer before output starts.
+    // This is a little hacky but necessary since
+    // format.php is not included until after output starts
+    if (file_exists($CFG->dirroot.'/course/format/'.$course->format.'/renderer.php')) {
+        require_once($CFG->dirroot.'/course/format/'.$course->format.'/renderer.php');
+        if (class_exists('format_'.$course->format.'_renderer')) {
+            // call get_renderer only if renderer is defined in format plugin
+            // otherwise an exception would be thrown
+            $PAGE->get_renderer('format_'. $course->format);
+        }
+    }
 
     if ($reset_user_allowed_editing) {
         // ugly hack
@@ -110,8 +155,11 @@
             // Redirect to site root if Editing is toggled on frontpage
             if ($course->id == SITEID) {
                 redirect($CFG->wwwroot .'/?redirect=0');
+            } else if (!empty($return)) {
+                redirect($CFG->wwwroot . $return);
             } else {
-                redirect($PAGE->url);
+                $url = new moodle_url($PAGE->url, array('notifyeditingon' => 1));
+                redirect($url);
             }
         } else if (($edit == 0) and confirm_sesskey()) {
             $USER->editing = 0;
@@ -122,39 +170,48 @@
             // Redirect to site root if Editing is toggled on frontpage
             if ($course->id == SITEID) {
                 redirect($CFG->wwwroot .'/?redirect=0');
+            } else if (!empty($return)) {
+                redirect($CFG->wwwroot . $return);
             } else {
                 redirect($PAGE->url);
             }
         }
+        if (($modchooser == 1) && confirm_sesskey()) {
+            set_user_preference('usemodchooser', $modchooser);
+        } else if (($modchooser == 0) && confirm_sesskey()) {
+            set_user_preference('usemodchooser', $modchooser);
+        }
 
-        if (has_capability('moodle/course:update', $context)) {
+        if (has_capability('moodle/course:sectionvisibility', $context)) {
             if ($hide && confirm_sesskey()) {
                 set_section_visible($course->id, $hide, '0');
+                redirect($PAGE->url);
             }
 
             if ($show && confirm_sesskey()) {
                 set_section_visible($course->id, $show, '1');
+                redirect($PAGE->url);
             }
+        }
 
-            if (!empty($section)) {
-                if (!empty($move) and confirm_sesskey()) {
-                    if (move_section($course, $section, $move)) {
-                        if ($course->id == SITEID) {
-                            redirect($CFG->wwwroot . '/?redirect=0');
-                        } else {
-                            redirect($PAGE->url);
-                        }
-                    } else {
-                        echo $OUTPUT->notification('An error occurred while moving a section');
-                    }
+        if (!empty($section) && !empty($move) &&
+                has_capability('moodle/course:movesections', $context) && confirm_sesskey()) {
+            $destsection = $section + $move;
+            if (move_section_to($course, $section, $destsection)) {
+                if ($course->id == SITEID) {
+                    redirect($CFG->wwwroot . '/?redirect=0');
+                } else {
+                    redirect(course_get_url($course));
                 }
+            } else {
+                echo $OUTPUT->notification('An error occurred while moving a section');
             }
         }
     } else {
         $USER->editing = 0;
     }
 
-    $SESSION->fromdiscussion = $CFG->wwwroot .'/course/view.php?id='. $course->id;
+    $SESSION->fromdiscussion = $PAGE->url->out(false);
 
 
     if ($course->id == SITEID) {
@@ -162,34 +219,10 @@
         redirect($CFG->wwwroot .'/');
     }
 
-    // AJAX-capable course format?
-    $useajax = false;
-    $formatajax = course_format_ajax_support($course->format);
-
-    if (!empty($CFG->enablecourseajax)
-            and $formatajax->capable
-            and !empty($USER->editing)
-            and ajaxenabled($formatajax->testedbrowsers)
-            and $PAGE->theme->enablecourseajax
-            and has_capability('moodle/course:manageactivities', $context)) {
-        $PAGE->requires->yui2_lib('dragdrop');
-        $PAGE->requires->yui2_lib('connection');
-        $PAGE->requires->yui2_lib('selector');
-        $PAGE->requires->js('/lib/ajax/block_classes.js', true);
-        $PAGE->requires->js('/lib/ajax/section_classes.js', true);
-
-        // Okay, global variable alert. VERY UGLY. We need to create
-        // this object here before the <blockname>_print_block()
-        // function is called, since that function needs to set some
-        // stuff in the javascriptportal object.
-        $COURSE->javascriptportal = new jsportal();
-        $useajax = true;
-    }
-
-    $CFG->blocksdrag = $useajax;   // this will add a new class to the header so we can style differently
+    $ajaxenabled = ajaxenabled();
 
     $completion = new completion_info($course);
-    if ($completion->is_enabled() && ajaxenabled()) {
+    if ($completion->is_enabled() && $ajaxenabled) {
         $PAGE->requires->string_for_js('completion-title-manual-y', 'completion');
         $PAGE->requires->string_for_js('completion-title-manual-n', 'completion');
         $PAGE->requires->string_for_js('completion-alt-manual-y', 'completion');
@@ -202,7 +235,7 @@
     // what to do, even though the link also appears in the course admin block.  It also
     // means you can back out of a situation where you removed the admin block. :)
     if ($PAGE->user_allowed_editing()) {
-        $buttons = $OUTPUT->edit_button(new moodle_url('/course/view.php', array('id' => $course->id)));
+        $buttons = $OUTPUT->edit_button($PAGE->url);
         $PAGE->set_button($buttons);
     }
 
@@ -210,7 +243,7 @@
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
 
-    if ($completion->is_enabled() && ajaxenabled()) {
+    if ($completion->is_enabled() && $ajaxenabled) {
         // This value tracks whether there has been a dynamic change to the page.
         // It is used so that if a user does this - (a) set some tickmarks, (b)
         // go to another page, (c) clicks Back button - the page will
@@ -226,30 +259,22 @@
     // Course wrapper start.
     echo html_writer::start_tag('div', array('class'=>'course-content'));
 
-    $modinfo =& get_fast_modinfo($COURSE);
-    get_all_mods($course->id, $mods, $modnames, $modnamesplural, $modnamesused);
-    foreach($mods as $modid=>$unused) {
-        if (!isset($modinfo->cms[$modid])) {
-            rebuild_course_cache($course->id);
-            $modinfo =& get_fast_modinfo($COURSE);
-            debugging('Rebuilding course cache', DEBUG_DEVELOPER);
-            break;
-        }
-    }
+    // make sure that section 0 exists (this function will create one if it is missing)
+    course_create_sections_if_missing($course, 0);
 
-    if (! $sections = get_all_sections($course->id)) {   // No sections found
-        // Double-check to be extra sure
-        if (! $section = $DB->get_record('course_sections', array('course'=>$course->id, 'section'=>0))) {
-            $section->course = $course->id;   // Create a default section.
-            $section->section = 0;
-            $section->visible = 1;
-            $section->summaryformat = FORMAT_HTML;
-            $section->id = $DB->insert_record('course_sections', $section);
-        }
-        if (! $sections = get_all_sections($course->id) ) {      // Try again
-            print_error('cannotcreateorfindstructs', 'error');
-        }
-    }
+    // get information about course modules and existing module types
+    // format.php in course formats may rely on presence of these variables
+    $modinfo = get_fast_modinfo($course);
+    $modnames = get_module_types_names();
+    $modnamesplural = get_module_types_names(true);
+    $modnamesused = $modinfo->get_used_module_names();
+    $mods = $modinfo->get_cms();
+    $sections = $modinfo->get_section_info_all();
+
+    // CAUTION, hacky fundamental variable defintion to follow!
+    // Note that because of the way course fromats are constructed though
+    // inclusion we pass parameters around this way..
+    $displaysection = $section;
 
     // Include the actual course format.
     require($CFG->dirroot .'/course/format/'. $course->format .'/format.php');
@@ -257,16 +282,7 @@
 
     echo html_writer::end_tag('div');
 
-    // Use AJAX?
-    if ($useajax && has_capability('moodle/course:manageactivities', $context)) {
-        // At the bottom because we want to process sections and activities
-        // after the relevant html has been generated. We're forced to do this
-        // because of the way in which lib/ajax/ajaxcourse.js is written.
-        echo html_writer::script(false, new moodle_url('/lib/ajax/ajaxcourse.js'));
-        $COURSE->javascriptportal->print_javascript($course->id);
-    }
-
+    // Include course AJAX
+    include_course_ajax($course, $modnamesused);
 
     echo $OUTPUT->footer();
-
-

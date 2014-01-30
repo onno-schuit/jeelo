@@ -17,76 +17,32 @@
 /**
  * This file keeps track of upgrades to the imsenterprise enrolment plugin
  *
- * @package    enrol
- * @subpackage imsenterprise
- * @copyright  2011 Petr Skoda {@link http://skodak.org
+ * @package    enrol_imsenterprise
+ * @copyright  2011 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Performs upgrade of the database structure and data
+ *
+ * @param int $oldversion the version we are upgrading from
+ * @return bool true
+ */
 function xmldb_enrol_imsenterprise_upgrade($oldversion) {
-    global $CFG, $DB, $OUTPUT;
+    global $CFG, $DB;
 
     $dbman = $DB->get_manager();
 
+    // Moodle v2.3.0 release upgrade line.
+    // Put any upgrade step following this.
 
-    //NOTE: this file is not executed during upgrade from 1.9.x!
+    // Moodle v2.4.0 release upgrade line.
+    // Put any upgrade step following this.
 
-
-    if ($oldversion < 2011013000) {
-        // this plugin does not use the new file api - lets undo the migration
-
-        $fs = get_file_storage();
-
-        if ($DB->record_exists('course', array('id'=>1))) { //course 1 is hardcoded here intentionally!
-            if ($context = get_context_instance(CONTEXT_COURSE, 1)) {
-                if ($file = $fs->get_file($context->id, 'course', 'legacy', 0, '/', 'imsenterprise-enrol.xml')) {
-                    if (!file_exists("$CFG->dataroot/1/imsenterprise-enrol.xml")) {
-                        check_dir_exists($CFG->dataroot.'/');
-                        $file->copy_content_to("$CFG->dataroot/1/imsenterprise-enrol.xml");
-                    }
-                    $file->delete();
-                }
-            }
-        }
-
-        if (!empty($CFG->enrol_imsfilelocation)) {
-            if (strpos($CFG->enrol_imsfilelocation, "$CFG->dataroot/") === 0) {
-                $location = str_replace("$CFG->dataroot/", '', $CFG->enrol_imsfilelocation);
-                $location = str_replace('\\', '/', $location);
-                $parts = explode('/', $location);
-                $courseid = array_shift($parts);
-                if (is_number($courseid) and $DB->record_exists('course', array('id'=>$courseid))) {
-                    if ($context = get_context_instance(CONTEXT_COURSE, $courseid)) {
-                        $file = array_pop($parts);
-                        if ($parts) {
-                            $dir = '/'.implode('/', $parts).'/';
-                        } else {
-                            $dir = '/';
-                        }
-                        if ($file = $fs->get_file($context->id, 'course', 'legacy', 0, $dir, $file)) {
-                            if (!file_exists($CFG->enrol_imsfilelocation)) {
-                                check_dir_exists($CFG->dataroot.'/'.$courseid.$dir);
-                                $file->copy_content_to($CFG->enrol_imsfilelocation);
-                            }
-                            $file->delete();
-                        }
-                    }
-                }
-            }
-        }
-
-        upgrade_plugin_savepoint(true, 2011013000, 'enrol', 'imsenterprise');
-    }
-
-    // Moodle v2.1.0 release upgrade line
-    // Put any upgrade step following this
-
-    // Moodle v2.2.0 release upgrade line
-    // Put any upgrade step following this
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
 
     return true;
 }
-
-

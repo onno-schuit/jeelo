@@ -16,14 +16,26 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    moodlecore
- * @subpackage backup-moodle2
- * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Defines backup_xml_transformer class
+ *
+ * @package     core_backup
+ * @subpackage  moodle2
+ * @category    backup
+ * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
+// Cache for storing link encoders, so that we don't need to call
+// register_link_encoders each time backup_xml_transformer is constructed
+// TODO MDL-25290 replace global with MUC code.
+global $LINKS_ENCODERS_CACHE;
+
+$LINKS_ENCODERS_CACHE = array();
+
 /**
- * Class implementing the @xml_contenttrasnformed logic to be applied in moodle2 backups
+ * Class implementing the @xml_contenttransformed logic to be applied in moodle2 backups
  *
  * TODO: Finish phpdocs
  */
@@ -49,13 +61,13 @@ class backup_xml_transformer extends xml_contenttransformer {
 
         // Array or object, debug and try our best recursively, shouldn't happen but...
         if (is_array($content)) {
-            debugging('Backup XML transformer should process arrays but plain content always', DEBUG_DEVELOPER);
+            debugging('Backup XML transformer should not process arrays but plain content only', DEBUG_DEVELOPER);
             foreach($content as $key => $plaincontent) {
                 $content[$key] = $this->process($plaincontent);
             }
             return $content;
         } else if (is_object($content)) {
-            debugging('Backup XML transformer should not process objects but plain content always', DEBUG_DEVELOPER);
+            debugging('Backup XML transformer should not process objects but plain content only', DEBUG_DEVELOPER);
             foreach((array)$content as $key => $plaincontent) {
                 $content[$key] = $this->process($plaincontent);
             }
@@ -126,14 +138,26 @@ class backup_xml_transformer extends xml_contenttransformer {
         return $result;
     }
 
+    /**
+     * Register all available content link encoders
+     *
+     * @return array encoder
+     * @todo MDL-25290 replace LINKS_ENCODERS_CACHE global with MUC code
+     */
     private function register_link_encoders() {
+        global $LINKS_ENCODERS_CACHE;
+        // If encoder is linked, then return cached encoder.
+        if (!empty($LINKS_ENCODERS_CACHE)) {
+            return $LINKS_ENCODERS_CACHE;
+        }
+
         $encoders = array();
 
         // Add the course encoder
         $encoders['backup_course_task'] = 'encode_content_links';
 
         // Add the module ones. Each module supporting moodle2 backups MUST have it
-        $mods = get_plugin_list('mod');
+        $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $moddir) {
             if (plugin_supports('mod', $mod, FEATURE_BACKUP_MOODLE2)) {
                 $encoders['backup_' . $mod . '_activity_task'] = 'encode_content_links';
@@ -141,7 +165,7 @@ class backup_xml_transformer extends xml_contenttransformer {
         }
 
         // Add the block encoders
-        $blocks = get_plugin_list('block');
+        $blocks = core_component::get_plugin_list('block');
         foreach ($blocks as $block => $blockdir) {
             if (class_exists('backup_' . $block . '_block_task')) {
                 $encoders['backup_' . $block . '_block_task'] = 'encode_content_links';
@@ -155,6 +179,7 @@ class backup_xml_transformer extends xml_contenttransformer {
         // Add local encodes
         // TODO: Any interest? 1.9 never had that.
 
+        $LINKS_ENCODERS_CACHE = $encoders;
         return $encoders;
     }
 }

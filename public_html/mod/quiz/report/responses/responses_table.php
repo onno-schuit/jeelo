@@ -15,43 +15,55 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file defines the quiz responses report class.
+ * This file defines the quiz responses table.
  *
- * @package    quiz
- * @subpackage responses
- * @copyright  2008 Jean-Michel Vedrine
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   quiz_responses
+ * @copyright 2008 Jean-Michel Vedrine
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/mod/quiz/report/attemptsreport_table.php');
+
 
 /**
  * This is a table subclass for displaying the quiz responses report.
  *
- * @copyright  2008 Jean-Michel Vedrine
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2008 Jean-Michel Vedrine
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class quiz_report_responses_table extends quiz_attempt_report_table {
+class quiz_responses_table extends quiz_attempts_report_table {
 
-    public function __construct($quiz, $context, $qmsubselect, $qmfilter,
-            $attemptsmode, $groupstudents, $students,
-            $questions, $includecheckboxes, $reporturl, $displayoptions) {
+    /**
+     * Constructor
+     * @param object $quiz
+     * @param context $context
+     * @param string $qmsubselect
+     * @param quiz_responses_options $options
+     * @param array $groupstudents
+     * @param array $students
+     * @param array $questions
+     * @param moodle_url $reporturl
+     */
+    public function __construct($quiz, $context, $qmsubselect, quiz_responses_options $options,
+            $groupstudents, $students, $questions, $reporturl) {
         parent::__construct('mod-quiz-report-responses-report', $quiz, $context,
-                $qmsubselect, $qmfilter, $attemptsmode, $groupstudents, $students,
-                $questions, $includecheckboxes, $reporturl, $displayoptions);
+                $qmsubselect, $options, $groupstudents, $students, $questions, $reporturl);
     }
 
     public function build_table() {
-        if ($this->rawdata) {
-            $this->strtimeformat = str_replace(',', ' ', get_string('strftimedatetime'));
-            parent::build_table();
+        if (!$this->rawdata) {
+            return;
         }
+
+        $this->strtimeformat = str_replace(',', ' ', get_string('strftimedatetime'));
+        parent::build_table();
     }
 
     public function col_sumgrades($attempt) {
-        if (!$attempt->timefinish) {
+        if ($attempt->state != quiz_attempt::FINISHED) {
             return '-';
         }
 
@@ -79,11 +91,22 @@ class quiz_report_responses_table extends quiz_attempt_report_table {
 
         $stepdata = $this->lateststeps[$attempt->usageid][$slot];
 
-        if (is_null($stepdata->$field)) {
+        if (property_exists($stepdata, $field . 'full')) {
+            $value = $stepdata->{$field . 'full'};
+        } else {
+            $value = $stepdata->$field;
+        }
+
+        if (is_null($value)) {
             $summary = '-';
         } else {
-            $summary = trim($stepdata->$field);
+            $summary = trim($value);
         }
+
+        if ($this->is_downloading() && $this->is_downloading() != 'xhtml') {
+            return $summary;
+        }
+        $summary = s($summary);
 
         if ($this->is_downloading() || $field != 'responsesummary') {
             return $summary;
@@ -124,8 +147,21 @@ class quiz_report_responses_table extends quiz_attempt_report_table {
      * @param string $alias the table alias for latest state information relating to that slot.
      */
     protected function get_required_latest_state_fields($slot, $alias) {
-        return "$alias.questionsummary AS question$slot,
-                $alias.rightanswer AS right$slot,
-                $alias.responsesummary AS response$slot";
+        global $DB;
+        $sortableresponse = $DB->sql_order_by_text("{$alias}.questionsummary");
+        if ($sortableresponse === "{$alias}.questionsummary") {
+            // Can just order by text columns. No complexity needed.
+            return "{$alias}.questionsummary AS question{$slot},
+                    {$alias}.rightanswer AS right{$slot},
+                    {$alias}.responsesummary AS response{$slot}";
+        } else {
+            // Work-around required.
+            return $DB->sql_order_by_text("{$alias}.questionsummary") . " AS question{$slot},
+                    {$alias}.questionsummary AS question{$slot}full,
+                    " . $DB->sql_order_by_text("{$alias}.rightanswer") . " AS right{$slot},
+                    {$alias}.rightanswer AS right{$slot}full,
+                    " . $DB->sql_order_by_text("{$alias}.responsesummary") . " AS response{$slot},
+                    {$alias}.responsesummary AS response{$slot}full";
+        }
     }
 }

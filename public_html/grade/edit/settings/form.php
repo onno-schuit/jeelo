@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,6 +13,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * A form for editing course grade settings
+ *
+ * @package   core_grades
+ * @copyright 2007 Petr Skoda
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
@@ -32,7 +39,7 @@ class course_settings_form extends moodleform {
 
         $mform =& $this->_form;
 
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
         $can_view_admin_links = false;
         if (has_capability('moodle/grade:manage', $systemcontext)) {
             $can_view_admin_links = true;
@@ -60,6 +67,7 @@ class course_settings_form extends moodleform {
 
         // Grade item settings
         $mform->addElement('header', 'grade_item_settings', get_string('gradeitemsettings', 'grades'));
+        $mform->setExpanded('grade_item_settings');
         if ($can_view_admin_links) {
             $link = '<a href="' . $CFG->wwwroot.'/'.$CFG->admin.'/settings.php?section=gradeitemsettings">' . $strchangedefaults . '</a>';
             $mform->addElement('static', 'gradeitemsettingslink', null, $link);
@@ -96,13 +104,14 @@ class course_settings_form extends moodleform {
         $types = array('report', 'export', 'import');
 
         foreach($types as $type) {
-            foreach (get_plugin_list('grade'.$type) as $plugin => $plugindir) {
+            foreach (core_component::get_plugin_list('grade'.$type) as $plugin => $plugindir) {
              // Include all the settings commands for this plugin if there are any
                 if (file_exists($plugindir.'/lib.php')) {
                     require_once($plugindir.'/lib.php');
                     $functionname = 'grade_'.$type.'_'.$plugin.'_settings_definition';
                     if (function_exists($functionname)) {
                         $mform->addElement('header', 'grade_'.$type.$plugin, get_string('pluginname', 'grade'.$type.'_'.$plugin, NULL));
+                        $mform->setExpanded('grade_'.$type.$plugin);
                         if ($can_view_admin_links) {
                             $link = '<a href="' . $CFG->wwwroot.'/'.$CFG->admin.'/settings.php?section=gradereport' . $plugin . '">' . $strchangedefaults . '</a>';
                             $mform->addElement('static', 'gradeitemsettingslink', null, $link);

@@ -43,7 +43,7 @@ list($context, $course, $cm) = get_context_info_array($contextid);
 
 // will be used when restore
 if (!empty($filecontextid)) {
-    $filecontext = get_context_instance_by_id($filecontextid);
+    $filecontext = context::instance_by_id($filecontextid);
 }
 
 $url = new moodle_url('/backup/restorefile.php', array('contextid'=>$contextid));
@@ -72,10 +72,23 @@ if (!check_dir_exists($tmpdir, true, true)) {
 // choose the backup file from backup files tree
 if ($action == 'choosebackupfile') {
     if ($fileinfo = $browser->get_file_info($filecontext, $component, $filearea, $itemid, $filepath, $filename)) {
-        $filename = restore_controller::get_tempdir_name($course->id, $USER->id);
-        $pathname = $tmpdir . '/' . $filename;
-        $fileinfo->copy_to_pathname($pathname);
-        $restore_url = new moodle_url('/backup/restore.php', array('contextid'=>$contextid, 'filename'=>$filename));
+        if (is_a($fileinfo, 'file_info_stored')) {
+            // Use the contenthash rather than copying the file where possible,
+            // to improve performance and avoid timeouts with large files.
+            $fs = get_file_storage();
+            $params = $fileinfo->get_params();
+            $file = $fs->get_file($params['contextid'], $params['component'], $params['filearea'],
+                    $params['itemid'], $params['filepath'], $params['filename']);
+            $restore_url = new moodle_url('/backup/restore.php', array('contextid' => $contextid,
+                    'pathnamehash' => $file->get_pathnamehash(), 'contenthash' => $file->get_contenthash()));
+        } else {
+            // If it's some weird other kind of file then use old code.
+            $filename = restore_controller::get_tempdir_name($course->id, $USER->id);
+            $pathname = $tmpdir . '/' . $filename;
+            $fileinfo->copy_to_pathname($pathname);
+            $restore_url = new moodle_url('/backup/restore.php', array(
+                    'contextid' => $contextid, 'filename' => $filename));
+        }
         redirect($restore_url);
     } else {
         redirect($url, get_string('filenotfound', 'error'));
@@ -116,7 +129,7 @@ if ($context->contextlevel == CONTEXT_MODULE) {
     echo $OUTPUT->heading_with_help(get_string('choosefilefromactivitybackup', 'backup'), 'choosefilefromuserbackup', 'backup');
     echo $OUTPUT->container_start();
     $treeview_options = array();
-    $user_context = get_context_instance(CONTEXT_USER, $USER->id);
+    $user_context = context_user::instance($USER->id);
     $treeview_options['filecontext'] = $context;
     $treeview_options['currentcontext'] = $context;
     $treeview_options['component']   = 'backup';
@@ -142,7 +155,7 @@ echo $OUTPUT->container_end();
 echo $OUTPUT->heading_with_help(get_string('choosefilefromuserbackup', 'backup'), 'choosefilefromuserbackup', 'backup');
 echo $OUTPUT->container_start();
 $treeview_options = array();
-$user_context = get_context_instance(CONTEXT_USER, $USER->id);
+$user_context = context_user::instance($USER->id);
 $treeview_options['filecontext'] = $user_context;
 $treeview_options['currentcontext'] = $context;
 $treeview_options['component']   = 'user';
@@ -157,7 +170,7 @@ if (!empty($automatedbackups)) {
     echo $OUTPUT->heading_with_help(get_string('choosefilefromautomatedbackup', 'backup'), 'choosefilefromautomatedbackup', 'backup');
     echo $OUTPUT->container_start();
     $treeview_options = array();
-    $user_context = get_context_instance(CONTEXT_USER, $USER->id);
+    $user_context = context_user::instance($USER->id);
     $treeview_options['filecontext'] = $context;
     $treeview_options['currentcontext'] = $context;
     $treeview_options['component']   = 'backup';

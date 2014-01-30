@@ -1,57 +1,61 @@
 <?php
-
-///////////////////////////////////////////////////////////////////////////
-//                                                                       //
-// NOTICE OF COPYRIGHT                                                   //
-//                                                                       //
-// Moodle - Modular Object-Oriented Dynamic Learning Environment         //
-//          http://moodle.com                                            //
-//                                                                       //
-// Copyright (C) 1999 onwards  Martin Dougiamas  http://moodle.com       //
-//                                                                       //
-// This program is free software; you can redistribute it and/or modify  //
-// it under the terms of the GNU General Public License as published by  //
-// the Free Software Foundation; either version 2 of the License, or     //
-// (at your option) any later version.                                   //
-//                                                                       //
-// This program is distributed in the hope that it will be useful,       //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of        //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         //
-// GNU General Public License for more details:                          //
-//                                                                       //
-//          http://www.gnu.org/copyleft/gpl.html                         //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Jabber message processor - send a given message by jabber
+ * Jabber message processor to send messages by jabber
  *
- * @author Luis Rodrigues
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package
+ * @package    message_jabber
+ * @copyright  2008 Luis Rodrigues
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
 
 require_once($CFG->dirroot.'/message/output/lib.php');
 require_once($CFG->libdir.'/jabber/XMPP/XMPP.php');
 
+/**
+ * The jabber message processor
+ *
+ * @package   message_jabber
+ * @copyright 2008 Luis Rodrigues
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class message_output_jabber extends message_output {
 
     /**
-     * Processes the message (sends using jabber).
-     * @param object $eventdata the event data submitted by the message sender plus $eventdata->savedmessageid
+     * Processes the message and sends a notification via jabber
+     *
+     * @param stdClass $eventdata the event data submitted by the message sender plus $eventdata->savedmessageid
      * @return true if ok, false if error
      */
     function send_message($eventdata){
         global $CFG;
 
-        if (!empty($CFG->noemailever)) {
-            // hidden setting for development sites, set in config.php if needed
-            debugging('$CFG->noemailever active, no jabber message sent.', DEBUG_MINIMAL);
+        // Skip any messaging of suspended and deleted users.
+        if ($eventdata->userto->auth === 'nologin' or $eventdata->userto->suspended or $eventdata->userto->deleted) {
             return true;
         }
 
-        // skip any messaging suspended and deleted users
-        if ($eventdata->userto->auth === 'nologin' or $eventdata->userto->suspended or $eventdata->userto->deleted) {
+        if (!empty($CFG->noemailever)) {
+            // hidden setting for development sites, set in config.php if needed
+            debugging('$CFG->noemailever is active, no jabber message sent.', DEBUG_MINIMAL);
+            return true;
+        }
+
+        if (PHPUNIT_TEST) {
+            // No connection to external servers allowed in phpunit tests.
             return true;
         }
 
@@ -74,6 +78,9 @@ class message_output_jabber extends message_output {
 
         $conn = new XMPPHP_XMPP($CFG->jabberhost,$CFG->jabberport,$CFG->jabberusername,$CFG->jabberpassword,'moodle',$CFG->jabberserver);
 
+        // No need to track the presence during the sending message process.
+        $conn->track_presence = false;
+
         try {
             //$conn->useEncryption(false);
             $conn->connect();
@@ -90,7 +97,8 @@ class message_output_jabber extends message_output {
 
     /**
      * Creates necessary fields in the messaging config form.
-     * @param object $mform preferences form class
+     *
+     * @param array $preferences An array of user preferences
      */
     function config_form($preferences){
         global $CFG;
@@ -103,8 +111,9 @@ class message_output_jabber extends message_output {
     }
 
     /**
-     * Parses the form submitted data and saves it into preferences array.
-     * @param object $mform preferences form class
+     * Parses the submitted form data and saves it into preferences array.
+     *
+     * @param stdClass $form preferences form class
      * @param array $preferences preferences array
      */
     function process_form($form, &$preferences){
@@ -114,7 +123,8 @@ class message_output_jabber extends message_output {
     }
 
     /**
-     * Loads the config data from database to put on the form (initial load)
+     * Loads the config data from database to put on the form during initial form display
+     *
      * @param array $preferences preferences array
      * @param int $userid the user id
      */

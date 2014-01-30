@@ -40,11 +40,11 @@ if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
     print_error('coursemisconf');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 $PAGE->set_url('/mod/survey/download.php', array('id'=>$id, 'type'=>$type, 'group'=>$group));
 
-require_login($course->id, false, $cm);
+require_login($course, false, $cm);
 require_capability('mod/survey:download', $context) ;
 
 if (! $survey = $DB->get_record("survey", array("id"=>$cm->instance))) {
@@ -146,7 +146,7 @@ foreach ($surveyanswers as $surveyanswer) {
 }
 
 // Output the file as a valid ODS spreadsheet if required
-$coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
+$coursecontext = context_course::instance($course->id);
 $courseshortname = format_string($course->shortname, true, array('context' => $coursecontext));
 
 if ($type == "ods") {
@@ -159,7 +159,7 @@ if ($type == "ods") {
 /// Sending HTTP headers
     $workbook->send($downloadfilename);
 /// Creating the first worksheet
-    $myxls =& $workbook->add_worksheet(textlib::substr(strip_tags(format_string($survey->name,true)), 0, 31));
+    $myxls = $workbook->add_worksheet(core_text::substr(strip_tags(format_string($survey->name,true)), 0, 31));
 
     $header = array("surveyid","surveyname","userid","firstname","lastname","email","idnumber","time", "notes");
     $col=0;
@@ -234,7 +234,7 @@ if ($type == "xls") {
 /// Sending HTTP headers
     $workbook->send($downloadfilename);
 /// Creating the first worksheet
-    $myxls =& $workbook->add_worksheet(textlib::substr(strip_tags(format_string($survey->name,true)), 0, 31));
+    $myxls = $workbook->add_worksheet(core_text::substr(strip_tags(format_string($survey->name,true)), 0, 31));
 
     $header = array("surveyid","surveyname","userid","firstname","lastname","email","idnumber","time", "notes");
     $col=0;
@@ -343,7 +343,7 @@ foreach ($results as $user => $rest) {
     foreach ($nestedorder as $key => $nestedquestions) {
         foreach ($nestedquestions as $key2 => $qid) {
             $question = $questions[$qid];
-        
+
             if ($question->type == "0" || $question->type == "1" || $question->type == "3" || $question->type == "-1")  {
                 echo $results[$user][$qid]["answer1"]."    ";
             }

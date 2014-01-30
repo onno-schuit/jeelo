@@ -29,9 +29,9 @@
         print_error("coursemisconf");
     }
 
-    require_login($course->id, false, $cm);
+    require_login($course, false, $cm);
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
 
     require_capability('mod/choice:readresponses', $context);
 
@@ -43,7 +43,15 @@
     $strchoices = get_string("modulenameplural", "choice");
     $strresponses = get_string("responses", "choice");
 
-    add_to_log($course->id, "choice", "report", "report.php?id=$cm->id", "$choice->id",$cm->id);
+    $eventdata = array();
+    $eventdata['objectid'] = $choice->id;
+    $eventdata['context'] = $context;
+    $eventdata['courseid'] = $course->id;
+    $eventdata['other']['content'] = 'choicereportcontentviewed';
+
+    $event = \mod_choice\event\report_viewed::create($eventdata);
+    $event->set_page_detail();
+    $event->trigger();
 
     if (data_submitted() && $action == 'delete' && has_capability('mod/choice:deleteresponses',$context) && confirm_sesskey()) {
         choice_delete_responses($attemptids, $choice, $cm, $course); //delete responses.
@@ -55,6 +63,7 @@
         $PAGE->set_title(format_string($choice->name).": $strresponses");
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
+        echo $OUTPUT->heading($choice->name, 2, null);
         /// Check to see if groups are being used in this choice
         $groupmode = groups_get_activity_groupmode($cm);
         if ($groupmode) {
@@ -76,7 +85,7 @@
     /// Send HTTP headers
         $workbook->send($filename);
     /// Creating the first worksheet
-        $myxls =& $workbook->add_worksheet($strresponses);
+        $myxls = $workbook->add_worksheet($strresponses);
 
     /// Print names of all the fields
         $myxls->write_string(0,0,get_string("lastname"));
@@ -129,7 +138,7 @@
     /// Send HTTP headers
         $workbook->send($filename);
     /// Creating the first worksheet
-        $myxls =& $workbook->add_worksheet($strresponses);
+        $myxls = $workbook->add_worksheet($strresponses);
 
     /// Print names of all the fields
         $myxls->write_string(0,0,get_string("lastname"));

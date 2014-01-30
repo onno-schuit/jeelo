@@ -55,15 +55,14 @@ class mod_resource_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEANHTML);
         }
         $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $this->add_intro_editor($config->requiremodintro);
 
         //-------------------------------------------------------
         $mform->addElement('header', 'contentsection', get_string('contentheader', 'resource'));
+        $mform->setExpanded('contentsection');
 
         $filemanager_options = array();
-        // 3 == FILE_EXTERNAL & FILE_INTERNAL
-        // These two constant names are defined in repository/lib.php
-        $filemanager_options['return_types'] = 3;
         $filemanager_options['accepted_types'] = '*';
         $filemanager_options['maxbytes'] = 0;
         $filemanager_options['maxfiles'] = -1;
@@ -71,8 +70,15 @@ class mod_resource_mod_form extends moodleform_mod {
 
         $mform->addElement('filemanager', 'files', get_string('selectfiles'), null, $filemanager_options);
 
+        // add legacy files flag only if used
+        if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
+            $options = array(RESOURCELIB_LEGACYFILES_DONE   => get_string('legacyfilesdone', 'resource'),
+                             RESOURCELIB_LEGACYFILES_ACTIVE => get_string('legacyfilesactive', 'resource'));
+            $mform->addElement('select', 'legacyfiles', get_string('legacyfiles', 'resource'), $options);
+        }
+
         //-------------------------------------------------------
-        $mform->addElement('header', 'optionssection', get_string('optionsheader', 'resource'));
+        $mform->addElement('header', 'optionssection', get_string('appearance'));
 
         if ($this->current->instance) {
             $options = resourcelib_get_displayoptions(explode(',', $config->displayoptions), $this->current->display);
@@ -88,9 +94,15 @@ class mod_resource_mod_form extends moodleform_mod {
         } else {
             $mform->addElement('select', 'display', get_string('displayselect', 'resource'), $options);
             $mform->setDefault('display', $config->display);
-            $mform->setAdvanced('display', $config->display_adv);
             $mform->addHelpButton('display', 'displayselect', 'resource');
         }
+
+        $mform->addElement('checkbox', 'showsize', get_string('showsize', 'resource'));
+        $mform->setDefault('showsize', $config->showsize);
+        $mform->addHelpButton('showsize', 'showsize', 'resource');
+        $mform->addElement('checkbox', 'showtype', get_string('showtype', 'resource'));
+        $mform->setDefault('showtype', $config->showtype);
+        $mform->addHelpButton('showtype', 'showtype', 'resource');
 
         if (array_key_exists(RESOURCELIB_DISPLAY_POPUP, $options)) {
             $mform->addElement('text', 'popupwidth', get_string('popupwidth', 'resource'), array('size'=>3));
@@ -99,7 +111,7 @@ class mod_resource_mod_form extends moodleform_mod {
             }
             $mform->setType('popupwidth', PARAM_INT);
             $mform->setDefault('popupwidth', $config->popupwidth);
-            $mform->setAdvanced('popupwidth', $config->popupwidth_adv);
+            $mform->setAdvanced('popupwidth', true);
 
             $mform->addElement('text', 'popupheight', get_string('popupheight', 'resource'), array('size'=>3));
             if (count($options) > 1) {
@@ -107,41 +119,24 @@ class mod_resource_mod_form extends moodleform_mod {
             }
             $mform->setType('popupheight', PARAM_INT);
             $mform->setDefault('popupheight', $config->popupheight);
-            $mform->setAdvanced('popupheight', $config->popupheight_adv);
+            $mform->setAdvanced('popupheight', true);
         }
 
         if (array_key_exists(RESOURCELIB_DISPLAY_AUTO, $options) or
           array_key_exists(RESOURCELIB_DISPLAY_EMBED, $options) or
           array_key_exists(RESOURCELIB_DISPLAY_FRAME, $options)) {
-            $mform->addElement('checkbox', 'printheading', get_string('printheading', 'resource'));
-            $mform->disabledIf('printheading', 'display', 'eq', RESOURCELIB_DISPLAY_POPUP);
-            $mform->disabledIf('printheading', 'display', 'eq', RESOURCELIB_DISPLAY_DOWNLOAD);
-            $mform->disabledIf('printheading', 'display', 'eq', RESOURCELIB_DISPLAY_OPEN);
-            $mform->disabledIf('printheading', 'display', 'eq', RESOURCELIB_DISPLAY_NEW);
-            $mform->setDefault('printheading', $config->printheading);
-            $mform->setAdvanced('printheading', $config->printheading_adv);
-
             $mform->addElement('checkbox', 'printintro', get_string('printintro', 'resource'));
             $mform->disabledIf('printintro', 'display', 'eq', RESOURCELIB_DISPLAY_POPUP);
             $mform->disabledIf('printintro', 'display', 'eq', RESOURCELIB_DISPLAY_DOWNLOAD);
             $mform->disabledIf('printintro', 'display', 'eq', RESOURCELIB_DISPLAY_OPEN);
             $mform->disabledIf('printintro', 'display', 'eq', RESOURCELIB_DISPLAY_NEW);
             $mform->setDefault('printintro', $config->printintro);
-            $mform->setAdvanced('printintro', $config->printintro_adv);
         }
 
         $options = array('0' => get_string('none'), '1' => get_string('allfiles'), '2' => get_string('htmlfilesonly'));
         $mform->addElement('select', 'filterfiles', get_string('filterfiles', 'resource'), $options);
         $mform->setDefault('filterfiles', $config->filterfiles);
-        $mform->setAdvanced('filterfiles', $config->filterfiles_adv);
-
-        // add legacy files flag only if used
-        if (isset($this->current->legacyfiles) and $this->current->legacyfiles != RESOURCELIB_LEGACYFILES_NO) {
-            $options = array(RESOURCELIB_LEGACYFILES_DONE   => get_string('legacyfilesdone', 'resource'),
-                             RESOURCELIB_LEGACYFILES_ACTIVE => get_string('legacyfilesactive', 'resource'));
-            $mform->addElement('select', 'legacyfiles', get_string('legacyfiles', 'resource'), $options);
-            $mform->setAdvanced('legacyfiles', 1);
-        }
+        $mform->setAdvanced('filterfiles', true);
 
         //-------------------------------------------------------
         $this->standard_coursemodule_elements();
@@ -166,14 +161,23 @@ class mod_resource_mod_form extends moodleform_mod {
             if (isset($displayoptions['printintro'])) {
                 $default_values['printintro'] = $displayoptions['printintro'];
             }
-            if (isset($displayoptions['printheading'])) {
-                $default_values['printheading'] = $displayoptions['printheading'];
-            }
             if (!empty($displayoptions['popupwidth'])) {
                 $default_values['popupwidth'] = $displayoptions['popupwidth'];
             }
             if (!empty($displayoptions['popupheight'])) {
                 $default_values['popupheight'] = $displayoptions['popupheight'];
+            }
+            if (!empty($displayoptions['showsize'])) {
+                $default_values['showsize'] = $displayoptions['showsize'];
+            } else {
+                // Must set explicitly to 0 here otherwise it will use system
+                // default which may be 1.
+                $default_values['showsize'] = 0;
+            }
+            if (!empty($displayoptions['showtype'])) {
+                $default_values['showtype'] = $displayoptions['showtype'];
+            } else {
+                $default_values['showtype'] = 0;
             }
         }
     }
@@ -192,7 +196,7 @@ class mod_resource_mod_form extends moodleform_mod {
 
         $errors = parent::validation($data, $files);
 
-        $usercontext = get_context_instance(CONTEXT_USER, $USER->id);
+        $usercontext = context_user::instance($USER->id);
         $fs = get_file_storage();
         if (!$files = $fs->get_area_files($usercontext->id, 'user', 'draft', $data['files'], 'sortorder, id', false)) {
             $errors['files'] = get_string('required');

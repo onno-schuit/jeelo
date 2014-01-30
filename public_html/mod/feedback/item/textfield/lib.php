@@ -120,7 +120,7 @@ class feedback_item_textfield extends feedback_item_base {
     public function get_analysed($item, $groupid = false, $courseid = false) {
         global $DB;
 
-        $analysed_val = null;
+        $analysed_val = new stdClass();
         $analysed_val->data = null;
         $analysed_val->name = $item->name;
 
@@ -179,7 +179,7 @@ class feedback_item_textfield extends feedback_item_base {
         return $row_offset;
     }
 
-    /**     
+    /**
      * print the item at the edit-page of feedback
      *
      * @global object
@@ -194,7 +194,9 @@ class feedback_item_textfield extends feedback_item_base {
         $presentation = explode ("|", $item->presentation);
         $requiredmark =  ($item->required == 1) ? $str_required_mark : '';
         //print the question and label
+        $inputname = $item->typ . '_' . $item->id;
         echo '<div class="feedback_item_label_'.$align.'">';
+        echo '<label for="'. $inputname .'">';
         echo '('.$item->label.') ';
         echo format_text($item->name.$requiredmark, true, false, false);
         if ($item->dependitem) {
@@ -204,13 +206,15 @@ class feedback_item_textfield extends feedback_item_base {
                 echo '</span>';
             }
         }
+        echo '</label>';
         echo '</div>';
 
         //print the presentation
         echo '<div class="feedback_item_presentation_'.$align.'">';
         echo '<span class="feedback_item_textfield">';
         echo '<input type="text" '.
-                    'name="'.$item->typ.'_'.$item->id.'" '.
+                    'id="'.$inputname.'" '.
+                    'name="'.$inputname.'" '.
                     'size="'.$presentation[0].'" '.
                     'maxlength="'.$presentation[1].'" '.
                     'value="" />';
@@ -218,7 +222,7 @@ class feedback_item_textfield extends feedback_item_base {
         echo '</div>';
     }
 
-    /**     
+    /**
      * print the item at the complete-page of feedback
      *
      * @global object
@@ -241,23 +245,27 @@ class feedback_item_textfield extends feedback_item_base {
         $requiredmark =  ($item->required == 1) ? $str_required_mark : '';
 
         //print the question and label
+        $inputname = $item->typ . '_' . $item->id;
         echo '<div class="feedback_item_label_'.$align.$highlight.'">';
+        echo '<label for="'. $inputname .'">';
             echo format_text($item->name.$requiredmark, true, false, false);
+        echo '</label>';
         echo '</div>';
 
         //print the presentation
         echo '<div class="feedback_item_presentation_'.$align.$highlight.'">';
         echo '<span class="feedback_item_textfield">';
         echo '<input type="text" '.
-                    'name="'.$item->typ.'_'.$item->id.'" '.
+                    'id="'.$inputname.'" '.
+                    'name="'.$inputname.'" '.
                     'size="'.$presentation[0].'" '.
                     'maxlength="'.$presentation[1].'" '.
-                    'value="'.($value ? htmlspecialchars($value) : '').'" />';
+                    'value="'.$value.'" />';
         echo '</span>';
         echo '</div>';
     }
 
-    /**     
+    /**
      * print the item at the complete-page of feedback
      *
      * @global object
@@ -295,7 +303,7 @@ class feedback_item_textfield extends feedback_item_base {
     }
 
     public function create_value($data) {
-        $data = clean_text($data);
+        $data = s($data);
         return $data;
     }
 
@@ -319,5 +327,13 @@ class feedback_item_textfield extends feedback_item_base {
 
     public function can_switch_require() {
         return true;
+    }
+
+    public function value_type() {
+        return PARAM_RAW;
+    }
+
+    public function clean_input_value($value) {
+        return s($value);
     }
 }

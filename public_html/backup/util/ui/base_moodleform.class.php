@@ -81,12 +81,27 @@ abstract class base_moodleform extends moodleform {
     function definition() {
         $ui = $this->uistage->get_ui();
         $mform = $this->_form;
+        $mform->setDisableShortforms();
         $stage = $mform->addElement('hidden', 'stage', $this->uistage->get_stage());
+        $mform->setType('stage', PARAM_INT);
         $stage = $mform->addElement('hidden', $ui->get_name(), $ui->get_uniqueid());
+        $mform->setType($ui->get_name(), PARAM_ALPHANUM);
         $params = $this->uistage->get_params();
         if (is_array($params) && count($params) > 0) {
             foreach ($params as $name=>$value) {
+                // TODO: Horrible hack, but current backup ui structure does not allow
+                // to make this easy (only changing params to objects that would be
+                // possible. MDL-38735.
+                $intparams = array(
+                        'contextid', 'importid', 'target');
                 $stage = $mform->addElement('hidden', $name, $value);
+                if (in_array($name, $intparams)) {
+                    $mform->setType($name, PARAM_INT);
+                } else {
+                    // Adding setType() to avoid missing setType() warnings.
+                    // MDL-39126: support $mform->setType() for additional backup parameters.
+                    $mform->setType($name, PARAM_RAW);
+                }
             }
         }
     }
@@ -96,7 +111,6 @@ abstract class base_moodleform extends moodleform {
      * @global moodle_page $PAGE
      */
     function definition_after_data() {
-        global $PAGE;
         $buttonarray=array();
         $buttonarray[] = $this->_form->createElement('submit', 'submitbutton', get_string($this->uistage->get_ui()->get_name().'stage'.$this->uistage->get_stage().'action', 'backup'), array('class'=>'proceedbutton'));
         if (!$this->uistage->is_first_stage()) {
@@ -106,13 +120,9 @@ abstract class base_moodleform extends moodleform {
         $this->_form->addGroup($buttonarray, 'buttonar', '', array(' '), false);
         $this->_form->closeHeaderBefore('buttonar');
 
-        $config = new stdClass;
-        $config->title = get_string('confirmcancel', 'backup');
-        $config->question = get_string('confirmcancelquestion', 'backup');
-        $config->yesLabel = get_string('confirmcancelyes', 'backup');
-        $config->noLabel = get_string('confirmcancelno', 'backup');
-        $PAGE->requires->yui_module('moodle-backup-confirmcancel', 'M.core_backup.watch_cancel_buttons', array($config));
+        $this->_definition_finalized = true;
     }
+
     /**
      * Closes any open divs
      */
@@ -136,24 +146,39 @@ abstract class base_moodleform extends moodleform {
      * @return bool
      */
     function add_setting(backup_setting $setting, base_task $task=null) {
+        return $this->add_settings(array(array($setting, $task)));
+    }
+    /**
+     * Adds multiple backup_settings as elements to the form
+     * @param array $settingstasks Consists of array($setting, $task) elements
+     * @return bool
+     */
+    public function add_settings(array $settingstasks) {
         global $OUTPUT;
 
-        // If the setting cant be changed or isn't visible then add it as a fixed setting.
-        if (!$setting->get_ui()->is_changeable() || $setting->get_visibility() != backup_setting::VISIBLE) {
-            return $this->add_fixed_setting($setting, $task);
-        }
+        $defaults = array();
+        foreach ($settingstasks as $st) {
+            list($setting, $task) = $st;
+            // If the setting cant be changed or isn't visible then add it as a fixed setting.
+            if (!$setting->get_ui()->is_changeable() || $setting->get_visibility() != backup_setting::VISIBLE) {
+                $this->add_fixed_setting($setting, $task);
+                continue;
+            }
 
-        // First add the formatting for this setting
-        $this->add_html_formatting($setting);
+            // First add the formatting for this setting
+            $this->add_html_formatting($setting);
 
-        // The call the add method with the get_element_properties array
-        call_user_func_array(array($this->_form, 'addElement'), $setting->get_ui()->get_element_properties($task, $OUTPUT));
-        $this->_form->setDefault($setting->get_ui_name(), $setting->get_value());
-        if ($setting->has_help()) {
-            list($identifier, $component) = $setting->get_help();
-            $this->_form->addHelpButton($setting->get_ui_name(), $identifier, $component);
+            // Then call the add method with the get_element_properties array
+            call_user_func_array(array($this->_form, 'addElement'), $setting->get_ui()->get_element_properties($task, $OUTPUT));
+            $this->_form->setType($setting->get_ui_name(), $setting->get_param_validation());
+            $defaults[$setting->get_ui_name()] = $setting->get_value();
+            if ($setting->has_help()) {
+                list($identifier, $component) = $setting->get_help();
+                $this->_form->addHelpButton($setting->get_ui_name(), $identifier, $component);
+            }
+            $this->_form->addElement('html', html_writer::end_tag('div'));
         }
-        $this->_form->addElement('html', html_writer::end_tag('div'));
+        $this->_form->setDefaults($defaults);
         return true;
     }
     /**
@@ -252,6 +277,7 @@ abstract class base_moodleform extends moodleform {
             $this->_form->addElement('html', html_writer::end_tag('div'));
         }
         $this->_form->addElement('hidden', $settingui->get_name(), $settingui->get_value());
+        $this->_form->setType($settingui->get_name(), $settingui->get_param_validation());
     }
     /**
      * Adds dependencies to the form recursively
@@ -304,7 +330,26 @@ abstract class base_moodleform extends moodleform {
      * Displays the form
      */
     public function display() {
+        global $PAGE, $COURSE;
+
         $this->require_definition_after_data();
+
+        $config = new stdClass;
+        $config->title = get_string('confirmcancel', 'backup');
+        $config->question = get_string('confirmcancelquestion', 'backup');
+        $config->yesLabel = get_string('confirmcancelyes', 'backup');
+        $config->noLabel = get_string('confirmcancelno', 'backup');
+        $config->closeButtonTitle = get_string('close', 'editor');
+        $PAGE->requires->yui_module('moodle-backup-confirmcancel', 'M.core_backup.watch_cancel_buttons', array($config));
+
+        // Get list of module types on course.
+        $modinfo = get_fast_modinfo($COURSE);
+        $modnames = $modinfo->get_used_module_names(true);
+        $PAGE->requires->yui_module('moodle-backup-backupselectall', 'M.core_backup.select_all_init',
+                array($modnames));
+        $PAGE->requires->strings_for_js(array('select', 'all', 'none'), 'moodle');
+        $PAGE->requires->strings_for_js(array('showtypes', 'hidetypes'), 'backup');
+
         parent::display();
     }
 
@@ -313,7 +358,6 @@ abstract class base_moodleform extends moodleform {
      */
     public function require_definition_after_data() {
         if (!$this->_definition_finalized) {
-            $this->_definition_finalized = true;
             $this->definition_after_data();
         }
     }

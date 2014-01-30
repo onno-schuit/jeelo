@@ -52,11 +52,9 @@ if (! $feedback = $DB->get_record("feedback", array("id"=>$cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
-        print_error('badcontext');
-}
+$context = context_module::instance($cm->id);
 
-require_login($course->id, true, $cm);
+require_login($course, true, $cm);
 
 require_capability('mod/feedback:edititems', $context);
 
@@ -92,10 +90,10 @@ echo $OUTPUT->header();
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
-echo $OUTPUT->heading(format_text($feedback->name));
+echo $OUTPUT->heading(format_string($feedback->name));
 
 echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthnormal');
-echo $OUTPUT->heading(get_string('confirmusetemplate', 'feedback'));
+echo $OUTPUT->heading(get_string('confirmusetemplate', 'feedback'), 3);
 
 $mform->display();
 

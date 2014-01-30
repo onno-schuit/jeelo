@@ -40,6 +40,8 @@
  * See:  http://www.opensource.org/licenses/bsd-license.php
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Combine a base URL and a relative URL to produce a new
  * absolute URL.  The base URL is often the URL of a page,
@@ -79,6 +81,9 @@ function url_to_absolute( $baseUrl, $relativeUrl )
 	if ( $b === FALSE || empty( $b['scheme'] ) || empty( $b['host'] ) )
 		return FALSE;
 	$r['scheme'] = $b['scheme'];
+	if (empty($b['path'])) {
+		$b['path'] = '';
+	}
 
 	// If relative URL has an authority, clean path and return.
 	if ( isset( $r['host'] ) )
@@ -107,15 +112,16 @@ function url_to_absolute( $baseUrl, $relativeUrl )
 		return join_url( $r );
 	}
 
-	// If relative URL path doesn't start with /, merge with base path
-	if ( $r['path'][0] != '/' )
-	{
-		$base = mb_strrchr( $b['path'], '/', TRUE, 'UTF-8' );
-		if ( $base === FALSE ) $base = '';
+	// If relative URL path doesn't start with /, merge with base path.
+	if ($r['path'][0] != '/') {
+		$base = core_text::strrchr($b['path'], '/', TRUE);
+		if ($base === FALSE) {
+			$base = '';
+		}
 		$r['path'] = $base . '/' . $r['path'];
 	}
-	$r['path'] = url_remove_dot_segments( $r['path'] );
-	return join_url( $r );
+	$r['path'] = url_remove_dot_segments($r['path']);
+	return join_url($r);
 }
 
 /**
@@ -149,12 +155,15 @@ function url_remove_dot_segments( $path )
 			array_push( $outSegs, $seg );
 	}
 	$outPath = implode( '/', $outSegs );
-	if ( $path[0] == '/' )
+
+	if ($path[0] == '/') {
 		$outPath = '/' . $outPath;
-	// compare last multi-byte character against '/'
-	if ( $outPath != '/' &&
-		(mb_strlen($path)-1) == mb_strrpos( $path, '/', 'UTF-8' ) )
+	}
+
+	// Compare last multi-byte character against '/'.
+	if ($outPath != '/' && (core_text::strlen($path) - 1) == core_text::strrpos($path, '/', 'UTF-8')) {
 		$outPath .= '/';
+	}
 	return $outPath;
 }
 
@@ -248,11 +257,11 @@ function url_remove_dot_segments( $path )
  * 	the associative array of URL parts, or FALSE if the URL is
  * 	too malformed to recognize any parts.
  */
-function split_url( $url, $decode=TRUE )
+function split_url( $url, $decode=FALSE)
 {
 	// Character sets from RFC3986.
 	$xunressub     = 'a-zA-Z\d\-._~\!$&\'()*+,;=';
-	$xpchar        = $xunressub . ':@%';
+	$xpchar        = $xunressub . ':@% ';
 
 	// Scheme from RFC3986.
 	$xscheme        = '([a-zA-Z][a-zA-Z\d+-.]*)';
@@ -382,7 +391,7 @@ function split_url( $url, $decode=TRUE )
  * 	empty string is returned if the $parts array does not contain
  * 	any of the needed values.
  */
-function join_url( $parts, $encode=TRUE )
+function join_url( $parts, $encode=FALSE)
 {
 	if ( $encode )
 	{
@@ -432,6 +441,51 @@ function join_url( $parts, $encode=TRUE )
 		$url .= '#' . $parts['fragment'];
 	return $url;
 }
+
+/**
+ * This function encodes URL to form a URL which is properly
+ * percent encoded to replace disallowed characters.
+ *
+ * RFC3986 specifies the allowed characters in the URL as well as
+ * reserved characters in the URL. This function replaces all the
+ * disallowed characters in the URL with their repective percent
+ * encodings. Already encoded characters are not encoded again,
+ * such as '%20' is not encoded to '%2520'.
+ *
+ * Parameters:
+ * 	url		the url to encode.
+ *
+ * Return values:
+ * 	Returns the encoded URL string.
+ */
+function encode_url($url) {
+  $reserved = array(
+    ":" => '!%3A!ui',
+    "/" => '!%2F!ui',
+    "?" => '!%3F!ui',
+    "#" => '!%23!ui',
+    "[" => '!%5B!ui',
+    "]" => '!%5D!ui',
+    "@" => '!%40!ui',
+    "!" => '!%21!ui',
+    "$" => '!%24!ui',
+    "&" => '!%26!ui',
+    "'" => '!%27!ui',
+    "(" => '!%28!ui',
+    ")" => '!%29!ui',
+    "*" => '!%2A!ui',
+    "+" => '!%2B!ui',
+    "," => '!%2C!ui',
+    ";" => '!%3B!ui',
+    "=" => '!%3D!ui',
+    "%" => '!%25!ui',
+  );
+
+  $url = rawurlencode($url);
+  $url = preg_replace(array_values($reserved), array_keys($reserved), $url);
+  return $url;
+}
+
 /**
  * Extract URLs from a web page.
  *

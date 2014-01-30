@@ -27,8 +27,8 @@
 require_once('../../config.php');
 require_once('locallib.php');
 
-$attemptid = required_param('attempt', PARAM_INT); // attempt id
-$slot = required_param('slot', PARAM_INT); // question number in attempt
+$attemptid = required_param('attempt', PARAM_INT);
+$slot = required_param('slot', PARAM_INT); // The question number in the attempt.
 
 $PAGE->set_url('/mod/quiz/comment.php', array('attempt' => $attemptid, 'slot' => $slot));
 
@@ -40,7 +40,7 @@ if (!$attemptobj->is_finished()) {
 }
 
 // Check login and permissions.
-require_login($attemptobj->get_courseid(), false, $attemptobj->get_cm());
+require_login($attemptobj->get_course(), false, $attemptobj->get_cm());
 $attemptobj->require_capability('mod/quiz:grade');
 
 // Log this action.
@@ -48,22 +48,41 @@ add_to_log($attemptobj->get_courseid(), 'quiz', 'manualgrade', 'comment.php?atte
         $attemptobj->get_attemptid() . '&slot=' . $slot,
         $attemptobj->get_quizid(), $attemptobj->get_cmid());
 
-// Print the page header
+// Print the page header.
 $PAGE->set_pagelayout('popup');
-echo $OUTPUT->header();
-echo $OUTPUT->heading(format_string($attemptobj->get_question_name($slot)));
+$PAGE->set_heading($attemptobj->get_course()->fullname);
+$output = $PAGE->get_renderer('mod_quiz');
+echo $output->header();
+
+// Prepare summary information about this question attempt.
+$summarydata = array();
+
+// Quiz name.
+$summarydata['quizname'] = array(
+    'title'   => get_string('modulename', 'quiz'),
+    'content' => format_string($attemptobj->get_quiz_name()),
+);
+
+// Question name.
+$summarydata['questionname'] = array(
+    'title'   => get_string('question', 'quiz'),
+    'content' => $attemptobj->get_question_name($slot),
+);
 
 // Process any data that was submitted.
 if (data_submitted() && confirm_sesskey()) {
-    if (optional_param('submit', false, PARAM_BOOL)) {
+    if (optional_param('submit', false, PARAM_BOOL) && question_engine::is_manual_grade_in_range($attemptobj->get_uniqueid(), $slot)) {
         $transaction = $DB->start_delegated_transaction();
-        $attemptobj->process_all_actions(time());
+        $attemptobj->process_submitted_actions(time());
         $transaction->allow_commit();
-        echo $OUTPUT->notification(get_string('changessaved'), 'notifysuccess');
+        echo $output->notification(get_string('changessaved'), 'notifysuccess');
         close_window(2, true);
         die;
     }
 }
+
+// Print quiz information.
+echo $output->review_summary_table($summarydata, 0);
 
 // Print the comment form.
 echo '<form method="post" class="mform" id="manualgradingform" action="' .
@@ -78,11 +97,8 @@ echo $attemptobj->render_question_for_commenting($slot);
 </div>
 <fieldset class="hidden">
     <div>
-        <div class="fitem">
-            <div class="fitemtitle">
-                <div class="fgrouplabel"><label> </label></div>
-            </div>
-            <fieldset class="felement fgroup">
+        <div class="fitem fitem_actionbuttons fitem_fsubmit">
+            <fieldset class="felement fsubmit">
                 <input id="id_submitbutton" type="submit" name="submit" value="<?php
                         print_string('save', 'quiz'); ?>"/>
             </fieldset>
@@ -94,4 +110,4 @@ echo '</form>';
 $PAGE->requires->js_init_call('M.mod_quiz.init_comment_popup', null, false, quiz_get_js_module());
 
 // End of the page.
-echo $OUTPUT->footer();
+echo $output->footer();

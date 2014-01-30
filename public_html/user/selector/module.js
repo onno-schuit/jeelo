@@ -43,6 +43,8 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
         listbox : Y.one('#'+name),
         /** Used to hold the timeout id of the timeout that waits before doing a search. */
         timeoutid : null,
+        /** Stores any in-progress remote requests. */
+        iotransactions : {},
         /** The last string that we searched for, so we can avoid unnecessary repeat searches. */
         lastsearch : lastsearch,
         /** Whether any options where selected last time we checked. Used by
@@ -77,8 +79,9 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
             var clearbtn = Y.one('#'+this.name + '_clearbutton');
             this.clearbutton = Y.Node.create('<input type="button" value="'+clearbtn.get('value')+'" />');
             clearbtn.replace(Y.Node.getDOMNode(this.clearbutton));
-            this.clearbutton.set('id',+this.name+"_clearbutton");
+            this.clearbutton.set('id', this.name+"_clearbutton");
             this.clearbutton.on('click', this.handle_clear, this);
+            this.clearbutton.set('disabled', (this.get_search_text() == ''));
 
             this.send_query(false);
         },
@@ -139,15 +142,20 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
                 return;
             }
 
-            Y.io(M.cfg.wwwroot + '/user/selector/search.php', {
+            // Try to cancel existing transactions.
+            Y.Object.each(this.iotransactions, function(trans) {
+                trans.abort();
+            });
+
+            var iotrans = Y.io(M.cfg.wwwroot + '/user/selector/search.php', {
                 method: 'POST',
                 data: 'selectorid='+hash+'&sesskey='+M.cfg.sesskey+'&search='+value + '&userselector_searchanywhere=' + this.get_option('searchanywhere'),
                 on: {
-                    success:this.handle_response,
-                    failure:this.handle_failure
+                    complete: this.handle_response
                 },
                 context:this
             });
+            this.iotransactions[iotrans.id] = iotrans;
 
             this.lastsearch = value;
             this.listbox.setStyle('background','url(' + M.util.image_url('i/loading', 'moodle') + ') no-repeat center center');
@@ -159,23 +167,22 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
          */
         handle_response : function(requestid, response) {
             try {
+                delete this.iotransactions[requestid];
+                if (!Y.Object.isEmpty(this.iotransactions)) {
+                    // More searches pending. Wait until they are all done.
+                    return;
+                }
                 this.listbox.setStyle('background','');
                 var data = Y.JSON.parse(response.responseText);
+                if (data.error) {
+                    this.searchfield.addClass('error');
+                    return new M.core.ajaxException(data);
+                }
                 this.output_options(data);
             } catch (e) {
-                this.handle_failure();
-            }
-        },
-        /**
-         * Handles what happens when the ajax request fails.
-         */
-        handle_failure : function() {
-            this.listbox.setStyle('background','');
-            this.searchfield.addClass('error');
-
-            // If we are in developer debug mode, output a link to help debug the failure.
-            if (M.cfg.developerdebug) {
-                this.searchfield.insert(Y.Node.create('<a href="'+M.cfg.wwwroot +'/user/selector/search.php?selectorid='+hash+'&sesskey='+M.cfg.sesskey+'&search='+this.get_search_text()+'&debug=1">Ajax call failed. Click here to try the search call directly.</a>'));
+                this.listbox.setStyle('background','');
+                this.searchfield.addClass('error');
+                return new M.core.exception(e);
             }
         },
         /**
@@ -202,8 +209,9 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
 
             // Output each optgroup.
             var count = 0;
-            for (var groupname in data.results) {
-                this.output_group(groupname, data.results[groupname], selectedusers, true);
+            for (var key in data.results) {
+                var groupdata = data.results[key];
+                this.output_group(groupdata.name, groupdata.users, selectedusers, true);
                 count++;
             }
             if (!count) {
@@ -229,17 +237,23 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
         output_group : function(groupname, users, selectedusers, processsingle) {
             var optgroup = Y.Node.create('<optgroup></optgroup>');
             var count = 0;
-            for (var userid in users) {
-                var user = users[userid];
-                var option = Y.Node.create('<option value="'+userid+'">'+user.name+'</option>');
+            for (var key in users) {
+                var user = users[key];
+                var option = Y.Node.create('<option value="'+user.id+'">'+user.name+'</option>');
                 if (user.disabled) {
                     option.set('disabled', true);
-                } else if (selectedusers===true || selectedusers[userid]) {
+                } else if (selectedusers===true || selectedusers[user.id]) {
                     option.set('selected', true);
+                    delete selectedusers[user.id];
                 } else {
                     option.set('selected', false);
                 }
                 optgroup.append(option);
+                if (user.infobelow) {
+                    extraoption = Y.Node.create('<option disabled="disabled" class="userselector-infobelow"/>');
+                    extraoption.appendChild(document.createTextNode(user.infobelow));
+                    optgroup.append(extraoption);
+                }
                 count++;
             }
 
@@ -249,6 +263,7 @@ M.core_user.init_user_selector = function (Y, name, hash, extrafields, lastsearc
                     option.set('selected', true);
                 }
             } else {
+                optgroup.set('label', groupname);
                 optgroup.append(Y.Node.create('<option disabled="disabled">\u00A0</option>'));
             }
             this.listbox.append(optgroup);

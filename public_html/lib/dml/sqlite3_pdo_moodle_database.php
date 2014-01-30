@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,22 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Experimental pdo database class.
  *
- * @package    core
- * @subpackage dml
+ * @package    core_dml
  * @copyright  2008 Andrei Bautu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/dml/pdo_moodle_database.php');
+require_once(__DIR__.'/pdo_moodle_database.php');
 
 /**
  * Experimental pdo database class
+ *
+ * @package    core_dml
+ * @copyright  2008 Andrei Bautu
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sqlite3_pdo_moodle_database extends pdo_moodle_database {
     protected $database_file_extension = '.sq3.php';
@@ -86,13 +87,15 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
      * @return bool success
      */
     public function create_database($dbhost, $dbuser, $dbpass, $dbname, array $dboptions=null) {
+        global $CFG;
+
         $this->dbhost = $dbhost;
         $this->dbuser = $dbuser;
         $this->dbpass = $dbpass;
         $this->dbname = $dbname;
         $filepath = $this->get_dbfilepath();
         $dirpath = dirname($filepath);
-        @mkdir($dirpath);
+        @mkdir($dirpath, $CFG->directorypermissions, true);
         return touch($filepath);
     }
 
@@ -132,7 +135,8 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
     }
 
     /**
-     * Return tables in database WITHOUT current prefix
+     * Return tables in database WITHOUT current prefix.
+     * @param bool $usecache if true, returns list of cached tables.
      * @return array of table names in lowercase and without prefix
      */
     public function get_tables($usecache=true) {
@@ -146,16 +150,20 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
         foreach ($rstables as $table) {
             $table = $table['name'];
             $table = strtolower($table);
-            if (empty($this->prefix) || strpos($table, $this->prefix) === 0) {
+            if ($this->prefix !== '') {
+                if (strpos($table, $this->prefix) !== 0) {
+                    continue;
+                }
                 $table = substr($table, strlen($this->prefix));
-                $tables[$table] = $table;
             }
+            $tables[$table] = $table;
         }
         return $tables;
     }
 
     /**
      * Return table indexes - everything lowercased
+     * @param string $table The table we want to get indexes from.
      * @return array of arrays
      */
     public function get_indexes($table) {
@@ -191,9 +199,17 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
      * @return array array of database_column_info objects indexed with column names
      */
     public function get_columns($table, $usecache=true) {
-        if ($usecache and isset($this->columns[$table])) {
-            return $this->columns[$table];
+
+        if ($usecache) {
+            $properties = array('dbfamily' => $this->get_dbfamily(), 'settings' => $this->get_settings_hash());
+            $cache = cache::make('core', 'databasemeta', $properties);
+            if ($data = $cache->get($table)) {
+                return $data;
+            }
         }
+
+        $structure = array();
+
         // get table's CREATE TABLE command (we'll need it for autoincrement fields)
         $sql = 'SELECT sql FROM sqlite_master WHERE type="table" AND tbl_name="'.$this->prefix.$table.'"';
         if ($this->debug) {
@@ -205,7 +221,6 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
         }
         $createsql = $createsql['sql'];
 
-        $columns = array();
         $sql = 'PRAGMA table_info("'. $this->prefix.$table.'")';
         if ($this->debug) {
             $this->debug_query($sql);
@@ -253,13 +268,6 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
                     $columninfo['meta_type'] = 'C';
                     break;
                 case 'enu': // enums
-                    if (preg_match('|'.$columninfo['name'].'\W+in\W+\(/\*liststart\*/(.*?)/\*listend\*/\)|im', $createsql, $tmp)) {
-                        $tmp = explode(',', $tmp[1]);
-                        foreach($tmp as $value) {
-                            $columninfo['enums'][] = trim($value, '\'"');
-                        }
-                        unset($tmp);
-                    }
                     $columninfo['meta_type'] = 'C';
                     break;
                 case 'tex': // text
@@ -288,11 +296,14 @@ class sqlite3_pdo_moodle_database extends pdo_moodle_database {
                 // trim extra quotes from text default values
                 $columninfo['default_value'] = substr($columninfo['default_value'], 1, -1);
             }
-            $columns[$columninfo['name']] = new database_column_info($columninfo);
+            $structure[$columninfo['name']] = new database_column_info($columninfo);
         }
 
-        $this->columns[$table] = $columns;
-        return $columns;
+        if ($usecache) {
+            $cache->set($table, $structure);
+        }
+
+        return $structure;
     }
 
     /**

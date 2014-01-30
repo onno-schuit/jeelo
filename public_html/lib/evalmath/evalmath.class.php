@@ -107,7 +107,7 @@ class EvalMath {
         'sin','sinh','arcsin','asin','arcsinh','asinh',
         'cos','cosh','arccos','acos','arccosh','acosh',
         'tan','tanh','arctan','atan','arctanh','atanh',
-        'sqrt','abs','ln','log','exp','floor','ceil','round');
+        'sqrt','abs','ln','log','exp','floor','ceil');
 
     var $fc = array( // calc functions emulation
         'average'=>array(-1), 'max'=>array(-1),  'min'=>array(-1),
@@ -557,9 +557,8 @@ class EvalMathFuncs {
         return $min + $randomno;
     }
 
-    static function rand_float(){
-        $randomvalue = array_shift(unpack('v', md5(self::get_random_seed(), true)));
-        return $randomvalue / 65536;
+    static function rand_float() {
+        $randomvalues = unpack('v', md5(self::get_random_seed(), true));
+        return array_shift($randomvalues) / 65536;
     }
-
 }

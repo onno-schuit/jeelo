@@ -16,11 +16,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    moodlecore
- * @subpackage backup-moodle2
- * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Defines backup_qtype_plugin class
+ *
+ * @package     core_backup
+ * @subpackage  moodle2
+ * @category    backup
+ * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class extending standard backup_plugin in order to implement some
@@ -53,12 +58,7 @@ abstract class backup_qtype_plugin extends backup_plugin {
         $answers->add_child($answer);
 
         // Set the sources
-        $answer->set_source_sql('
-                SELECT *
-                FROM {question_answers}
-                WHERE question = :question
-                ORDER BY id',
-                array('question' => backup::VAR_PARENTID));
+        $answer->set_source_table('question_answers', array('question' => backup::VAR_PARENTID), 'id ASC');
 
         // Aliases
         $answer->set_source_alias('answer', 'answertext');
@@ -87,12 +87,7 @@ abstract class backup_qtype_plugin extends backup_plugin {
         $units->add_child($unit);
 
         // Set the sources
-        $unit->set_source_sql('
-                SELECT *
-                FROM {question_numerical_units}
-                WHERE question = :question
-                ORDER BY id',
-                array('question' => backup::VAR_PARENTID));
+        $unit->set_source_table('question_numerical_units', array('question' => backup::VAR_PARENTID), 'id ASC');
 
         // don't need to annotate ids nor files
     }
@@ -181,7 +176,7 @@ abstract class backup_qtype_plugin extends backup_plugin {
     public static function get_components_and_fileareas($filter = null) {
         $components = array();
         // Get all the plugins of this type
-        $qtypes = get_plugin_list('qtype');
+        $qtypes = core_component::get_plugin_list('qtype');
         foreach ($qtypes as $name => $path) {
             // Apply filter if specified
             if (!is_null($filter) && $filter != $name) {

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,40 +14,43 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Native oci class representing moodle database interface.
  *
- * @package    core
- * @subpackage dml
+ * @package    core_dml
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/dml/moodle_database.php');
-require_once($CFG->libdir.'/dml/oci_native_moodle_recordset.php');
-require_once($CFG->libdir.'/dml/oci_native_moodle_temptables.php');
+require_once(__DIR__.'/moodle_database.php');
+require_once(__DIR__.'/oci_native_moodle_recordset.php');
+require_once(__DIR__.'/oci_native_moodle_temptables.php');
 
 /**
  * Native oci class representing moodle database interface.
  *
  * One complete reference for PHP + OCI:
  * http://www.oracle.com/technology/tech/php/underground-php-oracle-manual.html
+ *
+ * @package    core_dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class oci_native_moodle_database extends moodle_database {
 
     protected $oci     = null;
 
-    private $last_stmt_error = null; // To store stmt errors and enable get_last_error() to detect them
-    private $commit_status = null;   // default value initialised in connect method, we need the driver to be present
+    /** @var To store stmt errors and enable get_last_error() to detect them.*/
+    private $last_stmt_error = null;
+    /** @var Default value initialised in connect method, we need the driver to be present.*/
+    private $commit_status = null;
 
-    private $last_error_reporting; // To handle oci driver default verbosity
-    private $unique_session_id; // To store unique_session_id. Needed for temp tables unique naming
-
-    private $dblocks_supported = null; // To cache locks support along the connection life
-    private $bitwise_supported = null; // To cache bitwise operations support along the connection life
+    /** @var To handle oci driver default verbosity.*/
+    private $last_error_reporting;
+    /** @var To store unique_session_id. Needed for temp tables unique naming.*/
+    private $unique_session_id;
 
     /**
      * Detects if all needed PHP stuff installed.
@@ -108,34 +110,22 @@ class oci_native_moodle_database extends moodle_database {
     }
 
     /**
-     * Returns localised database description
-     * Note: can be used before connect()
-     * @return string
-     */
-    public function get_configuration_hints() {
-        return get_string('databasesettingssub_oci', 'install');
-    }
-
-    /**
      * Diagnose database and tables, this function is used
      * to verify database and driver settings, db engine types, etc.
      *
      * @return string null means everything ok, string means problem found.
      */
     public function diagnose() {
-        if (!$this->bitwise_supported() or !$this->session_lock_supported()) {
-            return 'Oracle PL/SQL Moodle support packages are not installed! Database administrator has to execute /lib/dml/oci_native_moodle_package.sql script.';
-        }
         return null;
     }
 
     /**
      * Connect to db
      * Must be called before other methods.
-     * @param string $dbhost
-     * @param string $dbuser
-     * @param string $dbpass
-     * @param string $dbname
+     * @param string $dbhost The database host.
+     * @param string $dbuser The database username.
+     * @param string $dbpass The database username's password.
+     * @param string $dbname The name of the database being connected to.
      * @param mixed $prefix string means moodle db prefix, false used for external databases where prefix not used
      * @param array $dboptions driver specific options
      * @return bool true
@@ -197,6 +187,19 @@ class oci_native_moodle_database extends moodle_database {
                 $dberr = $e['message'];
             }
             throw new dml_connection_exception($dberr);
+        }
+
+        // Make sure moodle package is installed - now required.
+        if (!$this->oci_package_installed()) {
+            try {
+                $this->attempt_oci_package_install();
+            } catch (Exception $e) {
+                // Ignore problems, only the result counts,
+                // admins have to fix it manually if necessary.
+            }
+            if (!$this->oci_package_installed()) {
+                throw new dml_exception('dbdriverproblem', 'Oracle PL/SQL Moodle support package MOODLELIB is not installed! Database administrator has to execute /lib/dml/oci_native_moodle_package.sql script.');
+            }
         }
 
         // get unique session id, to be used later for temp tables stuff
@@ -270,7 +273,7 @@ class oci_native_moodle_database extends moodle_database {
 
     /**
      * Returns database server info array
-     * @return array
+     * @return array Array containing 'description' and 'version' info
      */
     public function get_server_info() {
         static $info = null; // TODO: move to real object property
@@ -284,12 +287,6 @@ class oci_native_moodle_database extends moodle_database {
         }
 
         return $info;
-    }
-
-    protected function is_min_version($version) {
-        $server = $this->get_server_info();
-        $server = $server['version'];
-        return version_compare($server, $version, '>=');
     }
 
     /**
@@ -315,7 +312,7 @@ class oci_native_moodle_database extends moodle_database {
 
     /**
      * Returns supported query parameter types
-     * @return int bitmask
+     * @return int bitmask of accepted SQL_PARAMS_*
      */
     protected function allowed_param_types() {
         return SQL_PARAMS_NAMED;
@@ -386,6 +383,7 @@ class oci_native_moodle_database extends moodle_database {
 
     /**
      * Return tables in database WITHOUT current prefix
+     * @param bool $usecache if true, returns list of cached tables.
      * @return array of table names in lowercase and without prefix
      */
     public function get_tables($usecache=true) {
@@ -408,10 +406,12 @@ class oci_native_moodle_database extends moodle_database {
         oci_free_statement($stmt);
         $records = array_map('strtolower', $records['TABLE_NAME']);
         foreach ($records as $tablename) {
-            if (strpos($tablename, $this->prefix) !== 0) {
-                continue;
+            if ($this->prefix !== '') {
+                if (strpos($tablename, $this->prefix) !== 0) {
+                    continue;
+                }
+                $tablename = substr($tablename, strlen($this->prefix));
             }
-            $tablename = substr($tablename, strlen($this->prefix));
             $this->tables[$tablename] = $tablename;
         }
 
@@ -422,8 +422,9 @@ class oci_native_moodle_database extends moodle_database {
     }
 
     /**
-     * Return table indexes - everything lowercased
-     * @return array of arrays
+     * Return table indexes - everything lowercased.
+     * @param string $table The table we want to get indexes from.
+     * @return array An associative array of indexes containing 'unique' flag and 'columns' being indexed
      */
     public function get_indexes($table) {
         $indexes = array();
@@ -467,21 +468,30 @@ class oci_native_moodle_database extends moodle_database {
      * @return array array of database_column_info objects indexed with column names
      */
     public function get_columns($table, $usecache=true) {
-        if ($usecache and isset($this->columns[$table])) {
-            return $this->columns[$table];
+
+        if ($usecache) {
+            $properties = array('dbfamily' => $this->get_dbfamily(), 'settings' => $this->get_settings_hash());
+            $cache = cache::make('core', 'databasemeta', $properties);
+            if ($data = $cache->get($table)) {
+                return $data;
+            }
         }
 
         if (!$table) { // table not specified, return empty array directly
             return array();
         }
 
-        $this->columns[$table] = array();
+        $structure = array();
 
         // We give precedence to CHAR_LENGTH for VARCHAR2 columns over WIDTH because the former is always
         // BYTE based and, for cross-db operations, we want CHAR based results. See MDL-29415
-        $sql = "SELECT CNAME, COLTYPE, nvl(CHAR_LENGTH, WIDTH) AS WIDTH, SCALE, PRECISION, NULLS, DEFAULTVAL
+        // Instead of guessing sequence based exclusively on name, check tables against user_triggers to
+        // ensure the table has a 'before each row' trigger to assume 'id' is auto_increment. MDL-32365
+        $sql = "SELECT CNAME, COLTYPE, nvl(CHAR_LENGTH, WIDTH) AS WIDTH, SCALE, PRECISION, NULLS, DEFAULTVAL,
+                  DECODE(NVL(TRIGGER_NAME, '0'), '0', '0', '1') HASTRIGGER
                   FROM COL c
              LEFT JOIN USER_TAB_COLUMNS u ON (u.TABLE_NAME = c.TNAME AND u.COLUMN_NAME = c.CNAME AND u.DATA_TYPE = 'VARCHAR2')
+             LEFT JOIN USER_TRIGGERS t ON (t.TABLE_NAME = c.TNAME AND TRIGGER_TYPE = 'BEFORE EACH ROW' AND c.CNAME = 'ID')
                  WHERE TNAME = UPPER('{" . $table . "}')
               ORDER BY COLNO";
 
@@ -503,6 +513,7 @@ class oci_native_moodle_database extends moodle_database {
 
             $info = new stdClass();
             $info->name = strtolower($rawcolumn->CNAME);
+            $info->auto_increment = ((int)$rawcolumn->HASTRIGGER) ? true : false;
             $matches = null;
 
             if ($rawcolumn->COLTYPE === 'VARCHAR2'
@@ -511,7 +522,6 @@ class oci_native_moodle_database extends moodle_database {
              or $rawcolumn->COLTYPE === 'NVARCHAR'
              or $rawcolumn->COLTYPE === 'CHAR'
              or $rawcolumn->COLTYPE === 'NCHAR') {
-                //TODO add some basic enum support here
                 $info->type          = $rawcolumn->COLTYPE;
                 $info->meta_type     = 'C';
                 $info->max_length    = $rawcolumn->WIDTH;
@@ -537,7 +547,6 @@ class oci_native_moodle_database extends moodle_database {
                 $info->primary_key   = false;
                 $info->binary        = false;
                 $info->unsigned      = null;
-                $info->auto_increment= false;
                 $info->unique        = null;
 
             } else if ($rawcolumn->COLTYPE === 'NUMBER') {
@@ -550,22 +559,19 @@ class oci_native_moodle_database extends moodle_database {
                         $info->primary_key   = true;
                         $info->meta_type     = 'R';
                         $info->unique        = true;
-                        $info->auto_increment= true;
                         $info->has_default   = false;
                     } else {
                         $info->primary_key   = false;
                         $info->meta_type     = 'I';
                         $info->unique        = null;
-                        $info->auto_increment= false;
                     }
-                    $info->scale = null;
+                    $info->scale = 0;
 
                 } else {
                     //float
                     $info->meta_type     = 'N';
                     $info->primary_key   = false;
                     $info->unsigned      = null;
-                    $info->auto_increment= false;
                     $info->unique        = null;
                     $info->scale         = $rawcolumn->SCALE;
                 }
@@ -583,7 +589,6 @@ class oci_native_moodle_database extends moodle_database {
                 $info->primary_key   = false;
                 $info->meta_type     = 'N';
                 $info->unique        = null;
-                $info->auto_increment= false;
                 $info->not_null      = ($rawcolumn->NULLS === 'NOT NULL');
                 $info->has_default   = !is_null($rawcolumn->DEFAULTVAL);
                 if ($info->has_default) {
@@ -619,7 +624,6 @@ class oci_native_moodle_database extends moodle_database {
                 $info->primary_key   = false;
                 $info->binary        = false;
                 $info->unsigned      = null;
-                $info->auto_increment= false;
                 $info->unique        = null;
 
             } else if ($rawcolumn->COLTYPE === 'BLOB') {
@@ -648,7 +652,6 @@ class oci_native_moodle_database extends moodle_database {
                 $info->primary_key   = false;
                 $info->binary        = true;
                 $info->unsigned      = null;
-                $info->auto_increment= false;
                 $info->unique        = null;
 
             } else {
@@ -657,10 +660,14 @@ class oci_native_moodle_database extends moodle_database {
                 $info->meta_type     = '?';
             }
 
-            $this->columns[$table][$info->name] = new database_column_info($info);
+            $structure[$info->name] = new database_column_info($info);
         }
 
-        return $this->columns[$table];
+        if ($usecache) {
+            $cache->set($table, $structure);
+        }
+
+        return $structure;
     }
 
     /**
@@ -671,6 +678,8 @@ class oci_native_moodle_database extends moodle_database {
      * @return mixed the normalised value
      */
     protected function normalise_value($column, $value) {
+        $this->detect_objects($value);
+
         if (is_bool($value)) { // Always, convert boolean to int
             $value = (int)$value;
 
@@ -755,10 +764,27 @@ class oci_native_moodle_database extends moodle_database {
      */
     private function oracle_dirty_hack ($table, $field, $value) {
 
+        // General bound parameter, just hack the spaces and pray it will work.
+        if (!$table) {
+            if ($value === '') {
+                return ' ';
+            } else if (is_bool($value)) {
+                return (int)$value;
+            } else {
+                return $value;
+            }
+        }
+
         // Get metadata
         $columns = $this->get_columns($table);
         if (!isset($columns[$field])) {
-            return $value;
+            if ($value === '') {
+                return ' ';
+            } else if (is_bool($value)) {
+                return (int)$value;
+            } else {
+                return $value;
+            }
         }
         $column = $columns[$field];
 
@@ -775,7 +801,7 @@ class oci_native_moodle_database extends moodle_database {
         // In the opposite, when retrieving records from Oracle, we'll decode " " back to
         // empty strings to allow everything to work properly. DIRTY HACK.
 
-        // !! These paragraphs explain the rationale about the change for Moodle 2.0:
+        // !! These paragraphs explain the rationale about the change for Moodle 2.5:
         //
         // Before Moodle 2.0, we only used to apply this DIRTY HACK to NOT NULL columns, as
         // stated above, but it causes one problem in NULL columns where both empty strings
@@ -788,21 +814,19 @@ class oci_native_moodle_database extends moodle_database {
         // to rely in NULL/empty/content contents without problems, until now that wasn't
         // possible at all.
         //
-        // No breakage with old data is expected as long as at the time of writing this
-        // (20090922) all the current uses of both sql_empty() and sql_isempty() has been
-        // revised in 2.0 and all them were being performed against NOT NULL columns,
-        // where nothing has changed (the DIRTY HACK was already being applied).
+        // One space DIRTY HACK is now applied automatically for all query parameters
+        // and results. The only problem is string concatenation where the glue must
+        // be specified as "' '" sql fragment.
         //
         // !! Conclusions:
         //
-        // From Moodle 2.0 onwards, ALL empty strings in Oracle DBs will be stored as
+        // From Moodle 2.5 onwards, ALL empty strings in Oracle DBs will be stored as
         // 1-whitespace char, ALL NULLs as NULLs and, obviously, content as content. And
         // those 1-whitespace chars will be converted back to empty strings by all the
         // get_field/record/set() functions transparently and any SQL needing direct handling
-        // of empties will need to use the sql_empty() and sql_isempty() helper functions.
-        // MDL-17491.
+        // of empties will have to use placeholders or sql_isempty() helper function.
 
-        // If the field ins't VARCHAR or CLOB, skip
+        // If the field isn't VARCHAR or CLOB, skip
         if ($column->meta_type != 'C' and $column->meta_type != 'X') {
             return $value;
         }
@@ -828,7 +852,7 @@ class oci_native_moodle_database extends moodle_database {
             return '0'; // Transform 0 to '0' that evaluates the same for PHP
 
         } else if ($value === '') {
-            return ' '; // Transform '' to ' ' that DONT'T EVALUATE THE SAME
+            return ' '; // Transform '' to ' ' that DON'T EVALUATE THE SAME
                         // (we'll transform back again on get_records_XXX functions and others)!!
         }
 
@@ -870,7 +894,7 @@ class oci_native_moodle_database extends moodle_database {
      * Do NOT use in code, to be used by database_manager only!
      * @param string $sql query
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function change_database_structure($sql) {
         $this->reset_caches();
@@ -982,7 +1006,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param string $sql query
      * @param array $params query parameters
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function execute($sql, array $params=null) {
         list($sql, $params, $type) = $this->fix_sql_params($sql, $params);
@@ -1014,7 +1038,7 @@ class oci_native_moodle_database extends moodle_database {
      *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
      *                        MUST_EXIST means throw exception if no record or multiple records found
      * @return mixed a fieldset object containing the first matching record, false or exception if error not found depending on mode
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function get_record_sql($sql, array $params=null, $strictness=IGNORE_MISSING) {
         $strictness = (int)$strictness;
@@ -1039,14 +1063,15 @@ class oci_native_moodle_database extends moodle_database {
      * code where it's possible there might be large datasets being returned.  For known
      * small datasets use get_records_sql - it leads to simpler code.
      *
-     * The return type is as for @see function get_recordset.
+     * The return type is like:
+     * @see function get_recordset.
      *
      * @param string $sql the SQL select query to execute.
      * @param array $params array of sql parameters
      * @param int $limitfrom return a subset of records, starting at this point (optional, required if $limitnum is set).
      * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
      * @return moodle_recordset instance
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function get_recordset_sql($sql, array $params=null, $limitfrom=0, $limitnum=0) {
 
@@ -1071,7 +1096,8 @@ class oci_native_moodle_database extends moodle_database {
     /**
      * Get a number of records as an array of objects using a SQL statement.
      *
-     * Return value as for @see function get_records.
+     * Return value is like:
+     * @see function get_records.
      *
      * @param string $sql the SQL select query to execute. The first column of this SELECT statement
      *   must be a unique value (usually the 'id' field), as it will be used as the key of the
@@ -1080,7 +1106,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param int $limitfrom return a subset of records, starting at this point (optional, required if $limitnum is set).
      * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
      * @return array of objects, or empty array if no records were found
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function get_records_sql($sql, array $params=null, $limitfrom=0, $limitnum=0) {
 
@@ -1122,7 +1148,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param string $sql The SQL query
      * @param array $params array of sql parameters
      * @return array of values
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function get_fieldset_sql($sql, array $params=null) {
         list($sql, $params, $type) = $this->fix_sql_params($sql, $params);
@@ -1152,7 +1178,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param bool $bulk true means repeated inserts expected
      * @param bool $customsequence true if 'id' included in $params, disables $returnid
      * @return bool|int true or new id
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function insert_record_raw($table, $params, $returnid=true, $bulk=false, $customsequence=false) {
         if (!is_array($params)) {
@@ -1224,7 +1250,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param object $data A data object with values for one or more fields in the record
      * @param bool $returnid Should the id of the newly created record entry be returned? If this option is not requested then true/false is returned.
      * @return bool|int true or new id
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function insert_record($table, $dataobject, $returnid=true, $bulk=false) {
         $dataobject = (array)$dataobject;
@@ -1253,7 +1279,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param string $table name of database table to be inserted into
      * @param object $dataobject A data object with values for one or more fields in the record
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function import_record($table, $dataobject) {
         $dataobject = (array)$dataobject;
@@ -1278,7 +1304,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param mixed $params data record as object or array
      * @param bool true means repeated updates expected
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function update_record_raw($table, $params, $bulk=false) {
         $params = (array)$params;
@@ -1327,7 +1353,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param object $dataobject An object with contents equal to fieldname=>fieldvalue. Must have an entry for 'id' to map to the table specified.
      * @param bool true means repeated updates expected
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function update_record($table, $dataobject, $bulk=false) {
         $dataobject = (array)$dataobject;
@@ -1357,7 +1383,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
      * @param array $params array of sql parameters
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function set_field_select($table, $newfield, $newvalue, $select, array $params=null) {
 
@@ -1413,7 +1439,7 @@ class oci_native_moodle_database extends moodle_database {
      * @param string $select A fragment of SQL to be used in a where clause in the SQL call (used to define the selection criteria).
      * @param array $params array of sql parameters
      * @return bool true
-     * @throws dml_exception if error
+     * @throws dml_exception A DML specific exception is thrown for any errors.
      */
     public function delete_records_select($table, $select, array $params=null) {
 
@@ -1440,27 +1466,6 @@ class oci_native_moodle_database extends moodle_database {
         return ' FROM dual';
     }
 
-// Bitwise operations
-   protected function bitwise_supported() {
-        if (isset($this->bitwise_supported)) { // Use cached value if available
-            return $this->bitwise_supported;
-        }
-        $sql = "SELECT 1
-                FROM user_objects
-                WHERE object_type = 'PACKAGE BODY'
-                  AND object_name = 'MOODLE_BITS'
-                  AND status = 'VALID'";
-        $this->query_start($sql, null, SQL_QUERY_AUX);
-        $stmt = $this->parse_query($sql);
-        $result = oci_execute($stmt, $this->commit_status);
-        $this->query_end($result, $stmt);
-        $records = null;
-        oci_fetch_all($stmt, $records, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
-        oci_free_statement($stmt);
-        $this->bitwise_supported = isset($records[0]) && reset($records[0]) ? true : false;
-        return $this->bitwise_supported;
-    }
-
     public function sql_bitand($int1, $int2) {
         return 'bitand((' . $int1 . '), (' . $int2 . '))';
     }
@@ -1470,21 +1475,11 @@ class oci_native_moodle_database extends moodle_database {
     }
 
     public function sql_bitor($int1, $int2) {
-        // Use the MOODLE_BITS package if available
-        if ($this->bitwise_supported()) {
-            return 'MOODLE_BITS.BITOR(' . $int1 . ', ' . $int2 . ')';
-        }
-        // fallback to PHP bool operations, can break if using placeholders
-        return '((' . $int1 . ') + (' . $int2 . ') - ' . $this->sql_bitand($int1, $int2) . ')';
+        return 'MOODLELIB.BITOR(' . $int1 . ', ' . $int2 . ')';
     }
 
     public function sql_bitxor($int1, $int2) {
-        // Use the MOODLE_BITS package if available
-        if ($this->bitwise_supported()) {
-            return 'MOODLE_BITS.BITXOR(' . $int1 . ', ' . $int2 . ')';
-        }
-        // fallback to PHP bool operations, can break if using placeholders
-        return '(' . $this->sql_bitor($int1, $int2) . ' - ' . $this->sql_bitand($int1, $int2) . ')';
+        return 'MOODLELIB.BITXOR(' . $int1 . ', ' . $int2 . ')';
     }
 
     /**
@@ -1528,7 +1523,7 @@ class oci_native_moodle_database extends moodle_database {
      */
     public function sql_like($fieldname, $param, $casesensitive = true, $accentsensitive = true, $notlike = false, $escapechar = '\\') {
         if (strpos($param, '%') !== false) {
-            debugging('Potential SQL injection detected, sql_ilike() expects bound parameters (? or :named)');
+            debugging('Potential SQL injection detected, sql_like() expects bound parameters (? or :named)');
         }
 
         $LIKE = $notlike ? 'NOT LIKE' : 'LIKE';
@@ -1542,28 +1537,124 @@ class oci_native_moodle_database extends moodle_database {
         }
     }
 
-    // NOTE: Oracle concat implementation isn't ANSI compliant when using NULLs (the result of
-    // any concatenation with NULL must return NULL) because of his inability to differentiate
-    // NULLs and empty strings. So this function will cause some tests to fail. Hopefully
-    // it's only a side case and it won't affect normal concatenation operations in Moodle.
     public function sql_concat() {
         $arr = func_get_args();
-        $s = implode(' || ', $arr);
-        if ($s === '') {
-            return " '' ";
+        if (empty($arr)) {
+            return " ' ' ";
         }
-        return " $s ";
+        foreach ($arr as $k => $v) {
+            if ($v === "' '") {
+                $arr[$k] = "'*OCISP*'"; // New mega hack.
+            }
+        }
+        $s = $this->recursive_concat($arr);
+        return " MOODLELIB.UNDO_MEGA_HACK($s) ";
     }
 
-    public function sql_concat_join($separator="' '", $elements=array()) {
-        for ($n=count($elements)-1; $n > 0 ; $n--) {
+    public function sql_concat_join($separator="' '", $elements = array()) {
+        if ($separator === "' '") {
+            $separator = "'*OCISP*'"; // New mega hack.
+        }
+        foreach ($elements as $k => $v) {
+            if ($v === "' '") {
+                $elements[$k] = "'*OCISP*'"; // New mega hack.
+            }
+        }
+        for ($n = count($elements)-1; $n > 0 ; $n--) {
             array_splice($elements, $n, 0, $separator);
         }
-        $s = implode(' || ', $elements);
-        if ($s === '') {
-            return " '' ";
+        if (empty($elements)) {
+            return " ' ' ";
         }
-        return " $s ";
+        $s = $this->recursive_concat($elements);
+        return " MOODLELIB.UNDO_MEGA_HACK($s) ";
+    }
+
+    /**
+     * Constructs 'IN()' or '=' sql fragment
+     *
+     * Method overriding {@link moodle_database::get_in_or_equal} to be able to get
+     * more than 1000 elements working, to avoid ORA-01795. We use a pivoting technique
+     * to be able to transform the params into virtual rows, so the original IN()
+     * expression gets transformed into a subquery. Once more, be noted that we shouldn't
+     * be using ever get_in_or_equal() with such number of parameters (proper subquery and/or
+     * chunking should be used instead).
+     *
+     * @param mixed $items A single value or array of values for the expression.
+     * @param int $type Parameter bounding type : SQL_PARAMS_QM or SQL_PARAMS_NAMED.
+     * @param string $prefix Named parameter placeholder prefix (a unique counter value is appended to each parameter name).
+     * @param bool $equal True means we want to equate to the constructed expression, false means we don't want to equate to it.
+     * @param mixed $onemptyitems This defines the behavior when the array of items provided is empty. Defaults to false,
+     *              meaning throw exceptions. Other values will become part of the returned SQL fragment.
+     * @throws coding_exception | dml_exception
+     * @return array A list containing the constructed sql fragment and an array of parameters.
+     */
+    public function get_in_or_equal($items, $type=SQL_PARAMS_QM, $prefix='param', $equal=true, $onemptyitems=false) {
+        list($sql, $params) = parent::get_in_or_equal($items, $type, $prefix,  $equal, $onemptyitems);
+
+        // Less than 1000 elements, nothing to do.
+        if (count($params) < 1000) {
+            return array($sql, $params); // Return unmodified.
+        }
+
+        // Extract the interesting parts of the sql to rewrite.
+        if (preg_match('!(^.*IN \()([^\)]*)(.*)$!', $sql, $matches) === false) {
+            return array($sql, $params); // Return unmodified.
+        }
+
+        $instart = $matches[1];
+        $insql = $matches[2];
+        $inend = $matches[3];
+        $newsql = '';
+
+        // Some basic verification about the matching going ok.
+        $insqlarr = explode(',', $insql);
+        if (count($insqlarr) !== count($params)) {
+            return array($sql, $params); // Return unmodified.
+        }
+
+        // Arrived here, we need to chunk and pivot the params, building a new sql (params remain the same).
+        $addunionclause = false;
+        while ($chunk = array_splice($insqlarr, 0, 125)) { // Each chunk will handle up to 125 (+125 +1) elements (DECODE max is 255).
+            $chunksize = count($chunk);
+            if ($addunionclause) {
+                $newsql .= "\n    UNION ALL";
+            }
+            $newsql .= "\n        SELECT DECODE(pivot";
+            $counter = 1;
+            foreach ($chunk as $element) {
+                $newsql .= ",\n            {$counter}, " . trim($element);
+                $counter++;
+            }
+            $newsql .= ")";
+            $newsql .= "\n        FROM dual";
+            $newsql .= "\n        CROSS JOIN (SELECT LEVEL AS pivot FROM dual CONNECT BY LEVEL <= {$chunksize})";
+            $addunionclause = true;
+        }
+
+        // Rebuild the complete IN() clause and return it.
+        return array($instart . $newsql . $inend, $params);
+    }
+
+    /**
+     * Mega hacky magic to work around crazy Oracle NULL concats.
+     * @param array $args
+     * @return string
+     */
+    protected function recursive_concat(array $args) {
+        $count = count($args);
+        if ($count == 1) {
+            $arg = reset($args);
+            return $arg;
+        }
+        if ($count == 2) {
+            $args[] = "' '";
+            // No return here intentionally.
+        }
+        $first = array_shift($args);
+        $second = array_shift($args);
+        $third = $this->recursive_concat($args);
+        return "MOODLELIB.TRICONCAT($first, $second, $third)";
     }
 
     /**
@@ -1573,31 +1664,38 @@ class oci_native_moodle_database extends moodle_database {
         return "INSTR(($haystack), ($needle))";
     }
 
+    /**
+     * Returns the SQL to know if one field is empty.
+     *
+     * @param string $tablename Name of the table (without prefix). Not used for now but can be
+     *                          necessary in the future if we want to use some introspection using
+     *                          meta information against the DB.
+     * @param string $fieldname Name of the field we are going to check
+     * @param bool $nullablefield For specifying if the field is nullable (true) or no (false) in the DB.
+     * @param bool $textfield For specifying if it is a text (also called clob) field (true) or a varchar one (false)
+     * @return string the sql code to be added to check for empty values
+     */
     public function sql_isempty($tablename, $fieldname, $nullablefield, $textfield) {
         if ($textfield) {
-            return " (".$this->sql_compare_text($fieldname)." = '".$this->sql_empty()."') ";
+            return " (".$this->sql_compare_text($fieldname)." = ' ') ";
         } else {
-            return " ($fieldname = '".$this->sql_empty()."') ";
+            return " ($fieldname = ' ') ";
         }
-    }
-
-    public function sql_empty() {
-        return ' ';
     }
 
     public function sql_order_by_text($fieldname, $numchars=32) {
         return 'dbms_lob.substr(' . $fieldname . ', ' . $numchars . ',1)';
     }
 
-/// session locking
-    public function session_lock_supported() {
-        if (isset($this->dblocks_supported)) { // Use cached value if available
-            return $this->dblocks_supported;
-        }
+    /**
+     * Is the required OCI server package installed?
+     * @return bool
+     */
+    protected function oci_package_installed() {
         $sql = "SELECT 1
                 FROM user_objects
                 WHERE object_type = 'PACKAGE BODY'
-                  AND object_name = 'MOODLE_LOCKS'
+                  AND object_name = 'MOODLELIB'
                   AND status = 'VALID'";
         $this->query_start($sql, null, SQL_QUERY_AUX);
         $stmt = $this->parse_query($sql);
@@ -1606,24 +1704,39 @@ class oci_native_moodle_database extends moodle_database {
         $records = null;
         oci_fetch_all($stmt, $records, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
         oci_free_statement($stmt);
-        $this->dblocks_supported = isset($records[0]) && reset($records[0]) ? true : false;
-        return $this->dblocks_supported;
+        return isset($records[0]) && reset($records[0]) ? true : false;
+    }
+
+    /**
+     * Try to add required moodle package into oracle server.
+     */
+    protected function attempt_oci_package_install() {
+        $sqls = file_get_contents(__DIR__.'/oci_native_moodle_package.sql');
+        $sqls = preg_split('/^\/$/sm', $sqls);
+        foreach ($sqls as $sql) {
+            $sql = trim($sql);
+            if ($sql === '' or $sql === 'SHOW ERRORS') {
+                continue;
+            }
+            $this->change_database_structure($sql);
+        }
+    }
+
+    public function session_lock_supported() {
+        return true;
     }
 
     /**
      * Obtain session lock
      * @param int $rowid id of the row with session record
      * @param int $timeout max allowed time to wait for the lock in seconds
-     * @return bool success
+     * @return void
      */
     public function get_session_lock($rowid, $timeout) {
-        if (!$this->session_lock_supported()) {
-            return;
-        }
         parent::get_session_lock($rowid, $timeout);
 
         $fullname = $this->dbname.'-'.$this->prefix.'-session-'.$rowid;
-        $sql = 'SELECT MOODLE_LOCKS.GET_LOCK(:lockname, :locktimeout) FROM DUAL';
+        $sql = 'SELECT MOODLELIB.GET_LOCK(:lockname, :locktimeout) FROM DUAL';
         $params = array('lockname' => $fullname , 'locktimeout' => $timeout);
         $this->query_start($sql, $params, SQL_QUERY_AUX);
         $stmt = $this->parse_query($sql);
@@ -1637,14 +1750,15 @@ class oci_native_moodle_database extends moodle_database {
     }
 
     public function release_session_lock($rowid) {
-        if (!$this->session_lock_supported()) {
+        if (!$this->used_for_db_sessions) {
             return;
         }
+
         parent::release_session_lock($rowid);
 
         $fullname = $this->dbname.'-'.$this->prefix.'-session-'.$rowid;
         $params = array('lockname' => $fullname);
-        $sql = 'SELECT MOODLE_LOCKS.RELEASE_LOCK(:lockname) FROM DUAL';
+        $sql = 'SELECT MOODLELIB.RELEASE_LOCK(:lockname) FROM DUAL';
         $this->query_start($sql, $params, SQL_QUERY_AUX);
         $stmt = $this->parse_query($sql);
         $this->bind_params($stmt, $params);
@@ -1653,7 +1767,6 @@ class oci_native_moodle_database extends moodle_database {
         oci_free_statement($stmt);
     }
 
-/// transactions
     /**
      * Driver specific start of real database transaction,
      * this can not be used directly in code.

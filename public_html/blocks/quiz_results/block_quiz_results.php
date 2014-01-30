@@ -65,7 +65,7 @@ class block_quiz_results extends block_base {
         if (empty($this->instance->parentcontextid)) {
             return 0;
         }
-        $parentcontext = get_context_instance_by_id($this->instance->parentcontextid);
+        $parentcontext = context::instance_by_id($this->instance->parentcontextid);
         if ($parentcontext->contextlevel != CONTEXT_MODULE) {
             return 0;
         }
@@ -76,7 +76,7 @@ class block_quiz_results extends block_base {
         return $cm->instance;
     }
 
-    function instance_config_save($data) {
+    function instance_config_save($data, $nolongerused = false) {
         if (empty($data->quizid)) {
             $data->quizid = $this->get_owning_quiz();
         }
@@ -151,7 +151,7 @@ class block_quiz_results extends block_base {
                 $context = $this->page->context;
             } else {
                 $cm = get_coursemodule_from_instance('quiz', $quizid, $courseid);
-                $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+                $context = context_module::instance($cm->id);
             }
             $groupmode = groups_get_activity_groupmode($cm);
 
@@ -378,7 +378,9 @@ class block_quiz_results extends block_base {
 
             // Now grab all the users from the database
             $userids = array_merge(array_keys($best), array_keys($worst));
-            $users = $DB->get_records_list('user', 'id', $userids, '', 'id, firstname, lastname, idnumber');
+            $fields = array_merge(array('id', 'idnumber'), get_all_user_name_fields());
+            $fields = implode(',', $fields);
+            $users = $DB->get_records_list('user', 'id', $userids, '', $fields);
 
             // Ready for output!
 

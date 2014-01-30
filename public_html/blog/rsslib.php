@@ -1,8 +1,41 @@
 <?php
 
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Blog RSS Management
+ *
+ * @package    core_blog
+ * @category   rss
+ * @copyright  2010 Andrew Davis
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 require_once($CFG->dirroot.'/lib/rsslib.php');
 require_once($CFG->dirroot .'/blog/lib.php');
 
+/**
+ * Build the URL for the RSS feed
+ *
+ * @param int    $contextid    The context under which the URL should be created
+ * @param int    $userid       The id of the user requesting the RSS Feed
+ * @param string $filtertype   The source of the RSS feed (site/course/group/user)
+ * @param int    $filterselect The id of the item defined by $filtertype
+ * @param int    $tagid        The id of the row in the tag table that identifies the RSS Feed
+ * @return string
+ */
 function blog_rss_get_url($contextid, $userid, $filtertype, $filterselect=0, $tagid=0) {
     $componentname = 'blog';
 
@@ -29,8 +62,15 @@ function blog_rss_get_url($contextid, $userid, $filtertype, $filterselect=0, $ta
     return rss_get_url($contextid, $userid, $componentname, $additionalargs);
 }
 
-// This function returns the icon (from theme) with the link to rss/file.php
-// needs some hacking to rss/file.php
+/**
+ * Print the link for the RSS feed with the correct RSS icon (Theme based)
+ *
+ * @param stdClass    $context      The context under which the URL should be created
+ * @param string      $filtertype   The source of the RSS feed (site/course/group/user)
+ * @param int         $filterselect The id of the item defined by $filtertype
+ * @param int         $tagid        The id of the row in the tag table that identifies the RSS Feed
+ * @param string      $tooltiptext  The tooltip to be displayed with the link
+ */
 function blog_rss_print_link($context, $filtertype, $filterselect=0, $tagid=0, $tooltiptext='') {
     global $CFG, $USER, $OUTPUT;
 
@@ -45,6 +85,15 @@ function blog_rss_print_link($context, $filtertype, $filterselect=0, $tagid=0, $
     print '<div class="mdl-right"><a href="'. $url .'"><img src="'. $rsspix .'" title="'. strip_tags($tooltiptext) .'" alt="'.get_string('rss').'" /></a></div>';
 }
 
+/**
+ * Build the URL for the RSS feed amd add it as a header
+ *
+ * @param stdClass    $context      The context under which the URL should be created
+ * @param string      $title        Name for the link to be added to the page header
+ * @param string      $filtertype   The source of the RSS feed (site/course/group/user)
+ * @param int         $filterselect The id of the item defined by $filtertype
+ * @param int         $tagid        The id of the row in the tag table that identifies the RSS Feed
+ */
 function blog_rss_add_http_header($context, $title, $filtertype, $filterselect=0, $tagid=0) {
     global $PAGE, $USER, $CFG;
 
@@ -63,53 +112,59 @@ function blog_rss_add_http_header($context, $title, $filtertype, $filterselect=0
 
 /**
  * Utility function to extract parameters needed to generate RSS URLs from the blog filters
- * @param <type> $filters
- * @return array array containing the id of the user/course/group, the relevant context and the filter type (site/user/course/group)
+ *
+ * @param  array $filters filters for the blog
+ * @return array array containing the id of the user/course/group, the relevant context and the filter type: site/user/course/group
  */
 function blog_rss_get_params($filters) {
     $thingid = $rsscontext = $filtertype = null;
 
-    $sitecontext = get_context_instance(CONTEXT_SYSTEM);
+    $sitecontext = context_system::instance();
 
     if (!$filters) {
         $thingid = SITEID;
-        $rsscontext = $sitecontext;
         $filtertype = 'site';
     } else if (array_key_exists('course', $filters)) {
         $thingid = $filters['course'];
-
-        $coursecontext = get_context_instance(CONTEXT_COURSE, $thingid);
-        $rsscontext = $coursecontext;
-
         $filtertype = 'course';
     } else if (array_key_exists('user', $filters)) {
         $thingid = $filters['user'];
-
-        $usercontext = get_context_instance(CONTEXT_USER, $thingid);
-        $rsscontext = $usercontext;
-
         $filtertype = 'user';
     } else if (array_key_exists('group', $filters)) {
         $thingid = $filters['group'];
-
-        $rsscontext = $sitecontext; //is this the context we should be using for group blogs?
         $filtertype = 'group';
     }
 
     return array($thingid, $rsscontext, $filtertype);
 }
 
-
-// Generate any blog RSS feed via one function (called by ../rss/file.php)
+/**
+ * Generate any blog RSS feed via one function
+ *
+ * @param stdClass $context The context of the blog for which the feed it being generated
+ * @param array    $args    An array of arguements needed to build the feed (contextid, token, componentname, type, id, tagid)
+ */
 function blog_rss_get_feed($context, $args) {
     global $CFG, $SITE, $DB;
+
+    if (empty($CFG->enableblogs)) {
+        debugging('Blogging disabled on this site, RSS feeds are not available');
+        return null;
+    }
 
     if (empty($CFG->enablerssfeeds)) {
         debugging('Sorry, RSS feeds are disabled on this site');
         return '';
     }
 
-    $sitecontext = get_context_instance(CONTEXT_SYSTEM);
+    if ($CFG->bloglevel == BLOG_SITE_LEVEL) {
+        if (isguestuser()) {
+            debugging(get_string('nopermissiontoshow','error'));
+            return '';
+        }
+    }
+
+    $sitecontext = context_system::instance();
     if (!has_capability('moodle/blog:view', $sitecontext)) {
         return null;
     }
@@ -188,10 +243,10 @@ function blog_rss_get_feed($context, $args) {
             break;
         case 'course':
             $info = $DB->get_field('course', 'fullname', array('id'=>$id));
-            $info = format_string($info, true, array('context' => get_context_instance(CONTEXT_COURSE, $id)));
+            $info = format_string($info, true, array('context' => context_course::instance($id)));
             break;
         case 'site':
-            $info = format_string($SITE->fullname, true, array('context' => get_context_instance(CONTEXT_COURSE, SITEID)));
+            $info = format_string($SITE->fullname, true, array('context' => context_course::instance(SITEID)));
             break;
         case 'group':
             $group = groups_get_group($id);
@@ -221,7 +276,14 @@ function blog_rss_get_feed($context, $args) {
     }
 }
 
-
+/**
+ * Retrieve the location and file name of a cached RSS feed
+ *
+ * @param string $type  The source of the RSS feed (site/course/group/user)
+ * @param int    $id    The id of the item defined by $type
+ * @param int    $tagid The id of the row in the tag table that identifies the RSS Feed
+ * @return string
+ */
 function blog_rss_file_name($type, $id, $tagid=0) {
     global $CFG;
 
@@ -232,7 +294,15 @@ function blog_rss_file_name($type, $id, $tagid=0) {
     }
 }
 
-//This function saves to file the rss feed specified in the parameters
+/**
+ * This function saves to file the rss feed specified in the parameters
+ *
+ * @param string $type     The source of the RSS feed (site/course/group/user)
+ * @param int    $id       The id of the item defined by $type
+ * @param int    $tagid    The id of the row in the tag table that identifies the RSS Feed
+ * @param string $contents The contents of the RSS Feed file
+ * @return bool whether the save was successful or not
+ */
 function blog_rss_save_file($type, $id, $tagid=0, $contents='') {
     global $CFG;
 
@@ -247,5 +317,19 @@ function blog_rss_save_file($type, $id, $tagid=0, $contents='') {
     $status = rss_save_file('blog', $filename, $contents, $expandfilename);
 
     return $status;
+}
+
+/**
+ * Delete the supplied user's cached blog post RSS feed.
+ * Only user blogs are available by RSS.
+ * This doesn't call rss_delete_file() as blog RSS caching uses it's own file structure.
+ *
+ * @param int $userid
+ */
+function blog_rss_delete_file($userid) {
+    $filename = blog_rss_file_name('user', $userid);
+    if (file_exists($filename)) {
+        unlink($filename);
+    }
 }
 

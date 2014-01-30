@@ -35,19 +35,34 @@ defined('MOODLE_INTERNAL') || die();
  */
 class filter_glossary extends moodle_text_filter {
 
+    public function setup($page, $context) {
+        // This only requires execution once per request.
+        static $jsinitialised = false;
+        if (empty($jsinitialised)) {
+            $page->requires->yui_module(
+                    'moodle-filter_glossary-autolinker',
+                    'M.filter_glossary.init_filter_autolinking',
+                    array(array('courseid' => 0)));
+            $page->requires->strings_for_js(array('ok'), 'moodle');
+            $jsinitialised = true;
+        }
+    }
+
     public function filter($text, array $options = array()) {
-        global $CFG, $DB, $GLOSSARY_EXCLUDECONCEPTS, $PAGE;
+        global $CFG, $DB, $GLOSSARY_EXCLUDECONCEPTS;
 
         // Trivial-cache - keyed on $cachedcontextid
         static $cachedcontextid;
         static $conceptlist;
 
-        static $jsinitialised;       // To control unique js init
         static $nothingtodo;         // To avoid processing if no glossaries / concepts are found
 
-        // Try to get current course
-        if (!$courseid = get_courseid_from_context($this->context)) {
+        // Try to get current course.
+        $coursectx = $this->context->get_course_context(false);
+        if (!$coursectx) {
             $courseid = 0;
+        } else {
+            $courseid = $coursectx->instanceid;
         }
 
         // Initialise/invalidate our trivial cache if dealing with a different context
@@ -57,7 +72,7 @@ class filter_glossary extends moodle_text_filter {
             $nothingtodo = false;
         }
 
-        if ($nothingtodo === true) {
+        if (($nothingtodo === true) || (!has_capability('mod/glossary:view', $this->context))) {
             return $text;
         }
 
@@ -120,6 +135,11 @@ class filter_glossary extends moodle_text_filter {
                 foreach ($concepts as $key => $concept) {
                     // Trim empty or unlinkable concepts
                     $currentconcept = trim(strip_tags($concept->concept));
+
+                    // Concept must be HTML-escaped, so do the same as format_string
+                    // to turn ampersands into &amp;.
+                    $currentconcept = replace_ampersands_not_followed_by_entity($currentconcept);
+
                     if (empty($currentconcept)) {
                         unset($concepts[$key]);
                         continue;
@@ -157,10 +177,14 @@ class filter_glossary extends moodle_text_filter {
                                       '&amp;mode=cat&amp;hook='.$concept->id.'">';
                 } else { // Link to entry or alias
                     if (!empty($concept->originalconcept)) {  // We are dealing with an alias (so show and point to original)
-                        $title = str_replace('"', "'", strip_tags($glossaryname.': '.$concept->originalconcept));
+                        $title = str_replace('"', "'", html_entity_decode(
+                                strip_tags($glossaryname.': '.$concept->originalconcept)));
                         $concept->id = $concept->entryid;
                     } else { // This is an entry
-                        $title = str_replace('"', "'", strip_tags($glossaryname.': '.$concept->concept));
+                        // We need to remove entities from the content here because it
+                        // will be escaped by html_writer below.
+                        $title = str_replace('"', "'", html_entity_decode(
+                                strip_tags($glossaryname.': '.$concept->concept)));
                     }
                     // hardcoding dictionary format in the URL rather than defaulting
                     // to the current glossary format which may not work in a popup.
@@ -185,16 +209,6 @@ class filter_glossary extends moodle_text_filter {
             }
 
             $conceptlist = filter_remove_duplicates($conceptlist);
-
-            if (empty($jsinitialised)) {
-                // Add a JavaScript event to open popup's here. This only ever need to be
-                // added once!
-                $PAGE->requires->yui_module(
-                        'moodle-filter_glossary-autolinker',
-                        'M.filter_glossary.init_filter_autolinking',
-                        array(array('courseid' => $courseid)));
-                $jsinitialised = true;
-            }
         }
 
         if (!empty($GLOSSARY_EXCLUDECONCEPTS)) {

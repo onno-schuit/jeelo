@@ -44,7 +44,7 @@ if ($u) {  // Two ways to specify the module
 $course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
 
 require_course_login($course, true, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 require_capability('mod/url:view', $context);
 
 add_to_log($course->id, 'url', 'view', 'view.php?id='.$cm->id, $url->id, $cm->id);
@@ -79,8 +79,25 @@ if ($displaytype == RESOURCELIB_DISPLAY_OPEN) {
 if ($redirect) {
     // coming from course page or url index page,
     // the redirection is needed for completion tracking and logging
-    $fullurl = url_get_full_url($url, $cm, $course);
-    redirect(str_replace('&amp;', '&', $fullurl));
+    $fullurl = str_replace('&amp;', '&', url_get_full_url($url, $cm, $course));
+
+    if (!course_get_format($course)->has_view_page()) {
+        // If course format does not have a view page, add redirection delay with a link to the edit page.
+        // Otherwise teacher is redirected to the external URL without any possibility to edit activity or course settings.
+        $editurl = null;
+        if (has_capability('moodle/course:manageactivities', $context)) {
+            $editurl = new moodle_url('/course/modedit.php', array('update' => $cm->id));
+            $edittext = get_string('editthisactivity');
+        } else if (has_capability('moodle/course:update', $context->get_course_context())) {
+            $editurl = new moodle_url('/course/edit.php', array('id' => $course->id));
+            $edittext = get_string('editcoursesettings');
+        }
+        if ($editurl) {
+            redirect($fullurl, html_writer::link($editurl, $edittext)."<br/>".
+                    get_string('pageshouldredirect'), 10);
+        }
+    }
+    redirect($fullurl);
 }
 
 switch ($displaytype) {

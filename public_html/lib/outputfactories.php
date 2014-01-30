@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,22 +15,24 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Interface and classes for creating appropriate renderers for various
- * parts of Moodle.
+ * Interface and classes for creating appropriate renderers for various parts of Moodle.
  *
  * Please see http://docs.moodle.org/en/Developement:How_Moodle_outputs_HTML
  * for an overview.
  *
- * @package    core
- * @subpackage lib
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright 2009 Tim Hunt
+ * @license  http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ * @category output
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 /** General rendering target, usually normal browser page */
 define('RENDERER_TARGET_GENERAL', 'general');
+
+/** General rendering target, usually normal browser page, but with limited capacity to avoid API use */
+define('RENDERER_TARGET_MAINTENANCE', 'maintenance');
 
 /** Plain text rendering for CLI scripts and cron */
 define('RENDERER_TARGET_CLI', 'cli');
@@ -45,7 +46,7 @@ define('RENDERER_TARGET_TEXTEMAIL', 'textemail');
 /** Rich text html rendering intended for sending via email */
 define('RENDERER_TARGET_HTMLEMAIL', 'htmlemail');
 
-/* note: maybe we could define portfolio export target too */
+// note: maybe we could define portfolio export target too
 
 
 /**
@@ -59,10 +60,13 @@ define('RENDERER_TARGET_HTMLEMAIL', 'htmlemail');
  * (See {@link renderer_factory_base::__construct} for an example.)
  *
  * @copyright 2009 Tim Hunt
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since     Moodle 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.0
+ * @package core
+ * @category output
  */
 interface renderer_factory {
+
     /**
      * Return the renderer for a particular part of Moodle.
      *
@@ -86,7 +90,7 @@ interface renderer_factory {
      * @param string $component name such as 'core', 'mod_forum' or 'qtype_multichoice'.
      * @param string $subtype optional subtype such as 'news' resulting to 'mod_forum_news'
      * @param string $target one of rendering target constants
-     * @return object an object implementing the requested renderer interface.
+     * @return renderer_base an object implementing the requested renderer interface.
      */
     public function get_renderer(moodle_page $page, $component, $subtype=null, $target=null);
 }
@@ -102,15 +106,20 @@ interface renderer_factory {
  * the definition of, the standard renderer class for a given module.
  *
  * @copyright 2009 Tim Hunt
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since     Moodle 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.0
+ * @package core
+ * @category output
  */
 abstract class renderer_factory_base implements renderer_factory {
-    /** @var theme_config the theme we belong to. */
+    /**
+     * @var theme_config The theme we belong to.
+     */
     protected $theme;
 
     /**
      * Constructor.
+     *
      * @param theme_config $theme the theme we belong to.
      */
     public function __construct(theme_config $theme) {
@@ -119,12 +128,15 @@ abstract class renderer_factory_base implements renderer_factory {
 
     /**
      * Returns suffix of renderer class expected for given target.
+     *
      * @param string $target one of the renderer target constants, target is guessed if null used
      * @return array two element array, first element is target, second the target suffix string
      */
     protected function get_target_suffix($target) {
-        if (empty($target)) {
-            // automatically guessed defaults
+        if (empty($target) || $target === RENDERER_TARGET_MAINTENANCE) {
+            // If the target hasn't been specified we need to guess the defaults.
+            // We also override the target with the default if the maintenance target has been provided.
+            // This ensures we don't use the maintenance renderer if we are processing a special target.
             if (CLI_SCRIPT) {
                 $target = RENDERER_TARGET_CLI;
             } else if (AJAX_SCRIPT) {
@@ -137,6 +149,7 @@ abstract class renderer_factory_base implements renderer_factory {
             case RENDERER_TARGET_AJAX: $suffix = '_ajax'; break;
             case RENDERER_TARGET_TEXTEMAIL: $suffix = '_textemail'; break;
             case RENDERER_TARGET_HTMLEMAIL: $suffix = '_htmlemail'; break;
+            case RENDERER_TARGET_MAINTENANCE: $suffix = '_maintenance'; break;
             default: $target = RENDERER_TARGET_GENERAL; $suffix = '';
         }
 
@@ -153,12 +166,13 @@ abstract class renderer_factory_base implements renderer_factory {
      * @param string $component name such as 'core', 'mod_forum' or 'qtype_multichoice'.
      * @param string $subtype optional subtype such as 'news' resulting to 'mod_forum_news'
      * @return string the name of the standard renderer class for that module.
+     * @throws coding_exception
      */
     protected function standard_renderer_classname($component, $subtype = null) {
-        global $CFG; // needed in included files
+        global $CFG; // Needed in included files.
 
-        // standardize component name ala frankenstyle
-        list($plugin, $type) = normalize_component($component);
+        // Standardize component name ala frankenstyle.
+        list($plugin, $type) = core_component::normalize_component($component);
         if ($type === null) {
             $component = $plugin;
         } else {
@@ -166,9 +180,9 @@ abstract class renderer_factory_base implements renderer_factory {
         }
 
         if ($component !== 'core') {
-            // renderers are stored in renderer.php files
-            if (!$compdirectory = get_component_directory($component)) {
-                throw new coding_exception('Invalid component specified in renderer request');
+            // Renderers are stored in renderer.php files.
+            if (!$compdirectory = core_component::get_component_directory($component)) {
+                throw new coding_exception('Invalid component specified in renderer request', $component);
             }
             $rendererfile = $compdirectory . '/renderer.php';
             if (file_exists($rendererfile)) {
@@ -176,13 +190,15 @@ abstract class renderer_factory_base implements renderer_factory {
             }
 
         } else if (!empty($subtype)) {
-            $coresubsystems = get_core_subsystems();
-            if (!isset($coresubsystems[$subtype])) {
-                throw new coding_exception('Invalid core subtype "' . $subtype . '" in renderer request');
+            $coresubsystems = core_component::get_core_subsystems();
+            if (!array_key_exists($subtype, $coresubsystems)) { // There may be nulls.
+                throw new coding_exception('Invalid core subtype "' . $subtype . '" in renderer request', $subtype);
             }
-            $rendererfile = $CFG->dirroot . '/' . $coresubsystems[$subtype] . '/renderer.php';
-            if (file_exists($rendererfile)) {
-                include_once($rendererfile);
+            if ($coresubsystems[$subtype]) {
+                $rendererfile = $coresubsystems[$subtype] . '/renderer.php';
+                if (file_exists($rendererfile)) {
+                    include_once($rendererfile);
+                }
             }
         }
 
@@ -195,23 +211,27 @@ abstract class renderer_factory_base implements renderer_factory {
     }
 }
 
-
 /**
- * This is the default renderer factory for Moodle. It simply returns an instance
- * of the appropriate standard renderer class.
+ * This is the default renderer factory for Moodle.
+ *
+ * It simply returns an instance of the appropriate standard renderer class.
  *
  * @copyright 2009 Tim Hunt
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since     Moodle 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.0
+ * @package core
+ * @category output
  */
 class standard_renderer_factory extends renderer_factory_base {
+
     /**
      * Implement the subclass method
+     *
      * @param moodle_page $page the page the renderer is outputting content for.
      * @param string $component name such as 'core', 'mod_forum' or 'qtype_multichoice'.
      * @param string $subtype optional subtype such as 'news' resulting to 'mod_forum_news'
      * @param string $target one of rendering target constants
-     * @return object an object implementing the requested renderer interface.
+     * @return renderer_base an object implementing the requested renderer interface.
      */
     public function get_renderer(moodle_page $page, $component, $subtype = null, $target = null) {
         $classname = $this->standard_renderer_classname($component, $subtype);
@@ -232,8 +252,7 @@ class standard_renderer_factory extends renderer_factory_base {
 
 
 /**
- * This is renderer factory allows themes to override the standard renderers using
- * php code.
+ * This is renderer factory allows themes to override the standard renderers using php code.
  *
  * It will load any code from theme/mytheme/renderers.php and
  * theme/parenttheme/renderers.php, if then exist. Then whenever you ask for
@@ -242,16 +261,21 @@ class standard_renderer_factory extends renderer_factory_base {
  * if either of those classes exist.
  *
  * @copyright 2009 Tim Hunt
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since     Moodle 2.0
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @since Moodle 2.0
+ * @package core
+ * @category output
  */
 class theme_overridden_renderer_factory extends renderer_factory_base {
 
+    /**
+     * @var array An array of renderer prefixes
+     */
     protected $prefixes = array();
 
     /**
      * Constructor.
-     * @param object $theme the theme we are rendering for.
+     * @param theme_config $theme the theme we are rendering for.
      */
     public function __construct(theme_config $theme) {
         parent::__construct($theme);
@@ -261,11 +285,12 @@ class theme_overridden_renderer_factory extends renderer_factory_base {
 
     /**
      * Implement the subclass method
+     *
      * @param moodle_page $page the page the renderer is outputting content for.
      * @param string $component name such as 'core', 'mod_forum' or 'qtype_multichoice'.
      * @param string $subtype optional subtype such as 'news' resulting to 'mod_forum_news'
      * @param string $target one of rendering target constants
-     * @return object an object implementing the requested renderer interface.
+     * @return renderer_base an object implementing the requested renderer interface.
      */
     public function get_renderer(moodle_page $page, $component, $subtype = null, $target = null) {
         $classname = $this->standard_renderer_classname($component, $subtype);

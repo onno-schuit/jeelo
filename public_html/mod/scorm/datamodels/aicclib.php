@@ -117,11 +117,11 @@ function scorm_parse_aicc($scorm) {
         $cm = get_coursemodule_from_instance('scorm', $scorm->id);
         $scorm->cmid = $cm->id;
     }
-    $context = get_context_instance(CONTEXT_MODULE, $scorm->cmid);
+    $context = context_module::instance($scorm->cmid);
 
     $fs = get_file_storage();
 
-    $files = $fs->get_area_files($context->id, 'mod_scorm', 'content', 0, '', false);
+    $files = $fs->get_area_files($context->id, 'mod_scorm', 'content', 0, 'sortorder, itemid, filepath, filename', false);
 
     $version = 'AICC';
     $ids = array();
@@ -134,11 +134,17 @@ function scorm_parse_aicc($scorm) {
         $extension = strtolower(substr($ext, 1));
         if (in_array($extension, $extaiccfiles)) {
             $id = strtolower(basename($filename, $ext));
+            if (!isset($ids[$id])) {
+                $ids[$id] = new stdClass();
+            }
             $ids[$id]->$extension = $file;
         }
     }
 
     foreach ($ids as $courseid => $id) {
+        if (!isset($courses[$courseid])) {
+            $courses[$courseid] = new stdClass();
+        }
         if (isset($id->crs)) {
             $contents = $id->crs->get_content();
             $rows = explode("\r\n", $contents);
@@ -169,6 +175,9 @@ function scorm_parse_aicc($scorm) {
                 if (preg_match($regexp, $rows[$i], $matches)) {
                     for ($j=0; $j<count($columns->columns); $j++) {
                         $column = $columns->columns[$j];
+                        if (!isset($courses[$courseid]->elements[substr(trim($matches[$columns->mastercol+1]), 1 , -1)])) {
+                            $courses[$courseid]->elements[substr(trim($matches[$columns->mastercol+1]), 1 , -1)] = new stdClass();
+                        }
                         $courses[$courseid]->elements[substr(trim($matches[$columns->mastercol+1]), 1 , -1)]->$column = substr(trim($matches[$j+1]), 1, -1);
                     }
                 }
@@ -197,7 +206,10 @@ function scorm_parse_aicc($scorm) {
                 if (preg_match($regexp, $rows[$i], $matches)) {
                     for ($j=0; $j<count($columns->columns); $j++) {
                         if ($j != $columns->mastercol) {
-                            $courses[$courseid]->elements[substr(trim($matches[$j+1]), 1 , -1)]->parent = substr(trim($matches[$columns->mastercol+1]), 1, -1);
+                            $element = substr(trim($matches[$j+1]), 1 , -1);
+                            if (!empty($element)) {
+                                $courses[$courseid]->elements[$element]->parent = substr(trim($matches[$columns->mastercol+1]), 1, -1);
+                            }
                         }
                     }
                 }
@@ -236,10 +248,11 @@ function scorm_parse_aicc($scorm) {
     }
 
     $oldscoes = $DB->get_records('scorm_scoes', array('scorm'=>$scorm->id));
-
+    $sortorder = 0;
     $launch = 0;
     if (isset($courses)) {
         foreach ($courses as $course) {
+            $sortorder++;
             $sco = new stdClass();
             $sco->identifier = $course->id;
             $sco->scorm = $scorm->id;
@@ -248,12 +261,13 @@ function scorm_parse_aicc($scorm) {
             $sco->parent = '/';
             $sco->launch = '';
             $sco->scormtype = '';
+            $sco->sortorder = $sortorder;
 
             if ($ss = $DB->get_record('scorm_scoes', array('scorm'=>$scorm->id,
                                                            'identifier'=>$sco->identifier))) {
                 $id = $ss->id;
                 $sco->id = $id;
-                $DB->update_record('scorm_scoes',$sco);
+                $DB->update_record('scorm_scoes', $sco);
                 unset($oldscoes[$id]);
             } else {
                 $id = $DB->insert_record('scorm_scoes', $sco);
@@ -265,68 +279,74 @@ function scorm_parse_aicc($scorm) {
             if (isset($course->elements)) {
                 foreach ($course->elements as $element) {
                     unset($sco);
+                    $sco = new stdClass();
                     $sco->identifier = $element->system_id;
                     $sco->scorm = $scorm->id;
                     $sco->organization = $course->id;
                     $sco->title = $element->title;
 
-                    if (!isset($element->parent) || strtolower($element->parent) == 'root') {
+                    if (!isset($element->parent)) {
                         $sco->parent = '/';
+                    } else if (strtolower($element->parent) == 'root') {
+                        $sco->parent = $course->id;
                     } else {
                         $sco->parent = $element->parent;
                     }
+                    $sco->launch = '';
+                    $sco->scormtype = '';
+                    $sco->previous = 0;
+                    $sco->next = 0;
+                    $id = null;
+                    // Is it an Assignable Unit (AU)?
                     if (isset($element->file_name)) {
                         $sco->launch = $element->file_name;
                         $sco->scormtype = 'sco';
-                        $sco->previous = 0;
-                        $sco->next = 0;
-                        $id = null;
-                        if ($oldscoid = scorm_array_search('identifier', $sco->identifier, $oldscoes)) {
-                            $sco->id = $oldscoid;
-                            $DB->update_record('scorm_scoes', $sco);
-                            $id = $oldscoid;
-                            $DB->delete_records('scorm_scoes_data', array('scoid'=>$oldscoid));
-                            unset($oldscoes[$oldscoid]);
-                        } else {
-                            $id = $DB->insert_record('scorm_scoes', $sco);
+                    }
+                    if ($oldscoid = scorm_array_search('identifier', $sco->identifier, $oldscoes)) {
+                        $sco->id = $oldscoid;
+                        $DB->update_record('scorm_scoes', $sco);
+                        $id = $oldscoid;
+                        $DB->delete_records('scorm_scoes_data', array('scoid'=>$oldscoid));
+                        unset($oldscoes[$oldscoid]);
+                    } else {
+                        $id = $DB->insert_record('scorm_scoes', $sco);
+                    }
+                    if (!empty($id)) {
+                        $scodata = new stdClass();
+                        $scodata->scoid = $id;
+                        if (isset($element->web_launch)) {
+                            $scodata->name = 'parameters';
+                            $scodata->value = $element->web_launch;
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
                         }
-                        if (!empty($id)) {
-                            $scodata = new stdClass();
-                            $scodata->scoid = $id;
-                            if (isset($element->web_launch)) {
-                                $scodata->name = 'parameters';
-                                $scodata->value = $element->web_launch;
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
-                            if (isset($element->prerequisites)) {
-                                $scodata->name = 'prerequisites';
-                                $scodata->value = $element->prerequisites;
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
-                            if (isset($element->max_time_allowed)) {
-                                $scodata->name = 'max_time_allowed';
-                                $scodata->value = $element->max_time_allowed;
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
-                            if (isset($element->time_limit_action)) {
-                                $scodata->name = 'time_limit_action';
-                                $scodata->value = $element->time_limit_action;
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
-                            if (isset($element->mastery_score)) {
-                                $scodata->name = 'mastery_score';
-                                $scodata->value = $element->mastery_score;
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
-                            if (isset($element->core_vendor)) {
-                                $scodata->name = 'datafromlms';
-                                $scodata->value = preg_replace('/<cr>/i', "\r\n", $element->core_vendor);
-                                $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
-                            }
+                        if (isset($element->prerequisites)) {
+                            $scodata->name = 'prerequisites';
+                            $scodata->value = $element->prerequisites;
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
                         }
-                        if ($launch==0) {
-                            $launch = $id;
+                        if (isset($element->max_time_allowed)) {
+                            $scodata->name = 'max_time_allowed';
+                            $scodata->value = $element->max_time_allowed;
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
                         }
+                        if (isset($element->time_limit_action)) {
+                            $scodata->name = 'time_limit_action';
+                            $scodata->value = $element->time_limit_action;
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
+                        }
+                        if (isset($element->mastery_score)) {
+                            $scodata->name = 'mastery_score';
+                            $scodata->value = $element->mastery_score;
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
+                        }
+                        if (isset($element->core_vendor)) {
+                            $scodata->name = 'datafromlms';
+                            $scodata->value = preg_replace('/<cr>/i', "\r\n", $element->core_vendor);
+                            $dataid = $DB->insert_record('scorm_scoes_data', $scodata);
+                        }
+                    }
+                    if ($launch==0) {
+                        $launch = $id;
                     }
                 }
             }
@@ -403,17 +423,17 @@ function scorm_aicc_confirm_hacp_session($hacpsession) {
  */
 function scorm_aicc_generate_simple_sco($scorm) {
     global $DB;
-    // find the old one
-    $scos = $DB->get_records('scorm_scoes', array('scorm'=>$scorm->id));
+    // Find the oldest one.
+    $scos = $DB->get_records('scorm_scoes', array('scorm' => $scorm->id), 'id');
     if (!empty($scos)) {
         $sco = array_shift($scos);
     } else {
-        $sco = new object();
+        $sco = new stdClass();
     }
-    // get rid of old ones
-    foreach($scos as $oldsco) {
-        $DB->delete_records('scorm_scoes', array('id'=>$oldsco->id));
-        $DB->delete_records('scorm_scoes_track', array('scoid'=>$oldsco->id));
+    // Get rid of old ones.
+    foreach ($scos as $oldsco) {
+        $DB->delete_records('scorm_scoes', array('id' => $oldsco->id));
+        $DB->delete_records('scorm_scoes_track', array('scoid' => $oldsco->id));
     }
 
     $sco->identifier = 'A1';
@@ -421,11 +441,10 @@ function scorm_aicc_generate_simple_sco($scorm) {
     $sco->organization = '';
     $sco->title = $scorm->name;
     $sco->parent = '/';
-    // add the HACP signal to the activity launcher
+    // Add the HACP signal to the activity launcher.
     if (preg_match('/\?/', $scorm->reference)) {
         $sco->launch = $scorm->reference.'&CMI=HACP';
-    }
-    else {
+    } else {
         $sco->launch = $scorm->reference.'?CMI=HACP';
     }
     $sco->scormtype = 'sco';

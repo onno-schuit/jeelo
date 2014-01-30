@@ -254,7 +254,7 @@ class moodle1_converter extends base_converter {
             $path = '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentblock;
 
         } else if (strpos($path, '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK') === 0) {
-            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentmod, $path);
+            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentblock, $path);
         }
 
         if ($path !== $data['path']) {
@@ -350,12 +350,12 @@ class moodle1_converter extends base_converter {
         }
 
         if ($path === '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK') {
-            $this->currentmod = null;
+            $this->currentblock = null;
             $forbidden = true;
 
         } else if (strpos($path, '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK') === 0) {
             // expand the BLOCK paths so that they contain the module name
-            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentmod, $path);
+            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentblock, $path);
         }
 
         if (empty($this->pathelements[$path])) {
@@ -397,7 +397,7 @@ class moodle1_converter extends base_converter {
             $path = '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentblock;
 
         } else if (strpos($path, '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK') === 0) {
-            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentmod, $path);
+            $path = str_replace('/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK', '/MOODLE_BACKUP/COURSE/BLOCKS/BLOCK/' . $this->currentblock, $path);
         }
 
         if (empty($this->pathelements[$path])) {
@@ -528,7 +528,8 @@ class moodle1_converter extends base_converter {
      * CONTEXT_SYSTEM and CONTEXT_COURSE ignore the $instance as they represent a
      * single system or the course being restored.
      *
-     * @see get_context_instance()
+     * @see context_system::instance()
+     * @see context_course::instance()
      * @param int $level the context level, like CONTEXT_COURSE or CONTEXT_MODULE
      * @param int $instance the instance id, for example $course->id for courses or $cm->id for activity modules
      * @return int the context id
@@ -640,7 +641,10 @@ class moodle1_converter extends base_converter {
             return $files;
         }
         foreach ($matches[2] as $match) {
-            $files[] = str_replace(array('$@FILEPHP@$', '$@SLASH@$', '$@FORCEDOWNLOAD@$'), array('', '/', ''), $match);
+            $file = str_replace(array('$@FILEPHP@$', '$@SLASH@$', '$@FORCEDOWNLOAD@$'), array('', '/', ''), $match);
+            if ($file === clean_param($file, PARAM_PATH)) {
+                $files[] = rawurldecode($file);
+            }
         }
 
         return array_unique($files);
@@ -657,9 +661,16 @@ class moodle1_converter extends base_converter {
     public static function rewrite_filephp_usage($text, array $files) {
 
         foreach ($files as $file) {
+            // Expect URLs properly encoded by default.
+            $parts   = explode('/', $file);
+            $encoded = implode('/', array_map('rawurlencode', $parts));
+            $fileref = '$@FILEPHP@$'.str_replace('/', '$@SLASH@$', $encoded);
+            $text    = str_replace($fileref.'$@FORCEDOWNLOAD@$', '@@PLUGINFILE@@'.$encoded.'?forcedownload=1', $text);
+            $text    = str_replace($fileref, '@@PLUGINFILE@@'.$encoded, $text);
+            // Add support for URLs without any encoding.
             $fileref = '$@FILEPHP@$'.str_replace('/', '$@SLASH@$', $file);
-            $text    = str_replace($fileref.'$@FORCEDOWNLOAD@$', '@@PLUGINFILE@@'.$file.'?forcedownload=1', $text);
-            $text    = str_replace($fileref, '@@PLUGINFILE@@'.$file, $text);
+            $text    = str_replace($fileref.'$@FORCEDOWNLOAD@$', '@@PLUGINFILE@@'.$encoded.'?forcedownload=1', $text);
+            $text    = str_replace($fileref, '@@PLUGINFILE@@'.$encoded, $text);
         }
 
         return $text;
@@ -1161,9 +1172,6 @@ class moodle1_file_manager implements loggable {
     /** @var string the root of the converter temp directory */
     protected $basepath;
 
-    /** @var textlib instance used during the migration */
-    protected $textlib;
-
     /** @var array of file ids that were migrated by this instance */
     protected $fileids = array();
 
@@ -1187,7 +1195,6 @@ class moodle1_file_manager implements loggable {
         $this->userid    = $userid;
         // set other useful bits
         $this->basepath  = $converter->get_tempdir_path();
-        $this->textlib   = textlib_get_instance();
     }
 
     /**
@@ -1202,6 +1209,14 @@ class moodle1_file_manager implements loggable {
      * @return int id of the migrated file
      */
     public function migrate_file($sourcepath, $filepath = '/', $filename = null, $sortorder = 0, $timecreated = null, $timemodified = null) {
+
+        // Normalise Windows paths a bit.
+        $sourcepath = str_replace('\\', '/', $sourcepath);
+
+        // PARAM_PATH must not be used on full OS path!
+        if ($sourcepath !== clean_param($sourcepath, PARAM_PATH)) {
+            throw new moodle1_convert_exception('file_invalid_path', $sourcepath);
+        }
 
         $sourcefullpath = $this->basepath.'/'.$sourcepath;
 
@@ -1218,7 +1233,7 @@ class moodle1_file_manager implements loggable {
         }
         $filepath = clean_param($filepath, PARAM_PATH);
 
-        if ($this->textlib->strlen($filepath) > 255) {
+        if (core_text::strlen($filepath) > 255) {
             throw new moodle1_convert_exception('file_path_longer_than_255_chars');
         }
 
@@ -1263,6 +1278,12 @@ class moodle1_file_manager implements loggable {
      * @return array ids of the migrated files, empty array if the $rootpath not found
      */
     public function migrate_directory($rootpath, $relpath='/') {
+
+        // Check the trailing slash in the $rootpath
+        if (substr($rootpath, -1) === '/') {
+            debugging('moodle1_file_manager::migrate_directory() expects $rootpath without the trailing slash', DEBUG_DEVELOPER);
+            $rootpath = substr($rootpath, 0, strlen($rootpath) - 1);
+        }
 
         if (!file_exists($this->basepath.'/'.$rootpath.$relpath)) {
             return array();

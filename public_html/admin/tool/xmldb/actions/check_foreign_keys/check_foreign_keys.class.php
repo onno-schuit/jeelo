@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,8 +29,7 @@
  * Each 0 in that column will violate the foreign key, but we ignore them.
  * If you want a strict check performed, then add &strict=1 to the URL.
  *
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -132,7 +130,7 @@ class check_foreign_keys extends XMLDBCheckAction {
     }
 
     protected function display_results(array $violatedkeys) {
-        $r = '<table class="generalbox boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
+        $r = '<table class="generaltable boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
         $r.= '  <tr><td class="generalboxcontent">';
         $r.= '    <h2 class="main">' . $this->str['searchresults'] . '</h2>';
         $r.= '    <p class="centerpara">' . $this->str['violatedforeignkeys'] . ': ' . count($violatedkeys) . '</p>';

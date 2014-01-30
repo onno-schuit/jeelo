@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,23 +14,25 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Experimental pdo database class
  *
- * @package    core
- * @subpackage dml
+ * @package    core_dml
  * @copyright  2008 Andrei Bautu
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/dml/moodle_database.php');
-require_once($CFG->libdir.'/dml/pdo_moodle_recordset.php');
+require_once(__DIR__.'/moodle_database.php');
+require_once(__DIR__.'/pdo_moodle_recordset.php');
 
 /**
  * Experimental pdo database class
+ *
+ * @package    core_dml
+ * @copyright  2008 Andrei Bautu
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class pdo_moodle_database extends moodle_database {
 
@@ -50,10 +51,10 @@ abstract class pdo_moodle_database extends moodle_database {
     /**
      * Connect to db
      * Must be called before other methods.
-     * @param string $dbhost
-     * @param string $dbuser
-     * @param string $dbpass
-     * @param string $dbname
+     * @param string $dbhost The database host.
+     * @param string $dbuser The database username.
+     * @param string $dbpass The database username's password.
+     * @param string $dbname The name of the database being connected to.
      * @param mixed $prefix string means moodle db prefix, false used for external databases where prefix not used
      * @param array $dboptions driver specific options
      * @return bool success
@@ -97,7 +98,7 @@ abstract class pdo_moodle_database extends moodle_database {
     }
 
     protected function configure_dbconnection() {
-        ///TODO: not needed preconfigure_dbconnection() stuff for PDO drivers?
+        //TODO: not needed preconfigure_dbconnection() stuff for PDO drivers?
     }
 
     /**
@@ -128,17 +129,8 @@ abstract class pdo_moodle_database extends moodle_database {
     }
 
     /**
-     * Returns localised database description
-     * Note: can be used before connect()
-     * @return string
-     */
-    public function get_configuration_hints() {
-        return get_string('databasesettingssub_' . $this->get_dbtype() . '_pdo', 'install');
-    }
-
-    /**
      * Returns database server info array
-     * @return array
+     * @return array Array containing 'description' and 'version' info
      */
     public function get_server_info() {
         $result = array();
@@ -153,7 +145,7 @@ abstract class pdo_moodle_database extends moodle_database {
 
     /**
      * Returns supported query parameter types
-     * @return int bitmask
+     * @return int bitmask of accepted SQL_PARAMS_*
      */
     protected function allowed_param_types() {
         return SQL_PARAMS_QM | SQL_PARAMS_NAMED;
@@ -171,7 +163,7 @@ abstract class pdo_moodle_database extends moodle_database {
      * Function to print/save/ignore debugging messages related to SQL queries.
      */
     protected function debug_query($sql, $params = null) {
-        echo '<hr /> (', $this->get_dbtype(), '): ',  htmlentities($sql);
+        echo '<hr /> (', $this->get_dbtype(), '): ',  htmlentities($sql, ENT_QUOTES, 'UTF-8');
         if($params) {
             echo ' (parameters ';
             print_r($params);
@@ -250,7 +242,8 @@ abstract class pdo_moodle_database extends moodle_database {
      * code where it's possible there might be large datasets being returned.  For known
      * small datasets use get_records_sql - it leads to simpler code.
      *
-     * The return type is as for @see function get_recordset.
+     * The return type is like:
+     * @see function get_recordset.
      *
      * @param string $sql the SQL select query to execute.
      * @param array $params array of sql parameters
@@ -303,7 +296,8 @@ abstract class pdo_moodle_database extends moodle_database {
     /**
      * Get a number of records as an array of objects.
      *
-     * Return value as for @see function get_records.
+     * Return value is like:
+     * @see function get_records.
      *
      * @param string $sql the SQL select query to execute. The first column of this SELECT statement
      *   must be a unique value (usually the 'id' field), as it will be used as the key of the
@@ -314,16 +308,17 @@ abstract class pdo_moodle_database extends moodle_database {
      * @return array of objects, or empty array if no records were found, or false if an error occurred.
      */
     public function get_records_sql($sql, array $params=null, $limitfrom=0, $limitnum=0) {
+        global $CFG;
+
         $rs = $this->get_recordset_sql($sql, $params, $limitfrom, $limitnum);
         if (!$rs->valid()) {
             $rs->close(); // Not going to iterate (but exit), close rs
             return false;
         }
         $objects = array();
-        $debugging = debugging('', DEBUG_DEVELOPER);
         foreach($rs as $value) {
             $key = reset($value);
-            if ($debugging && array_key_exists($key, $objects)) {
+            if ($CFG->debugdeveloper && array_key_exists($key, $objects)) {
                 debugging("Did you remember to make the first column something unique in your call to get_records? Duplicate value '$key' found in column first column of '$sql'.", DEBUG_DEVELOPER);
             }
             $objects[$key] = (object)$value;
@@ -403,17 +398,6 @@ abstract class pdo_moodle_database extends moodle_database {
             $column = $columns[$field];
             if (is_bool($value)) {
                 $value = (int)$value; // prevent "false" problems
-            }
-            if (!empty($column->enums)) {
-                // workaround for problem with wrong enums
-                if (is_null($value) and !$column->not_null) {
-                    // ok - nulls allowed
-                } else {
-                    if (!in_array((string)$value, $column->enums)) {
-                        debugging('Enum value '.s($value).' not allowed in field '.$field.' table '.$table.'.');
-                        return false;
-                    }
-                }
             }
             $cleaned[$field] = $value;
         }

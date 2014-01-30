@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   xmldb-editor
+ * @package   tool_xmldb
  * @copyright 2011 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +28,7 @@
  * them by changing to cross-db (CHAR) length semantics.
  * See MDL-29322 for more details.
  *
- * @package   xmldb-editor
+ * @package    tool_xmldb
  * @copyright 2011 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -75,8 +75,8 @@ class check_oracle_semantics extends XMLDBCheckAction {
                 // Get current semantic from dictionary, we only will process B (BYTE) ones
                 // suplying the SQL code to change them to C (CHAR) semantic
                 $params = array(
-                    'table_name' => textlib::strtoupper($DB->get_prefix() . $xmldb_table->getName()),
-                    'column_name' => textlib::strtoupper($xmldb_field->getName()),
+                    'table_name' => core_text::strtoupper($DB->get_prefix() . $xmldb_table->getName()),
+                    'column_name' => core_text::strtoupper($xmldb_field->getName()),
                     'data_type' => 'VARCHAR2');
                 $currentsemantic = $DB->get_field_sql('
                     SELECT char_used
@@ -110,7 +110,7 @@ class check_oracle_semantics extends XMLDBCheckAction {
         $dbman = $DB->get_manager();
 
         $s = '';
-        $r = '<table class="generalbox boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
+        $r = '<table class="generaltable boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
         $r.= '  <tr><td class="generalboxcontent">';
         $r.= '    <h2 class="main">' . $this->str['searchresults'] . '</h2>';
         $r.= '    <p class="centerpara">' . $this->str['wrongoraclesemantics'] . ': ' . count($wrong_fields) . '</p>';

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Defines site config settings for the grader report
+ *
+ * @package    gradereport_grader
+ * @copyright  2007 Moodle Pty Ltd (http://moodle.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
@@ -27,6 +34,9 @@ if ($ADMIN->fulltree) {
     /// Add settings for this module to the $settings object (it's already defined)
     $settings->add(new admin_setting_configtext('grade_report_studentsperpage', get_string('studentsperpage', 'grades'),
                                             get_string('studentsperpage_help', 'grades'), 100));
+
+    $settings->add(new admin_setting_configcheckbox('grade_report_showonlyactiveenrol', get_string('showonlyactiveenrol', 'grades'),
+                                                get_string('showonlyactiveenrol_help', 'grades'), 1));
 
     $settings->add(new admin_setting_configcheckbox('grade_report_quickgrading', get_string('quickgrading', 'grades'),
                                                 get_string('quickgrading_help', 'grades'), 1));

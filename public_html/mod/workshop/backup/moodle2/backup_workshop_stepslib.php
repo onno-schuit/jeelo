@@ -18,10 +18,10 @@
 /**
  * Defines all the backup steps that will be used by {@link backup_workshop_activity_task}
  *
- * @package    mod
- * @subpackage workshop
- * @copyright  2010 David Mudrak <david.mudrak@gmail.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_workshop
+ * @category    backup
+ * @copyright   2010 David Mudrak <david.mudrak@gmail.com>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -29,10 +29,15 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Defines the complete workshop structure for backup, with file and id annotations
  *
- * @see http://docs.moodle.org/dev/Workshop for XML structure diagram
+ * @link http://docs.moodle.org/dev/Workshop for XML structure diagram
  */
 class backup_workshop_activity_structure_step extends backup_activity_structure_step {
 
+    /**
+     * Defines the structure of the 'workshop' element inside the workshop.xml file
+     *
+     * @return backup_nested_element
+     */
     protected function define_structure() {
 
         // are we including userinfo?
@@ -50,7 +55,9 @@ class backup_workshop_activity_structure_step extends backup_activity_structure_
             'usepeerassessment', 'useselfassessment', 'grade', 'gradinggrade',
             'strategy', 'evaluation', 'gradedecimals', 'nattachments',
             'latesubmissions', 'maxbytes', 'examplesmode', 'submissionstart',
-            'submissionend', 'assessmentstart', 'assessmentend'));
+            'submissionend', 'assessmentstart', 'assessmentend',
+            'conclusion', 'conclusionformat', 'overallfeedbackmode',
+            'overallfeedbackfiles', 'overallfeedbackmaxbytes'));
 
         // assessment forms definition
         $this->add_subplugin_structure('workshopform', $workshop, true);
@@ -66,7 +73,8 @@ class backup_workshop_activity_structure_step extends backup_activity_structure_
 
         // reference assessment of the example submission
         $referenceassessment  = new backup_nested_element('referenceassessment', array('id'), array(
-            'timecreated', 'timemodified', 'grade'));
+            'timecreated', 'timemodified', 'grade', 'feedbackauthor', 'feedbackauthorformat',
+            'feedbackauthorattachment'));
 
         // dimension grades for the reference assessment (that is how the form is filled)
         $this->add_subplugin_structure('workshopform', $referenceassessment, true);
@@ -80,8 +88,8 @@ class backup_workshop_activity_structure_step extends backup_activity_structure_
         $exampleassessment  = new backup_nested_element('exampleassessment', array('id'), array(
             'reviewerid', 'weight', 'timecreated', 'timemodified', 'grade',
             'gradinggrade', 'gradinggradeover', 'gradinggradeoverby',
-            'feedbackauthor', 'feedbackauthorformat', 'feedbackreviewer',
-            'feedbackreviewerformat'));
+            'feedbackauthor', 'feedbackauthorformat', 'feedbackauthorattachment',
+            'feedbackreviewer', 'feedbackreviewerformat'));
 
         // dimension grades for the assessment of example submission (that is assessment forms are filled)
         $this->add_subplugin_structure('workshopform', $exampleassessment, true);
@@ -99,8 +107,8 @@ class backup_workshop_activity_structure_step extends backup_activity_structure_
         $assessment  = new backup_nested_element('assessment', array('id'), array(
             'reviewerid', 'weight', 'timecreated', 'timemodified', 'grade',
             'gradinggrade', 'gradinggradeover', 'gradinggradeoverby',
-            'feedbackauthor', 'feedbackauthorformat', 'feedbackreviewer',
-            'feedbackreviewerformat'));
+            'feedbackauthor', 'feedbackauthorformat', 'feedbackauthorattachment',
+            'feedbackreviewer', 'feedbackreviewerformat'));
 
         // dimension grades for the assessment (that is assessment forms are filled)
         $this->add_subplugin_structure('workshopform', $assessment, true);
@@ -189,12 +197,22 @@ class backup_workshop_activity_structure_step extends backup_activity_structure_
         $workshop->annotate_files('mod_workshop', 'intro', null); // no itemid used
         $workshop->annotate_files('mod_workshop', 'instructauthors', null); // no itemid used
         $workshop->annotate_files('mod_workshop', 'instructreviewers', null); // no itemid used
+        $workshop->annotate_files('mod_workshop', 'conclusion', null); // no itemid used
 
         $examplesubmission->annotate_files('mod_workshop', 'submission_content', 'id');
         $examplesubmission->annotate_files('mod_workshop', 'submission_attachment', 'id');
 
+        $referenceassessment->annotate_files('mod_workshop', 'overallfeedback_content', 'id');
+        $referenceassessment->annotate_files('mod_workshop', 'overallfeedback_attachment', 'id');
+
+        $exampleassessment->annotate_files('mod_workshop', 'overallfeedback_content', 'id');
+        $exampleassessment->annotate_files('mod_workshop', 'overallfeedback_attachment', 'id');
+
         $submission->annotate_files('mod_workshop', 'submission_content', 'id');
         $submission->annotate_files('mod_workshop', 'submission_attachment', 'id');
+
+        $assessment->annotate_files('mod_workshop', 'overallfeedback_content', 'id');
+        $assessment->annotate_files('mod_workshop', 'overallfeedback_attachment', 'id');
 
         // return the root element (workshop), wrapped into standard activity structure
         return $this->prepare_activity_structure($workshop);

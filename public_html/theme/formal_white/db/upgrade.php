@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -39,8 +38,7 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package    theme
- * @subpackage formal_white
+ * @package    theme_formal_white
  * @copyright  Mediatouch 2000 (http://mediatouch.it/)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -48,23 +46,43 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_theme_formal_white_upgrade($oldversion) {
-    if ($oldversion < 2011061301) {
-        $currentsetting = get_config('theme_formal_white');
-
-        if (isset($currentsetting->backgroundcolor)) {
-            unset_config('backgroundcolor', 'theme_formal_white');
-        }
-        if (isset($currentsetting->blockcolumnbgc)) {
-            unset_config('blockcolumnbgc', 'theme_formal_white');
-        }
-        upgrade_plugin_savepoint(true, 2011061301, 'theme', 'formal_white');
-    }
-
-    // Moodle v2.1.0 release upgrade line
-    // Put any upgrade step following this
 
     // Moodle v2.2.0 release upgrade line
     // Put any upgrade step following this
+
+    if ($oldversion < 2012051503) {
+        $currentsetting = get_config('theme_formal_white');
+
+        if (isset($currentsetting->displaylogo)) { // useless but safer
+            // Create a new config setting called headercontent and give it the current displaylogo value.
+            set_config('headercontent', $currentsetting->displaylogo, 'theme_formal_white');
+            unset_config('displaylogo', 'theme_formal_white');
+        }
+
+        if (isset($currentsetting->logo)) { // useless but safer
+            // Create a new config setting called headercontent and give it the current displaylogo value.
+            set_config('customlogourl', $currentsetting->logo, 'theme_formal_white');
+            unset_config('logo', 'theme_formal_white');
+        }
+
+        if (isset($currentsetting->frontpagelogo)) { // useless but safer
+            // Create a new config setting called headercontent and give it the current displaylogo value.
+            set_config('frontpagelogourl', $currentsetting->frontpagelogo, 'theme_formal_white');
+            unset_config('frontpagelogo', 'theme_formal_white');
+        }
+
+        upgrade_plugin_savepoint(true, 2012051503, 'theme', 'formal_white');
+    }
+
+    // Moodle v2.3.0 release upgrade line
+    // Put any upgrade step following this
+
+    // Moodle v2.4.0 release upgrade line
+    // Put any upgrade step following this
+
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
 
     return true;
 }

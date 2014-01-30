@@ -39,17 +39,18 @@ while(!feof($fd)) {
     $action = clam_handle_infected_file($file,$log->userid,true);
     clam_replace_infected_file($file);
 
-    list($ctxselect, $ctxjoin) = context_instance_preload_sql('c.id', CONTEXT_COURSE, 'ctx');
+    $ctxselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
+    $ctxjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
     $sql = "SELECT c.id, c.fullname $ctxselect FROM {course} c $ctxjoin WHERE c.id = :courseid";
-    $course = $DB->get_record_sql($sql, array('courseid' => $log->course));
-    context_instance_preload($course);
+    $course = $DB->get_record_sql($sql, array('courseid' => $log->course, 'contextlevel' => CONTEXT_COURSE));
+    context_helper::preload_from_record($course);
 
     $user = $DB->get_record("user", array("id"=>$log->userid));
     $subject = get_string('virusfoundsubject','moodle',format_string($site->fullname));
     $a->date = userdate($log->time);
 
     $a->action = $action;
-    $a->course = format_string($course->fullname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+    $a->course = format_string($course->fullname, true, array('context' => context_course::instance($course->id)));
     $a->user = fullname($user);
 
     notify_user($user,$subject,$a);
@@ -86,7 +87,7 @@ function notify_admins($user,$subject,$a) {
     foreach ($admins as $admin) {
         $eventdata = new stdClass();
         $eventdata->modulename        = 'moodle';
-        $eventdata->userfrom          = $admin;
+        $eventdata->userfrom          = get_admin();
         $eventdata->userto            = $admin;
         $eventdata->subject           = $subject;
         $eventdata->fullmessage       = $body;
@@ -107,7 +108,7 @@ function notify_admins_unknown($file,$a) {
     foreach ($admins as $admin) {
         $eventdata = new stdClass();
         $eventdata->modulename        = 'moodle';
-        $eventdata->userfrom          = $admin;
+        $eventdata->userfrom          = get_admin();
         $eventdata->userto            = $admin;
         $eventdata->subject           = $subject;
         $eventdata->fullmessage       = $body;

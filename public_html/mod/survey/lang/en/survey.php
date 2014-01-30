@@ -56,7 +56,7 @@ $string['attls15short'] = 'put myself in their shoes';
 $string['attls16'] = 'One could call my way of analysing things \'putting them on trial\' because I am careful to consider all the evidence.';
 $string['attls16short'] = 'putting on trial';
 $string['attls17'] = 'I value the use of logic and reason over the incorporation of my own concerns when solving problems.';
-$string['attls17short'] = 'i value logic most';
+$string['attls17short'] = 'I value logic most';
 $string['attls18'] = 'I can obtain insight into opinions that differ from mine through empathy.';
 $string['attls18short'] = 'insight from empathy';
 $string['attls19'] = 'When I encounter people whose opinions seem alien to me, I make a deliberate effort to \'extend\' myself into that person, to try to see how they could have those opinions.';
@@ -108,7 +108,7 @@ Thanks very much.';
 $string['collesaname'] = 'COLLES (Actual)';
 $string['collesapintro'] = 'The purpose of this questionnaire is to help us understand how well the online delivery of this unit enabled you to learn. 
 
-Each one of the 24 statements below asks you to compare your <b>preferred</b> (ideal) and <b>actual</b> experience in this unit.
+Each couple of the 24 statements below asks you to compare your <b>preferred</b> (ideal) and <b>actual</b> experience in this unit.
 
 There are no \'right\' or \'wrong\' answers; we are interested only in your opinion. Please be assured that your responses will be treated with a high degree of confidentiality, and will not affect your assessment.
 
@@ -187,7 +187,7 @@ $string['colles8'] = 'I think critically about ideas in the readings.';
 $string['colles8short'] = 'I\'m critical of readings';
 $string['colles9'] = 'I explain my ideas to other students.';
 $string['colles9short'] = 'I explain my ideas';
-$string['customintro'] = 'Custom intro';
+$string['customintro'] = 'Description';
 $string['deleteallanswers'] = 'Delete all survey responses';
 $string['deleteanalysis'] = 'Delete response analysis';
 $string['done'] = 'Done';
@@ -206,7 +206,10 @@ $string['invalidsurveyid'] = 'Survey ID was incorrect';
 $string['invalidtmptid'] = 'Invalid template id';
 $string['ipreferthat'] = 'I prefer that';
 $string['modulename'] = 'Survey';
-$string['modulename_help'] = 'The survey module provides three types of survey instrument for assessing and stimulating learning in online environments. The teacher can use them to gather data that will help them learn about their class and reflect on their own teaching.';
+$string['modulename_help'] = 'The survey activity module provides a number of verified survey instruments that have been found useful in assessing and stimulating learning in online environments. A teacher can use these to gather data from their students that will help them learn about their class and reflect on their own teaching.
+
+Note that these survey tools are pre-populated with questions. Teachers who wish to create their own survey should use the feedback activity module.';
+$string['modulename_link'] = 'mod/survey/view';
 $string['modulenameplural'] = 'Surveys';
 $string['name'] = 'Name';
 $string['newsurveyresponses'] = 'New survey responses';
@@ -234,6 +237,7 @@ $string['scaletimes5'] = 'Almost never,Seldom,Sometimes,Often,Almost always';
 $string['seemoredetail'] = 'Click here to see more detail';
 $string['selectedquestions'] = 'Selected questions from a scale, all students';
 $string['summary'] = 'Summary';
+$string['survey:addinstance'] = 'Add a new survey';
 $string['surveycompleted'] = 'You\'ve completed this survey.  The graph below shows a summary of your results compared to the class averages.';
 $string['survey:download'] = 'Download responses';
 $string['surveygraph'] = 'Survey graph';
@@ -252,4 +256,4 @@ $string['thanksforanswers'] = 'Thanks for answering this survey, {$a}';
 $string['time'] = 'Time';
 $string['viewsurveyresponses'] = 'View {$a} survey responses';
 $string['notyetanswered'] = 'Not yet answered';
-$string['allquestionrequireanswer'] = 'All questions are required and must be answered';
+$string['allquestionrequireanswer'] = 'All questions are required and must be answered.';

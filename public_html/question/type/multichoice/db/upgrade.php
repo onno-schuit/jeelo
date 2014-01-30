@@ -36,123 +36,102 @@ function xmldb_qtype_multichoice_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // This upgrade actually belongs to the random question type,
-    // but that does not have a DB upgrade script. Therefore, multichoice
-    // is doing it.
-    // Rename random questions to give them more helpful names.
-    if ($oldversion < 2008021800) {
-        require_once($CFG->dirroot . '/question/type/random/questiontype.php');
-        $randomqtype = new qtype_random();
-
-        // Get all categories containing random questions.
-        $categories = $DB->get_recordset_sql("
-                SELECT qc.id, qc.name
-                FROM {question_categories} qc
-                JOIN {question} q ON q.category = qc.id
-                WHERE q.qtype = 'random'
-                GROUP BY qc.id, qc.name");
-
-        // Rename the random qusetions in those categories.
-        $where = "qtype = 'random' AND category = ? AND " .
-                $DB->sql_compare_text('questiontext') . " = " . $DB->sql_compare_text('?');
-        foreach ($categories as $cat) {
-            $randomqname = $randomqtype->question_name($cat, false);
-            $DB->set_field_select('question', 'name', $randomqname, $where, array($cat->id, '0'));
-
-            $randomqname = $randomqtype->question_name($cat, true);
-            $DB->set_field_select('question', 'name', $randomqname, $where, array($cat->id, '1'));
-        }
-
-        upgrade_plugin_savepoint(true, 2008021800, 'qtype', 'multichoice');
-    }
-
-    if ($oldversion < 2009021801) {
-
-        // Define field correctfeedbackformat to be added to question_multichoice
-        $table = new xmldb_table('question_multichoice');
-        $field = new xmldb_field('correctfeedbackformat', XMLDB_TYPE_INTEGER, '2', null,
-                XMLDB_NOTNULL, null, '0', 'correctfeedback');
-
-        // Conditionally launch add field correctfeedbackformat
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field partiallycorrectfeedbackformat to be added to question_multichoice
-        $field = new xmldb_field('partiallycorrectfeedbackformat', XMLDB_TYPE_INTEGER, '2', null,
-                XMLDB_NOTNULL, null, '0', 'partiallycorrectfeedback');
-
-        // Conditionally launch add field partiallycorrectfeedbackformat
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Define field incorrectfeedbackformat to be added to question_multichoice
-        $field = new xmldb_field('incorrectfeedbackformat', XMLDB_TYPE_INTEGER, '2', null,
-                XMLDB_NOTNULL, null, '0', 'incorrectfeedback');
-
-        // Conditionally launch add field incorrectfeedbackformat
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // In the past, the correctfeedback, partiallycorrectfeedback,
-        // incorrectfeedback columns were assumed to contain content of the same
-        // form as questiontextformat. If we are using the HTML editor, then
-        // convert FORMAT_MOODLE content to FORMAT_HTML.
-        $rs = $DB->get_recordset_sql('
-                SELECT qm.*, q.oldquestiontextformat
-                FROM {question_multichoice} qm
-                JOIN {question} q ON qm.question = q.id');
-        foreach ($rs as $record) {
-            if ($CFG->texteditors !== 'textarea' &&
-                    $record->oldquestiontextformat == FORMAT_MOODLE) {
-                $record->correctfeedback = text_to_html(
-                        $record->correctfeedback, false, false, true);
-                $record->correctfeedbackformat = FORMAT_HTML;
-                $record->partiallycorrectfeedback = text_to_html(
-                        $record->partiallycorrectfeedback, false, false, true);
-                $record->partiallycorrectfeedbackformat = FORMAT_HTML;
-                $record->incorrectfeedback = text_to_html(
-                        $record->incorrectfeedback, false, false, true);
-                $record->incorrectfeedbackformat = FORMAT_HTML;
-            } else {
-                $record->correctfeedbackformat = $record->oldquestiontextformat;
-                $record->partiallycorrectfeedbackformat = $record->oldquestiontextformat;
-                $record->incorrectfeedbackformat = $record->oldquestiontextformat;
-            }
-            $DB->update_record('question_multichoice', $record);
-        }
-        $rs->close();
-
-        // multichoice savepoint reached
-        upgrade_plugin_savepoint(true, 2009021801, 'qtype', 'multichoice');
-    }
-
-    // Add new shownumcorrect field. If this is true, then when the user gets a
-    // multiple-response question partially correct, tell them how many choices
-    // they got correct alongside the feedback.
-    if ($oldversion < 2011011200) {
-
-        // Define field shownumcorrect to be added to question_multichoice
-        $table = new xmldb_table('question_multichoice');
-        $field = new xmldb_field('shownumcorrect', XMLDB_TYPE_INTEGER, '2', null,
-                XMLDB_NOTNULL, null, '0', 'answernumbering');
-
-        // Launch add field shownumcorrect
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // multichoice savepoint reached
-        upgrade_plugin_savepoint(true, 2011011200, 'qtype', 'multichoice');
-    }
-
-    // Moodle v2.1.0 release upgrade line
-    // Put any upgrade step following this
-
     // Moodle v2.2.0 release upgrade line
-    // Put any upgrade step following this
+    // Put any upgrade step following this.
+
+    // Moodle v2.3.0 release upgrade line
+    // Put any upgrade step following this.
+
+    // Moodle v2.4.0 release upgrade line
+    // Put any upgrade step following this.
+
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2013092300) {
+        // Find duplicate rows before they break the 2013092304 step below.
+        $problemids = $DB->get_recordset_sql("
+                SELECT question, MIN(id) AS recordidtokeep
+                  FROM {question_multichoice}
+              GROUP BY question
+                HAVING COUNT(1) > 1
+                ");
+        foreach ($problemids as $problem) {
+            $DB->delete_records_select('question_multichoice',
+                    'question = ? AND id > ?',
+                    array($problem->question, $problem->recordidtokeep));
+        }
+        $problemids->close();
+
+        // Shortanswer savepoint reached.
+        upgrade_plugin_savepoint(true, 2013092300, 'qtype', 'multichoice');
+    }
+
+    if ($oldversion < 2013092301) {
+
+        // Define table question_multichoice to be renamed to qtype_multichoice_options.
+        $table = new xmldb_table('question_multichoice');
+
+        // Launch rename table for question_multichoice.
+        $dbman->rename_table($table, 'qtype_multichoice_options');
+
+        // Record that qtype_match savepoint was reached.
+        upgrade_plugin_savepoint(true, 2013092301, 'qtype', 'multichoice');
+    }
+
+    if ($oldversion < 2013092302) {
+
+        // Define key question (foreign) to be dropped form qtype_multichoice_options.
+        $table = new xmldb_table('qtype_multichoice_options');
+        $key = new xmldb_key('question', XMLDB_KEY_FOREIGN, array('question'), 'question', array('id'));
+
+        // Launch drop key question.
+        $dbman->drop_key($table, $key);
+
+        // Record that qtype_match savepoint was reached.
+        upgrade_plugin_savepoint(true, 2013092302, 'qtype', 'multichoice');
+    }
+
+    if ($oldversion < 2013092303) {
+
+        // Rename field question on table qtype_multichoice_options to questionid.
+        $table = new xmldb_table('qtype_multichoice_options');
+        $field = new xmldb_field('question', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+
+        // Launch rename field question.
+        $dbman->rename_field($table, $field, 'questionid');
+
+        // Record that qtype_match savepoint was reached.
+        upgrade_plugin_savepoint(true, 2013092303, 'qtype', 'multichoice');
+    }
+
+    if ($oldversion < 2013092304) {
+
+        // Define key questionid (foreign-unique) to be added to qtype_multichoice_options.
+        $table = new xmldb_table('qtype_multichoice_options');
+        $key = new xmldb_key('questionid', XMLDB_KEY_FOREIGN_UNIQUE, array('questionid'), 'question', array('id'));
+
+        // Launch add key questionid.
+        $dbman->add_key($table, $key);
+
+        // Record that qtype_match savepoint was reached.
+        upgrade_plugin_savepoint(true, 2013092304, 'qtype', 'multichoice');
+    }
+
+    if ($oldversion < 2013092305) {
+
+        // Define field answers to be dropped from qtype_multichoice_options.
+        $table = new xmldb_table('qtype_multichoice_options');
+        $field = new xmldb_field('answers');
+
+        // Conditionally launch drop field answers.
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table, $field);
+        }
+
+        // Record that qtype_match savepoint was reached.
+        upgrade_plugin_savepoint(true, 2013092305, 'qtype', 'multichoice');
+    }
 
     return true;
 }

@@ -37,8 +37,8 @@ if (! $course = $DB->get_record('course', array('id'=>$id))) {
     print_error('invalidcourseid');
 }
 
-$context = get_context_instance(CONTEXT_COURSE, $id);
-require_login($course->id);
+$context = context_course::instance($id);
+require_login($course);
 
 // to create notes the current user needs a capability
 require_capability('moodle/notes:manage', $context);
@@ -63,9 +63,7 @@ if (!empty($users) && confirm_sesskey()) {
         $note->content = $contents[$k];
         $note->publishstate = $states[$k];
         $note->userid = $v;
-        if (note_save($note)) {
-            add_to_log($note->courseid, 'notes', 'add', 'index.php?course='.$note->courseid.'&amp;user='.$note->userid . '#note-' . $note->id , 'add note');
-        }
+        note_save($note);
     }
     redirect("$CFG->wwwroot/user/index.php?id=$id");
 }
@@ -79,7 +77,6 @@ $PAGE->set_title("$course->shortname: ".get_string('extendenrol'));
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
-
 // this will contain all available the based On select options, but we'll disable some on them on a per user basis
 
 echo $OUTPUT->heading($straddnote);
@@ -104,15 +101,15 @@ if (empty($users) and $post = data_submitted()) {
         }
     }
 }
-
 foreach ($users as $k => $v) {
     if(!$user = $DB->get_record('user', array('id'=>$v))) {
         continue;
     }
-    $checkbox = html_writer::select($state_names, 'states[' . $k . ']', empty($states[$k]) ? NOTES_STATE_PUBLIC : $states[$k], false);
+    $checkbox = html_writer::label(get_string('selectnotestate', 'notes'), 'menustates', false, array('class' => 'accesshide'));
+    $checkbox .= html_writer::select($state_names, 'states[' . $k . ']', empty($states[$k]) ? NOTES_STATE_PUBLIC : $states[$k], false, array('id' => 'menustates'));
     $table->data[] = array(
         '<input type="hidden" name="userid['.$k.']" value="'.$v.'" />'. fullname($user, true),
-        '<textarea name="contents['. $k . ']" rows="2" cols="40">' . strip_tags(@$contents[$k]) . '</textarea>',
+        '<textarea name="contents['. $k . ']" rows="2" cols="40" spellcheck="true">' . strip_tags(@$contents[$k]) . '</textarea>',
         $checkbox
     );
 }

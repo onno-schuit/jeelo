@@ -69,6 +69,8 @@ class restore_glossary_activity_task extends restore_activity_task {
 
         $rules[] = new restore_decode_rule('GLOSSARYVIEWBYID', '/mod/glossary/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('GLOSSARYINDEX', '/mod/glossary/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('GLOSSARYSHOWENTRY', '/mod/glossary/showentry.php?courseid=$1&eid=$2',
+                                           array('course', 'glossary_entry'));
 
         return $rules;
 
@@ -93,6 +95,7 @@ class restore_glossary_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('glossary', 'update entry', 'view.php?id={course_module}&mode=entry&hook={glossary_entry}', '{glossary_entry}');
         $rules[] = new restore_log_rule('glossary', 'delete entry', 'view.php?id={course_module}&mode=entry&hook={glossary_entry}', '{glossary_entry}');
         $rules[] = new restore_log_rule('glossary', 'approve entry', 'showentry.php?id={course_module}&eid={glossary_entry}', '{glossary_entry}');
+        $rules[] = new restore_log_rule('glossary', 'disapprove entry', 'showentry.php?id={course_module}&eid={glossary_entry}', '{glossary_entry}');
         $rules[] = new restore_log_rule('glossary', 'view entry', 'showentry.php?eid={glossary_entry}', '{glossary_entry}');
 
         return $rules;

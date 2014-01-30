@@ -48,7 +48,8 @@ if (!empty($id)) {
 }
 
 require_course_login($course->id, true, $cm);
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
+require_capability('mod/glossary:view', $context);
 
 // Prepare format_string/text options
 $fmtoptions = array(
@@ -56,9 +57,6 @@ $fmtoptions = array(
 
 require_once($CFG->dirroot . '/comment/lib.php');
 comment::init();
-
-/// Loading the textlib singleton instance. We are going to need it.
-$textlib = textlib_get_instance();
 
 /// redirecting if adding a new entry
 if ($tab == GLOSSARY_ADDENTRY_VIEW ) {
@@ -120,7 +118,7 @@ if ( $show ) {
 }
 /// Processing standard security processes
 if ($course->id != SITEID) {
-    require_login($course->id);
+    require_login($course);
 }
 if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $context)) {
     echo $OUTPUT->header();
@@ -173,6 +171,11 @@ break;
 
 case 'approval':    /// Looking for entries waiting for approval
     $tab = GLOSSARY_APPROVAL_VIEW;
+    // Override the display format with the approvaldisplayformat
+    if ($glossary->approvaldisplayformat !== 'default' && ($df = $DB->get_record("glossary_formats",
+            array("name" => $glossary->approvaldisplayformat)))) {
+        $displayformat = $df->popupformatname;
+    }
     if ( !$hook and !$sortkey and !$sortorder) {
         $hook = 'ALL';
     }
@@ -248,7 +251,7 @@ $PAGE->set_url($url);
 if (!empty($CFG->enablerssfeeds) && !empty($CFG->glossary_enablerssfeeds)
     && $glossary->rsstype && $glossary->rssarticles) {
 
-    $rsstitle = format_string($course->shortname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id))) . ': %fullname%';
+    $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': '. format_string($glossary->name);
     rss_add_http_header($context, 'mod_glossary', $glossary, $rsstitle);
 }
 
@@ -260,6 +263,7 @@ if ($tab == GLOSSARY_APPROVAL_VIEW) {
 } else { /// Print standard header
     echo $OUTPUT->header();
 }
+echo $OUTPUT->heading(format_string($glossary->name), 2);
 
 /// All this depends if whe have $showcommonelements
 if ($showcommonelements) {
@@ -311,11 +315,7 @@ if ($showcommonelements) {
 /// The print icon
     if ( $showcommonelements and $mode != 'search') {
         if (has_capability('mod/glossary:manageentries', $context) or $glossary->allowprintview) {
-//                print_box_start('printicon');
-            echo '<span class="wrap printicon">';
-            echo " <a title =\"". get_string("printerfriendly","glossary") ."\" href=\"print.php?id=$cm->id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;offset=$offset\"><img class=\"icon\" src=\"".$OUTPUT->pix_url('print', 'glossary')."\" alt=\"". get_string("printerfriendly","glossary") . "\" /></a>";
-            echo '</span>';
-//                print_box_end();
+            echo " <a class='printicon' title =\"". get_string("printerfriendly","glossary") ."\" href=\"print.php?id=$cm->id&amp;mode=$mode&amp;hook=".urlencode($hook)."&amp;sortkey=$sortkey&amp;sortorder=$sortorder&amp;offset=$offset\">" . get_string("printerfriendly","glossary")."</a>";
         }
     }
 /// End glossary controls
@@ -420,12 +420,12 @@ if ($allentries) {
 
         // Setting the pivot for the current entry
         $pivot = $entry->glossarypivot;
-        $upperpivot = $textlib->strtoupper($pivot);
-        $pivottoshow = $textlib->strtoupper(format_string($pivot, true, $fmtoptions));
+        $upperpivot = core_text::strtoupper($pivot);
+        $pivottoshow = core_text::strtoupper(format_string($pivot, true, $fmtoptions));
         // Reduce pivot to 1cc if necessary
         if ( !$fullpivot ) {
-            $upperpivot = $textlib->substr($upperpivot, 0, 1);
-            $pivottoshow = $textlib->substr($pivottoshow, 0, 1);
+            $upperpivot = core_text::substr($upperpivot, 0, 1);
+            $pivottoshow = core_text::substr($pivottoshow, 0, 1);
         }
 
         // if there's a group break
@@ -445,12 +445,12 @@ if ($allentries) {
 
                     $user = $DB->get_record("user", array("id"=>$entry->userid));
                     echo $OUTPUT->user_picture($user, array('courseid'=>$course->id));
-                    $pivottoshow = fullname($user, has_capability('moodle/site:viewfullnames', get_context_instance(CONTEXT_COURSE, $course->id)));
+                    $pivottoshow = fullname($user, has_capability('moodle/site:viewfullnames', context_course::instance($course->id)));
                 } else {
                     echo '<th >';
                 }
 
-                echo $OUTPUT->heading($pivottoshow);
+                echo $OUTPUT->heading($pivottoshow, 3);
                 echo "</th></tr></table></div>\n";
 
             }

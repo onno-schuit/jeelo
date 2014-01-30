@@ -179,13 +179,11 @@ function uu_validate_user_upload_columns(csv_import_reader $cir, $stdfields, $pr
         print_error('csvfewcolumns', 'error', $returnurl);
     }
 
-    $textlib = textlib_get_instance(); // profile fields may contain unicode chars
-
     // test columns
     $processed = array();
     foreach ($columns as $key=>$unused) {
         $field = $columns[$key];
-        $lcfield = $textlib->strtolower($field);
+        $lcfield = core_text::strtolower($field);
         if (in_array($field, $stdfields) or in_array($lcfield, $stdfields)) {
             // standard fields are only lowercase
             $newfield = $lcfield;
@@ -198,7 +196,7 @@ function uu_validate_user_upload_columns(csv_import_reader $cir, $stdfields, $pr
             // hack: somebody wrote uppercase in csv file, but the system knows only lowercase profile field
             $newfield = $lcfield;
 
-        } else if (preg_match('/^(cohort|course|group|type|role|enrolperiod)\d+$/', $lcfield)) {
+        } else if (preg_match('/^(cohort|course|group|type|role|enrolperiod|enrolstatus)\d+$/', $lcfield)) {
             // special fields for enrolments
             $newfield = $lcfield;
 
@@ -281,8 +279,6 @@ function uu_process_template($template, $user) {
  * Internal callback function.
  */
 function uu_process_template_callback($username, $firstname, $lastname, $block) {
-    $textlib = textlib_get_instance();
-
     switch ($block[3]) {
         case 'u':
             $repl = $username;
@@ -299,18 +295,18 @@ function uu_process_template_callback($username, $firstname, $lastname, $block) 
 
     switch ($block[1]) {
         case '+':
-            $repl = $textlib->strtoupper($repl);
+            $repl = core_text::strtoupper($repl);
             break;
         case '-':
-            $repl = $textlib->strtolower($repl);
+            $repl = core_text::strtolower($repl);
             break;
         case '~':
-            $repl = $textlib->strtotitle($repl);
+            $repl = core_text::strtotitle($repl);
             break;
     }
 
     if (!empty($block[2])) {
-        $repl = $textlib->substr($repl, 0 , $block[2]);
+        $repl = core_text::substr($repl, 0 , $block[2]);
     }
 
     return $repl;
@@ -325,12 +321,13 @@ function uu_process_template_callback($username, $firstname, $lastname, $block) 
  * @return array type=>name
  */
 function uu_supported_auths() {
-    // only following plugins are guaranteed to work properly
-    $whitelist = array('manual', 'nologin', 'none', 'email');
+    // Get all the enabled plugins.
     $plugins = get_enabled_auth_plugins();
     $choices = array();
     foreach ($plugins as $plugin) {
-        if (!in_array($plugin, $whitelist)) {
+        $objplugin = get_auth_plugin($plugin);
+        // If the plugin can not be manually set skip it.
+        if (!$objplugin->can_be_manually_set()) {
             continue;
         }
         $choices[$plugin] = get_string('pluginname', "auth_{$plugin}");
@@ -345,7 +342,7 @@ function uu_supported_auths() {
  */
 function uu_allowed_roles() {
     // let's cheat a bit, frontpage is guaranteed to exist and has the same list of roles ;-)
-    $roles = get_assignable_roles(get_context_instance(CONTEXT_COURSE, SITEID), ROLENAME_ORIGINALANDSHORT);
+    $roles = get_assignable_roles(context_course::instance(SITEID), ROLENAME_ORIGINALANDSHORT);
     return array_reverse($roles, true);
 }
 
@@ -354,7 +351,7 @@ function uu_allowed_roles() {
  * @return array
  */
 function uu_allowed_roles_cache() {
-    $allowedroles = get_assignable_roles(get_context_instance(CONTEXT_COURSE, SITEID), ROLENAME_SHORT);
+    $allowedroles = get_assignable_roles(context_course::instance(SITEID), ROLENAME_SHORT);
     foreach ($allowedroles as $rid=>$rname) {
         $rolecache[$rid] = new stdClass();
         $rolecache[$rid]->id   = $rid;
@@ -366,4 +363,63 @@ function uu_allowed_roles_cache() {
         }
     }
     return $rolecache;
+}
+
+/**
+ * Pre process custom profile data, and update it with corrected value
+ *
+ * @param stdClass $data user profile data
+ * @return stdClass pre-processed custom profile data
+ */
+function uu_pre_process_custom_profile_data($data) {
+    global $CFG, $DB;
+    // find custom profile fields and check if data needs to converted.
+    foreach ($data as $key => $value) {
+        if (preg_match('/^profile_field_/', $key)) {
+            $shortname = str_replace('profile_field_', '', $key);
+            if ($fields = $DB->get_records('user_info_field', array('shortname' => $shortname))) {
+                foreach ($fields as $field) {
+                    require_once($CFG->dirroot.'/user/profile/field/'.$field->datatype.'/field.class.php');
+                    $newfield = 'profile_field_'.$field->datatype;
+                    $formfield = new $newfield($field->id, $data->id);
+                    if (method_exists($formfield, 'convert_external_data')) {
+                        $data->$key = $formfield->convert_external_data($value);
+                    }
+                }
+            }
+        }
+    }
+    return $data;
+}
+
+/**
+ * Checks if data provided for custom fields is correct
+ * Currently checking for custom profile field or type menu
+ *
+ * @param array $data user profile data
+ * @return bool true if no error else false
+ */
+function uu_check_custom_profile_data(&$data) {
+    global $CFG, $DB;
+    $noerror = true;
+
+    // find custom profile fields and check if data needs to converted.
+    foreach ($data as $key => $value) {
+        if (preg_match('/^profile_field_/', $key)) {
+            $shortname = str_replace('profile_field_', '', $key);
+            if ($fields = $DB->get_records('user_info_field', array('shortname' => $shortname))) {
+                foreach ($fields as $field) {
+                    require_once($CFG->dirroot.'/user/profile/field/'.$field->datatype.'/field.class.php');
+                    $newfield = 'profile_field_'.$field->datatype;
+                    $formfield = new $newfield($field->id, 0);
+                    if (method_exists($formfield, 'convert_external_data') &&
+                            is_null($formfield->convert_external_data($value))) {
+                        $data['status'][] = get_string('invaliduserfield', 'error', $shortname);
+                        $noerror = false;
+                    }
+                }
+            }
+        }
+    }
+    return $noerror;
 }

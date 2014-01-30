@@ -17,8 +17,7 @@
 /**
  * Manual authentication plugin upgrade code
  *
- * @package    auth
- * @subpackage manual
+ * @package    auth_manual
  * @copyright  2011 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,26 +29,20 @@
 function xmldb_auth_manual_upgrade($oldversion) {
     global $CFG, $DB, $OUTPUT;
 
-    if ($oldversion < 2011022700) {
-        // force creation of missing passwords
-        $createpassword = hash_internal_user_password('');
-        $rs = $DB->get_recordset('user', array('password'=>$createpassword, 'auth'=>'manual'));
-        foreach ($rs as $user) {
-            if (validate_email($user->email)) {
-                $DB->set_field('user', 'password', 'to be created', array('id'=>$user->id));
-                unset_user_preference('auth_forcepasswordchange', $user);
-                set_user_preference('create_password', 1, $user);
-            }
-        }
-        $rs->close();
-        upgrade_plugin_savepoint(true, 2011022700, 'auth', 'manual');
-    }
+    $dbman = $DB->get_manager();
 
-    // Moodle v2.1.0 release upgrade line
+
+    // Moodle v2.3.0 release upgrade line
     // Put any upgrade step following this
 
-    // Moodle v2.2.0 release upgrade line
+
+    // Moodle v2.4.0 release upgrade line
     // Put any upgrade step following this
+
+
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
 
     return true;
 }

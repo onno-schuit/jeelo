@@ -48,7 +48,6 @@ if ($id !== false) {
 $PAGE->set_url($url);
 
 // set up some general variables
-$usehtmleditor = can_use_html_editor();
 
 
 if (($formdata = data_submitted()) AND !confirm_sesskey()) {
@@ -67,11 +66,9 @@ if (! $feedback = $DB->get_record("feedback", array("id"=>$cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
-        print_error('badcontext');
-}
+$context = context_module::instance($cm->id);
 
-require_login($course->id, true, $cm);
+require_login($course, true, $cm);
 
 require_capability('mod/feedback:edititems', $context);
 
@@ -127,10 +124,13 @@ if ($item->id) {
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($feedback->name));
 echo $OUTPUT->header();
+
+// Print the main part of the page.
+echo $OUTPUT->heading(format_string($feedback->name));
+
 /// print the tabs
 require('tabs.php');
-/// Print the main part of the page
-echo $OUTPUT->heading(format_text($feedback->name));
+
 //print errormsg
 if (isset($error)) {
     echo $error;

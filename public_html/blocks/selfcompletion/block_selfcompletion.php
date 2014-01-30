@@ -36,7 +36,11 @@ require_once($CFG->libdir.'/completionlib.php');
 class block_selfcompletion extends block_base {
 
     public function init() {
-        $this->title   = get_string('selfcompletion', 'block_selfcompletion');
+        $this->title = get_string('pluginname', 'block_selfcompletion');
+    }
+
+    function applicable_formats() {
+        return array('all' => true, 'mod' => false, 'tag' => false, 'my' => false);
     }
 
     public function get_content() {
@@ -51,7 +55,7 @@ class block_selfcompletion extends block_base {
         $this->content = new stdClass;
 
         // Can edit settings?
-        $can_edit = has_capability('moodle/course:update', get_context_instance(CONTEXT_COURSE, $this->page->course->id));
+        $can_edit = has_capability('moodle/course:update', context_course::instance($this->page->course->id));
 
         // Get course completion data
         $info = new completion_info($this->page->course);
@@ -83,7 +87,7 @@ class block_selfcompletion extends block_base {
 
         // Check this user is enroled
         if (!$info->is_tracked_user($USER->id)) {
-            $this->content->text = get_string('notenroled', 'completion');
+            $this->content->text = get_string('nottracked', 'completion');
             return $this->content;
         }
 

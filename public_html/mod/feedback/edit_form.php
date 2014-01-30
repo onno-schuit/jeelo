@@ -31,14 +31,14 @@ require_once($CFG->libdir.'/formslib.php');
 
 class feedback_edit_add_question_form extends moodleform {
     public function definition() {
-        $mform =& $this->_form;
+        $mform = $this->_form;
 
         //headline
-        $mform->addElement('header', 'general', get_string('add_items', 'feedback'));
+        $mform->addElement('header', 'general', get_string('content'));
         // visible elements
         $feedback_names_options = feedback_load_feedback_items_options();
 
-        $attributes = 'onChange="this.form.submit()"';
+        $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
         $mform->addElement('select', 'typ', '', $feedback_names_options, $attributes);
 
         // hidden elements
@@ -48,7 +48,7 @@ class feedback_edit_add_question_form extends moodleform {
         $mform->setType('position', PARAM_INT);
 
         // buttons
-        $mform->addElement('submit', 'add_item', get_string('add_item', 'feedback'));
+        $mform->addElement('submit', 'add_item', get_string('add_item', 'feedback'), array('class' => 'hiddenifjs'));
     }
 }
 
@@ -66,6 +66,9 @@ class feedback_edit_use_template_form extends moodleform {
     //eg: array('course' => $course)
     public function set_feedbackdata($data) {
         if (is_array($data)) {
+            if (!isset($this->feedbackdata)) {
+                $this->feedbackdata = new stdClass();
+            }
             foreach ($data as $key => $val) {
                 $this->feedbackdata->{$key} = $val;
             }
@@ -80,7 +83,7 @@ class feedback_edit_use_template_form extends moodleform {
 
         $elementgroup = array();
         //headline
-        $mform->addElement('header', '', get_string('using_templates', 'feedback'));
+        $mform->addElement('header', 'using_templates', get_string('using_templates', 'feedback'));
         // hidden elements
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
@@ -110,21 +113,21 @@ class feedback_edit_use_template_form extends moodleform {
                 $options[get_string('public', 'feedback')] = $publicoptions;
             }
 
-            $attributes = 'onChange="this.form.submit()"';
-            $elementgroup[] =& $mform->createElement('selectgroups',
+            $attributes = 'onChange="M.core_formchangechecker.set_form_submitted(); this.form.submit()"';
+            $elementgroup[] = $mform->createElement('selectgroups',
                                                      'templateid',
                                                      '',
                                                      $options,
                                                      $attributes);
 
-            $elementgroup[] =& $mform->createElement('submit',
+            $elementgroup[] = $mform->createElement('submit',
                                                      'use_template',
                                                      get_string('use_this_template', 'feedback'));
+
+            $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);
         } else {
             $mform->addElement('static', 'info', get_string('no_templates_available_yet', 'feedback'));
         }
-        $mform->addGroup($elementgroup, 'elementgroup', '', array(' '), false);
-
     }
 }
 
@@ -140,6 +143,9 @@ class feedback_edit_create_template_form extends moodleform {
 
     public function set_feedbackdata($data) {
         if (is_array($data)) {
+            if (!isset($this->feedbackdata)) {
+                $this->feedbackdata = new stdClass();
+            }
             foreach ($data as $key => $val) {
                 $this->feedbackdata->{$key} = $val;
             }
@@ -158,29 +164,29 @@ class feedback_edit_create_template_form extends moodleform {
         $mform->setType('savetemplate', PARAM_INT);
 
         //headline
-        $mform->addElement('header', '', get_string('creating_templates', 'feedback'));
+        $mform->addElement('header', 'creating_templates', get_string('creating_templates', 'feedback'));
 
         // visible elements
         $elementgroup = array();
 
-        $elementgroup[] =& $mform->createElement('static',
+        $elementgroup[] = $mform->createElement('static',
                                                  'templatenamelabel',
                                                  get_string('name', 'feedback'));
 
-        $elementgroup[] =& $mform->createElement('text',
+        $elementgroup[] = $mform->createElement('text',
                                                  'templatename',
                                                  get_string('name', 'feedback'),
                                                  array('size'=>'40', 'maxlength'=>'200'));
 
-        if (has_capability('mod/feedback:createpublictemplate', get_system_context())) {
-            $elementgroup[] =& $mform->createElement('checkbox',
+        if (has_capability('mod/feedback:createpublictemplate', context_system::instance())) {
+            $elementgroup[] = $mform->createElement('checkbox',
                                                      'ispublic',
                                                      get_string('public', 'feedback'),
                                                      get_string('public', 'feedback'));
         }
 
         // buttons
-        $elementgroup[] =& $mform->createElement('submit',
+        $elementgroup[] = $mform->createElement('submit',
                                                  'create_template',
                                                  get_string('save_as_new_template', 'feedback'));
 

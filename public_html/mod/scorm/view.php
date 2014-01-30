@@ -16,6 +16,7 @@
 
 require_once("../../config.php");
 require_once($CFG->dirroot.'/mod/scorm/locallib.php');
+require_once($CFG->dirroot.'/course/lib.php');
 
 $id = optional_param('id', '', PARAM_INT);       // Course Module ID, or
 $a = optional_param('a', '', PARAM_INT);         // scorm ID
@@ -23,7 +24,7 @@ $organization = optional_param('organization', '', PARAM_INT); // organization I
 $action = optional_param('action', '', PARAM_ALPHA);
 
 if (!empty($id)) {
-    if (! $cm = get_coursemodule_from_id('scorm', $id)) {
+    if (! $cm = get_coursemodule_from_id('scorm', $id, 0, true)) {
         print_error('invalidcoursemodule');
     }
     if (! $course = $DB->get_record("course", array("id"=>$cm->course))) {
@@ -39,7 +40,7 @@ if (!empty($id)) {
     if (! $course = $DB->get_record("course", array("id"=>$scorm->course))) {
         print_error('coursemisconf');
     }
-    if (! $cm = get_coursemodule_from_instance("scorm", $scorm->id, $course->id)) {
+    if (! $cm = get_coursemodule_from_instance("scorm", $scorm->id, $course->id, true)) {
         print_error('invalidcoursemodule');
     }
 } else {
@@ -56,10 +57,51 @@ if (!empty($forcejs)) {
     $PAGE->add_body_class('forcejavascript');
 }
 
-require_login($course->id, false, $cm);
+require_login($course, false, $cm);
 
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
-$contextmodule = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_course::instance($course->id);
+$contextmodule = context_module::instance($cm->id);
+
+$launch = false; // Does this automatically trigger a launch based on skipview.
+if (!empty($scorm->popup)) {
+    $orgidentifier = '';
+    $scoid = 0;
+    if ($scorm->skipview >= SCORM_SKIPVIEW_FIRST &&
+        has_capability('mod/scorm:skipview', $contextmodule) &&
+        !has_capability('mod/scorm:viewreport', $contextmodule)) { // Don't skip users with the capability to view reports.
+
+        // do we launch immediately and redirect the parent back ?
+        if ($scorm->skipview == SCORM_SKIPVIEW_ALWAYS || !scorm_has_tracks($scorm->id, $USER->id)) {
+            $orgidentifier = '';
+            if ($sco = scorm_get_sco($scorm->launch, SCO_ONLY)) {
+                if (($sco->organization == '') && ($sco->launch == '')) {
+                    $orgidentifier = $sco->identifier;
+                } else {
+                    $orgidentifier = $sco->organization;
+                }
+                $scoid = $sco->id;
+            }
+            $launch = true;
+        }
+    }
+    // Redirect back to the section with one section per page ?
+
+    $courseformat = course_get_format($course)->get_course();
+    $sectionid = '';
+    if (isset($courseformat->coursedisplay) && $courseformat->coursedisplay == COURSE_DISPLAY_MULTIPAGE) {
+        $sectionid = $cm->sectionnum;
+    }
+
+    $PAGE->requires->data_for_js('scormplayerdata', Array('launch' => $launch,
+                                                           'currentorg' => $orgidentifier,
+                                                           'sco' => $scoid,
+                                                           'scorm' => $scorm->id,
+                                                           'courseurl' => course_get_url($course, $sectionid)->out(false),
+                                                           'cwidth' => $scorm->width,
+                                                           'cheight' => $scorm->height,
+                                                           'popupoptions' => $scorm->options), true);
+    $PAGE->requires->js('/mod/scorm/view.js', true);
+}
 
 if (isset($SESSION->scorm)) {
     unset($SESSION->scorm);
@@ -73,7 +115,7 @@ $pagetitle = strip_tags($shortname.': '.format_string($scorm->name));
 
 add_to_log($course->id, 'scorm', 'pre-view', 'view.php?id='.$cm->id, "$scorm->id", $cm->id);
 
-if ((has_capability('mod/scorm:skipview', $contextmodule))) {
+if (empty($launch) && (has_capability('mod/scorm:skipview', $contextmodule))) {
     scorm_simple_play($scorm, $USER, $contextmodule, $cm->id);
 }
 
@@ -83,6 +125,7 @@ if ((has_capability('mod/scorm:skipview', $contextmodule))) {
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($scorm->name));
 
 if (!empty($action) && confirm_sesskey() && has_capability('mod/scorm:deleteownresponses', $contextmodule)) {
     if ($action == 'delete') {
@@ -102,9 +145,9 @@ $currenttab = 'info';
 require($CFG->dirroot . '/mod/scorm/tabs.php');
 
 // Print the main part of the page
-echo $OUTPUT->heading(format_string($scorm->name));
 $attemptstatus = '';
-if ($scorm->displayattemptstatus == 1) {
+if (empty($launch) && ($scorm->displayattemptstatus == SCORM_DISPLAY_ATTEMPTSTATUS_ALL ||
+         $scorm->displayattemptstatus == SCORM_DISPLAY_ATTEMPTSTATUS_ENTRY)) {
     $attemptstatus = scorm_get_attempt_status($USER, $scorm, $cm);
 }
 echo $OUTPUT->box(format_module_intro('scorm', $scorm, $cm->id).$attemptstatus, 'generalbox boxaligncenter boxwidthwide', 'intro');
@@ -119,10 +162,15 @@ if (!empty($scorm->timeclose) && $timenow > $scorm->timeclose) {
     echo $OUTPUT->box(get_string("expired", "scorm", userdate($scorm->timeclose)), "generalbox boxaligncenter");
     $scormopen = false;
 }
-if ($scormopen) {
+if ($scormopen && empty($launch)) {
     scorm_view_display($USER, $scorm, 'view.php?id='.$cm->id, $cm);
 }
 if (!empty($forcejs)) {
     echo $OUTPUT->box(get_string("forcejavascriptmessage", "scorm"), "generalbox boxaligncenter forcejavascriptmessage");
 }
+
+if (!empty($scorm->popup)) {
+    $PAGE->requires->js_init_call('M.mod_scormform.init');
+}
+
 echo $OUTPUT->footer();

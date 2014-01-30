@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,16 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * File containing the grade_report class.
- * @package gradebook
+ * File containing the grade_report class
+ *
+ * @package   core_grades
+ * @copyright 2007 Moodle Pty Ltd (http://moodle.com)
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once($CFG->libdir.'/gradelib.php');
 
 /**
  * An abstract class containing variables and methods used by all or most reports.
- * @abstract
- * @package gradebook
+ * @package core_grades
  */
 abstract class grade_report {
     /**
@@ -270,18 +271,21 @@ abstract class grade_report {
      * @return int Count of users
      */
     public function get_numusers($groups=true) {
-        global $CFG, $DB;
+        global $DB;
 
         $groupsql      = "";
         $groupwheresql = "";
 
-        //limit to users with a gradeable role
+        // Limit to users with a gradeable role.
         list($gradebookrolessql, $gradebookrolesparams) = $DB->get_in_or_equal(explode(',', $this->gradebookroles), SQL_PARAMS_NAMED, 'grbr0');
 
-        //limit to users with an active enrollment
+        // Limit to users with an active enrollment.
         list($enrolledsql, $enrolledparams) = get_enrolled_sql($this->context);
 
-        $params = array_merge($gradebookrolesparams, $enrolledparams);
+        // We want to query both the current context and parent contexts.
+        list($relatedctxsql, $relatedctxparams) = $DB->get_in_or_equal($this->context->get_parent_context_ids(true), SQL_PARAMS_NAMED, 'relatedctx');
+
+        $params = array_merge($gradebookrolesparams, $enrolledparams, $relatedctxparams);
 
         if ($groups) {
             $groupsql      = $this->groupsql;
@@ -299,7 +303,7 @@ abstract class grade_report {
                       WHERE ra.roleid $gradebookrolessql
                             AND u.deleted = 0
                             $groupwheresql
-                            AND ra.contextid ".get_related_contexts_string($this->context);
+                            AND ra.contextid $relatedctxsql";
         return $DB->count_records_sql($countsql, $params);
     }
 
@@ -332,10 +336,11 @@ abstract class grade_report {
      */
     protected function get_sort_arrow($direction='move', $sortlink=null) {
         global $OUTPUT;
+        $pix = array('up' => 't/sort_desc', 'down' => 't/sort_asc', 'move' => 't/sort');
         $matrix = array('up' => 'desc', 'down' => 'asc', 'move' => 'desc');
         $strsort = $this->get_lang_string('sort' . $matrix[$direction]);
 
-        $arrow = print_arrow($direction, $strsort, true);
+        $arrow = $OUTPUT->pix_icon($pix[$direction], $strsort, '', array('class' => 'sorticon'));
         return html_writer::link($sortlink, $arrow, array('title'=>$strsort));
     }
 
@@ -350,17 +355,26 @@ abstract class grade_report {
         global $CFG, $DB;
         static $hiding_affected = null;//array of items in this course affected by hiding
 
-        //if we're dealing with multiple users we need to know when we've moved on to a new user
+        // If we're dealing with multiple users we need to know when we've moved on to a new user.
         static $previous_userid = null;
 
-        if( $this->showtotalsifcontainhidden==GRADE_REPORT_SHOW_REAL_TOTAL_IF_CONTAINS_HIDDEN ) {
+        // If we're dealing with multiple courses we need to know when we've moved on to a new course.
+        static $previous_courseid = null;
+
+        if (!is_array($this->showtotalsifcontainhidden)) {
+            debugging('showtotalsifcontainhidden should be an array', DEBUG_DEVELOPER);
+            $this->showtotalsifcontainhidden = array($courseid => $this->showtotalsifcontainhidden);
+        }
+
+        if ($this->showtotalsifcontainhidden[$courseid] == GRADE_REPORT_SHOW_REAL_TOTAL_IF_CONTAINS_HIDDEN) {
             return $finalgrade;
         }
 
-        //if we've moved on to another user don't return the previous user's affected grades
-        if ($previous_userid!=$this->user->id) {
+        // If we've moved on to another course or user, reload the grades.
+        if ($previous_userid != $this->user->id || $previous_courseid != $courseid) {
             $hiding_affected = null;
             $previous_userid = $this->user->id;
+            $previous_courseid = $courseid;
         }
 
         if( !$hiding_affected ) {
@@ -390,7 +404,7 @@ abstract class grade_report {
 
         //if the item definitely depends on a hidden item
         if (array_key_exists($course_item->id, $hiding_affected['altered'])) {
-            if( !$this->showtotalsifcontainhidden ) {
+            if( !$this->showtotalsifcontainhidden[$courseid] ) {
                 //hide the grade
                 $finalgrade = null;
             }
@@ -400,7 +414,7 @@ abstract class grade_report {
             }
         } else if (!empty($hiding_affected['unknown'][$course_item->id])) {
             //not sure whether or not this item depends on a hidden item
-            if( !$this->showtotalsifcontainhidden ) {
+            if( !$this->showtotalsifcontainhidden[$courseid] ) {
                 //hide the grade
                 $finalgrade = null;
             }

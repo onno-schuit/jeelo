@@ -68,6 +68,8 @@ if ($id) {
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
+    require_login($course, true, $cm);
+
     // Checking wiki instance
     if (!$wiki = wiki_get_wiki($cm->instance)) {
         print_error('incorrectwikiid', 'wiki');
@@ -138,6 +140,7 @@ if ($id) {
     // Checking course instance
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
 
+    require_login($course, true, $cm);
     /*
      * Case 2:
      *
@@ -166,9 +169,9 @@ if ($id) {
     }
 
     // Checking course instance
-    if (!$course = $DB->get_record("course", array("id" => $cm->course))) {
-        print_error('coursemisconf');
-    }
+    $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+
+    require_login($course, true, $cm);
 
     $groupmode = groups_get_activity_groupmode($cm);
 
@@ -187,7 +190,7 @@ if ($id) {
 
     // Getting subwiki instance. If it does not exists, redirect to create page
     if (!$subwiki = wiki_get_subwiki_by_group($wiki->id, $gid, $uid)) {
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
 
         $modeanduser = $wiki->wikimode == 'individual' && $uid != $USER->id;
         $modeandgroupmember = $wiki->wikimode == 'collaborative' && !groups_is_member($gid);
@@ -267,9 +270,8 @@ if ($id) {
 } else {
     print_error('incorrectparameters');
 }
-require_login($course, true, $cm);
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 require_capability('mod/wiki:viewpage', $context);
 
 // Update 'viewed' state if required by completion system
@@ -282,15 +284,6 @@ if (($edit != - 1) and $PAGE->user_allowed_editing()) {
 }
 
 $wikipage = new page_wiki_view($wiki, $subwiki, $cm);
-
-/*The following piece of code is used in order
- * to perform set_url correctly. It is necessary in order
- * to make page_wiki_view class know that this page
- * has been called via its id.
- */
-if ($id) {
-    $wikipage->set_coursemodule($id);
-}
 
 $wikipage->set_gid($currentgroup);
 $wikipage->set_page($page);

@@ -45,10 +45,12 @@ class mod_imscp_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEANHTML);
         }
         $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $this->add_intro_editor($config->requiremodintro);
 
         //-------------------------------------------------------
         $mform->addElement('header', 'content', get_string('contentheader', 'imscp'));
+        $mform->setExpanded('content', true);
         $mform->addElement('filepicker', 'package', get_string('packagefile', 'imscp'));
 
         $options = array('-1'=>get_string('all'), '0'=>get_string('no'), '1'=>'1', '2'=>'2', '5'=>'5', '10'=>'10', '20'=>'20');
@@ -70,7 +72,7 @@ class mod_imscp_mod_form extends moodleform_mod {
             return $errors;
         }
 
-        $usercontext = get_context_instance(CONTEXT_USER, $USER->id);
+        $usercontext = context_user::instance($USER->id);
         $fs = get_file_storage();
 
         if (!$files = $fs->get_area_files($usercontext->id, 'user', 'draft', $data['package'], 'id', false)) {

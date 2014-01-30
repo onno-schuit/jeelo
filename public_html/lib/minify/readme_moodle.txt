@@ -1,20 +1,14 @@
-Description of Minify 2.1.3 import into Moodle
+Description of Minify 2.1.7 import into Moodle
 
 Notes:
- * Uses are required to add minify/lib to the include path
- * We ever actually use things within minify/lib/*
-
-Usage:
- * /lib/javascript.php
- * /theme/javascript.php
- * /theme/styles.php
+ * Do not use anything from /lib/minify/ directly, always use core_minify::*() methods.
+ * In 2.7dev we will import only the minimal number of files required by new core_minify class
+   and delete deprecated js_minify() and css_minify_css().
 
 Changes:
  * Removed index.php - Is an unused entry point program and could potentially
    pose a security risk in the future.
+ * Removed /builder/* - Not needed
  * Removed .htaccess - Not needed
- * Changed config.php - Changed settings to Moodle specific settings incase this
-   ever gets accidentally used.
- * Updated lib/Minify/CSS/Compressor.php - Applied an upstream fix for MDL-29864
-   to allow usage of unquoted font-familes with spaces in CSS.
-   http://code.google.com/p/minify/issues/detail?id=210
+ * Changed config.php - added moodle specific settings
+ * Removed lib/JSMin.php which is not GNU GPL compatible.

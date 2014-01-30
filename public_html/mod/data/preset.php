@@ -47,7 +47,6 @@ if ($id) {
 
 $context = context_module::instance($cm->id, MUST_EXIST);
 require_login($course, false, $cm);
-
 require_capability('mod/data:managetemplates', $context);
 $PAGE->set_url(new moodle_url('/mod/data/preset.php', array('d'=>$data->id)));
 $PAGE->set_title(get_string('course') . ': ' . $course->fullname);
@@ -98,12 +97,14 @@ $form_save->set_data(array('d' => $data->id, 'name'=>$data->name));
 /* Output */
 if (!$form_export->is_submitted()) {
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(format_string($data->name));
+    echo $OUTPUT->heading(format_string($data->name), 2);
 
     // Needed for tabs.php
     $currenttab = 'presets';
     $currentgroup = groups_get_activity_group($cm);
     $groupmode = groups_get_activity_groupmode($cm);
+    echo $OUTPUT->box(format_module_intro('data', $data, $cm->id), 'generalbox', 'intro');
+
     include('tabs.php');
 }
 
@@ -177,7 +178,7 @@ if (optional_param('sesskey', false, PARAM_BOOL) && confirm_sesskey()) {
         echo $OUTPUT->footer();
         exit(0);
     } else {
-        $action = optional_param('action', null, PARAM_ALPHA);
+        $action = optional_param('action', null, PARAM_ALPHANUM);
         $fullname = optional_param('fullname', '', PARAM_PATH); // directory the preset is in
         //
         // find out preset owner userid and shortname
@@ -217,7 +218,7 @@ if (optional_param('sesskey', false, PARAM_BOOL) && confirm_sesskey()) {
         } else if ($action == 'finishimport') {
             $overwritesettings = optional_param('overwritesettings', false, PARAM_BOOL);
             if (!$fullname) {
-                $presetdir = $CFG->tempdir.'/forms/'.required_param('directory', PARAM_ALPHANUMEXT);
+                $presetdir = $CFG->tempdir.'/forms/'.required_param('directory', PARAM_FILE);
                 if (!file_exists($presetdir) || !is_dir($presetdir)) {
                     print_error('cannotimport');
                 }
@@ -242,12 +243,12 @@ if (optional_param('sesskey', false, PARAM_BOOL) && confirm_sesskey()) {
 }
 
 // Export forms
-echo $OUTPUT->heading(get_string('export', 'data'));
+echo $OUTPUT->heading(get_string('export', 'data'), 3);
 $form_export->display();
 $form_save->display();
 
 // Import forms
-echo $OUTPUT->heading(get_string('import'));
+echo $OUTPUT->heading(get_string('import'), 3);
 $form_importzip->display();
 $form_importexisting->display();
 

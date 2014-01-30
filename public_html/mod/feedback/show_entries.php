@@ -41,10 +41,6 @@ $current_tab = $do_show;
 //get the objects
 ////////////////////////////////////////////////////////
 
-if ($userid) {
-    $formdata->userid = intval($userid);
-}
-
 if (! $cm = get_coursemodule_from_id('feedback', $id)) {
     print_error('invalidcoursemodule');
 }
@@ -61,15 +57,9 @@ $url = new moodle_url('/mod/feedback/show_entries.php', array('id'=>$cm->id, 'do
 
 $PAGE->set_url($url);
 
-if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
-        print_error('badcontext');
-}
+$context = context_module::instance($cm->id);
 
-require_login($course->id, true, $cm);
-
-if (($formdata = data_submitted()) AND !confirm_sesskey()) {
-    print_error('invalidsesskey');
-}
+require_login($course, true, $cm);
 
 require_capability('mod/feedback:viewreports', $context);
 
@@ -94,6 +84,7 @@ $strfeedback  = get_string("modulename", "feedback");
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($feedback->name));
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($feedback->name));
 
 require('tabs.php');
 

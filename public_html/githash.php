@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,16 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * CVS snapshot information
+ * git package information
  *
- * Moodle project is now using Git instead of CVS. All code is committed
- * first into official Moodle Git repository at git://git.moodle.org/moodle.git
- * This CVS repository receives only weekly snapshots of all files. 
- *
- * The following Git hash can be used to identify the exact snapshot.
+ * The following git hash can be used to identify the exact snapshot.
  *
  * You can find more information about using Git for Moodle development
- * and administration at http://docs.moodle.org/en/Git
+ * and administration at http://docs.moodle.org/en/Git .
  */
 
-$githash = '7d3704f293d1ab08d5eb1643461d02bb027327a2';
+$githash = '2b10fa0';

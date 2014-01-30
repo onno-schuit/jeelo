@@ -484,7 +484,7 @@ function lesson_mediafile_block_contents($cmid, $lesson) {
  **/
 function lesson_clock_block_contents($cmid, $lesson, $timer, $page) {
     // Display for timed lessons and for students only
-    $context = get_context_instance(CONTEXT_MODULE, $cmid);
+    $context = context_module::instance($cmid);
     if(!$lesson->timed || has_capability('mod/lesson:manage', $context)) {
         return null;
     }
@@ -609,37 +609,19 @@ function lesson_get_media_html($lesson, $context) {
 
     $extension = resourcelib_get_extension($url->out(false));
 
+    $mediarenderer = $PAGE->get_renderer('core', 'media');
+    $embedoptions = array(
+        core_media::OPTION_TRUSTED => true,
+        core_media::OPTION_BLOCK => true
+    );
+
     // find the correct type and print it out
     if (in_array($mimetype, array('image/gif','image/jpeg','image/png'))) {  // It's an image
         $code = resourcelib_embed_image($url, $title);
 
-    } else if ($mimetype == 'audio/mp3') {
-        // MP3 audio file
-        $code = resourcelib_embed_mp3($url, $title, $clicktoopen);
-
-    } else if ($mimetype == 'video/x-flv' or $extension === 'f4v') {
-        // Flash video file
-        $code = resourcelib_embed_flashvideo($url, $title, $clicktoopen);
-
-    } else if ($mimetype == 'application/x-shockwave-flash') {
-        // Flash file
-        $code = resourcelib_embed_flash($url, $title, $clicktoopen);
-
-    } else if (substr($mimetype, 0, 10) == 'video/x-ms') {
-        // Windows Media Player file
-        $code = resourcelib_embed_mediaplayer($url, $title, $clicktoopen);
-
-    } else if ($mimetype == 'video/quicktime') {
-        // Quicktime file
-        $code = resourcelib_embed_quicktime($url, $title, $clicktoopen);
-
-    } else if ($mimetype == 'video/mpeg') {
-        // Mpeg file
-        $code = resourcelib_embed_mpeg($url, $title, $clicktoopen);
-
-    } else if ($mimetype == 'audio/x-pn-realaudio-plugin') {
-        // RealMedia file
-        $code = resourcelib_embed_real($url, $title, $clicktoopen);
+    } else if ($mediarenderer->can_embed_url($url, $embedoptions)) {
+        // Media (audio/video) file.
+        $code = $mediarenderer->embed_url($url, $title, 0, 0, $embedoptions);
 
     } else {
         // anything else - just try object tag enlarged as much as possible
@@ -714,7 +696,7 @@ abstract class lesson_add_page_form_base extends moodleform {
         $mform = $this->_form;
         $editoroptions = $this->_customdata['editoroptions'];
 
-        $mform->addElement('header', 'qtypeheading', get_string('addaquestionpage', 'lesson', get_string($this->qtypestring, 'lesson')));
+        $mform->addElement('header', 'qtypeheading', get_string('createaquestionpage', 'lesson', get_string($this->qtypestring, 'lesson')));
 
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
@@ -740,9 +722,12 @@ abstract class lesson_add_page_form_base extends moodleform {
 
         if ($this->_customdata['edit'] === true) {
             $mform->addElement('hidden', 'edit', 1);
+            $mform->setType('edit', PARAM_BOOL);
             $this->add_action_buttons(get_string('cancel'), get_string('savepage', 'lesson'));
-        } else {
+        } else if ($this->qtype === 'questiontype') {
             $this->add_action_buttons(get_string('cancel'), get_string('addaquestionpage', 'lesson'));
+        } else {
+            $this->add_action_buttons(get_string('cancel'), get_string('savepage', 'lesson'));
         }
     }
 
@@ -777,10 +762,12 @@ abstract class lesson_add_page_form_base extends moodleform {
         if ($label === null) {
             $label = get_string("score", "lesson");
         }
+
         if (is_int($name)) {
             $name = "score[$name]";
         }
         $this->_form->addElement('text', $name, $label, array('size'=>5));
+        $this->_form->setType($name, PARAM_INT);
         if ($value !== null) {
             $this->_form->setDefault($name, $value);
         }
@@ -790,12 +777,12 @@ abstract class lesson_add_page_form_base extends moodleform {
      * Convenience function: Adds an answer editor
      *
      * @param int $count The count of the element to add
-     * @param string $label, NULL means default
+     * @param string $label, null means default
      * @param bool $required
      * @return void
      */
-    protected final function add_answer($count, $label = NULL, $required = false) {
-        if ($label === NULL) {
+    protected final function add_answer($count, $label = null, $required = false) {
+        if ($label === null) {
             $label = get_string('answer', 'lesson');
         }
         $this->_form->addElement('editor', 'answer_editor['.$count.']', $label, array('rows'=>'4', 'columns'=>'80'), array('noclean'=>true));
@@ -808,12 +795,12 @@ abstract class lesson_add_page_form_base extends moodleform {
      * Convenience function: Adds an response editor
      *
      * @param int $count The count of the element to add
-     * @param string $label, NULL means default
+     * @param string $label, null means default
      * @param bool $required
      * @return void
      */
-    protected final function add_response($count, $label = NULL, $required = false) {
-        if ($label === NULL) {
+    protected final function add_response($count, $label = null, $required = false) {
+        if ($label === null) {
             $label = get_string('response', 'lesson');
         }
         $this->_form->addElement('editor', 'response_editor['.$count.']', $label, array('rows'=>'4', 'columns'=>'80'), array('noclean'=>true));
@@ -831,7 +818,7 @@ abstract class lesson_add_page_form_base extends moodleform {
      *
      * @return bool
      */
-    public function construction_override() {
+    public function construction_override($pageid, lesson $lesson) {
         return true;
     }
 }
@@ -964,7 +951,7 @@ class lesson extends lesson_base {
         require_once($CFG->libdir.'/gradelib.php');
         require_once($CFG->dirroot.'/calendar/lib.php');
 
-        $DB->delete_records("lesson", array("id"=>$this->properties->id));;
+        $DB->delete_records("lesson", array("id"=>$this->properties->id));
         $DB->delete_records("lesson_pages", array("lessonid"=>$this->properties->id));
         $DB->delete_records("lesson_answers", array("lessonid"=>$this->properties->id));
         $DB->delete_records("lesson_attempts", array("lessonid"=>$this->properties->id));
@@ -979,7 +966,7 @@ class lesson extends lesson_base {
             }
         }
 
-        grade_update('mod/lesson', $this->properties->course, 'mod', 'lesson', $this->properties->id, 0, NULL, array('deleted'=>1));
+        grade_update('mod/lesson', $this->properties->course, 'mod', 'lesson', $this->properties->id, 0, null, array('deleted'=>1));
         return true;
     }
 
@@ -1621,14 +1608,16 @@ abstract class lesson_base {
         return !empty($this->properties->{$key});
     }
 
+    //NOTE: E_STRICT does not allow to change function signature!
+
     /**
-     * If overridden should create a new instance, save it in the DB and return it
+     * If implemented should create a new instance, save it in the DB and return it
      */
-    public static function create() {}
+    //public static function create() {}
     /**
-     * If overridden should load an instance from the DB and return it
+     * If implemented should load an instance from the DB and return it
      */
-    public static function load() {}
+    //public static function load() {}
     /**
      * Fetches all of the properties of the object
      * @return stdClass
@@ -2128,8 +2117,9 @@ abstract class lesson_page extends lesson_base {
             $context = $PAGE->context;
         }
         if ($maxbytes === null) {
-            $maxbytes =get_max_upload_file_size();
+            $maxbytes = get_user_max_upload_file_size($context);
         }
+        $properties->timemodified = time();
         $properties = file_postupdate_standard_editor($properties, 'contents', array('noclean'=>true, 'maxfiles'=>EDITOR_UNLIMITED_FILES, 'maxbytes'=>$maxbytes), $context, 'mod_lesson', 'page_contents', $properties->id);
         $DB->update_record("lesson_pages", $properties);
 
@@ -2323,9 +2313,14 @@ abstract class lesson_page extends lesson_base {
         }
         if (count($this->answers)>0) {
             $count = 0;
+            $qtype = $properties->qtype;
             foreach ($this->answers as $answer) {
-                $properties->{'answer_editor['.$count.']'} = array('text'=>$answer->answer, 'format'=>$answer->answerformat);
-                $properties->{'response_editor['.$count.']'} = array('text'=>$answer->response, 'format'=>$answer->responseformat);
+                $properties->{'answer_editor['.$count.']'} = array('text' => $answer->answer, 'format' => $answer->answerformat);
+                if ($qtype != LESSON_PAGE_MATCHING) {
+                    $properties->{'response_editor['.$count.']'} = array('text' => $answer->response, 'format' => $answer->responseformat);
+                } else {
+                    $properties->{'response_editor['.$count.']'} = $answer->response;
+                }
                 $properties->{'jumpto['.$count.']'} = $answer->jumpto;
                 $properties->{'score['.$count.']'} = $answer->score;
                 $count++;
@@ -2387,9 +2382,12 @@ abstract class lesson_page extends lesson_base {
             if (!isset($this->properties->contentsformat)) {
                 $this->properties->contentsformat = FORMAT_HTML;
             }
-            $context = get_context_instance(CONTEXT_MODULE, $PAGE->cm->id);
-            $contents = file_rewrite_pluginfile_urls($this->properties->contents, 'pluginfile.php', $context->id, 'mod_lesson', 'page_contents', $this->properties->id); // must do this BEFORE format_text()!!!!!!
-            return format_text($contents, $this->properties->contentsformat, array('context'=>$context, 'noclean'=>true)); // page edit is marked with XSS, we want all content here
+            $context = context_module::instance($PAGE->cm->id);
+            $contents = file_rewrite_pluginfile_urls($this->properties->contents, 'pluginfile.php', $context->id, 'mod_lesson',
+                                                     'page_contents', $this->properties->id);  // Must do this BEFORE format_text()!
+            return format_text($contents, $this->properties->contentsformat,
+                               array('context' => $context, 'noclean' => true,
+                                     'overflowdiv' => true));  // Page edit is marked with XSS, we want all content here.
         } else {
             return '';
         }
@@ -2689,6 +2687,40 @@ class lesson_page_type_manager {
     }
 
     /**
+     * This function detects errors in the ordering between 2 pages and updates the page records.
+     *
+     * @param stdClass $page1 Either the first of 2 pages or null if the $page2 param is the first in the list.
+     * @param stdClass $page1 Either the second of 2 pages or null if the $page1 param is the last in the list.
+     */
+    protected function check_page_order($page1, $page2) {
+        global $DB;
+        if (empty($page1)) {
+            if ($page2->prevpageid != 0) {
+                debugging("***prevpageid of page " . $page2->id . " set to 0***");
+                $page2->prevpageid = 0;
+                $DB->set_field("lesson_pages", "prevpageid", 0, array("id" => $page2->id));
+            }
+        } else if (empty($page2)) {
+            if ($page1->nextpageid != 0) {
+                debugging("***nextpageid of page " . $page1->id . " set to 0***");
+                $page1->nextpageid = 0;
+                $DB->set_field("lesson_pages", "nextpageid", 0, array("id" => $page1->id));
+            }
+        } else {
+            if ($page1->nextpageid != $page2->id) {
+                debugging("***nextpageid of page " . $page1->id . " set to " . $page2->id . "***");
+                $page1->nextpageid = $page2->id;
+                $DB->set_field("lesson_pages", "nextpageid", $page2->id, array("id" => $page1->id));
+            }
+            if ($page2->prevpageid != $page1->id) {
+                debugging("***prevpageid of page " . $page2->id . " set to " . $page1->id . "***");
+                $page2->prevpageid = $page1->id;
+                $DB->set_field("lesson_pages", "prevpageid", $page1->id, array("id" => $page2->id));
+            }
+        }
+    }
+
+    /**
      * This function loads ALL pages that belong to the lesson.
      *
      * @param lesson $lesson
@@ -2706,10 +2738,18 @@ class lesson_page_type_manager {
 
         $orderedpages = array();
         $lastpageid = 0;
-
-        while (true) {
+        $morepages = true;
+        while ($morepages) {
+            $morepages = false;
             foreach ($pages as $page) {
                 if ((int)$page->prevpageid === (int)$lastpageid) {
+                    // Check for errors in page ordering and fix them on the fly.
+                    $prevpage = null;
+                    if ($lastpageid !== 0) {
+                        $prevpage = $orderedpages[$lastpageid];
+                    }
+                    $this->check_page_order($prevpage, $page);
+                    $morepages = true;
                     $orderedpages[$page->id] = $page;
                     unset($pages[$page->id]);
                     $lastpageid = $page->id;
@@ -2720,6 +2760,23 @@ class lesson_page_type_manager {
                     }
                 }
             }
+        }
+
+        // Add remaining pages and fix the nextpageid links for each page.
+        foreach ($pages as $page) {
+            // Check for errors in page ordering and fix them on the fly.
+            $prevpage = null;
+            if ($lastpageid !== 0) {
+                $prevpage = $orderedpages[$lastpageid];
+            }
+            $this->check_page_order($prevpage, $page);
+            $orderedpages[$page->id] = $page;
+            unset($pages[$page->id]);
+            $lastpageid = $page->id;
+        }
+
+        if ($lastpageid !== 0) {
+            $this->check_page_order($orderedpages[$lastpageid], null);
         }
 
         return $orderedpages;

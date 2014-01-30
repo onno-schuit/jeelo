@@ -48,14 +48,12 @@ if (! $feedback = $DB->get_record("feedback", array("id"=>$cm->instance))) {
     print_error('invalidcoursemodule');
 }
 
-if (!$context = get_context_instance(CONTEXT_MODULE, $cm->id)) {
-        print_error('badcontext');
-}
+$context = context_module::instance($cm->id);
 
 if ($course->id == SITEID) {
-    require_login($course->id, true);
+    require_login($course, true);
 } else {
-    require_login($course->id, true, $cm);
+    require_login($course, true, $cm);
 }
 
 //check whether the given courseid exists
@@ -82,6 +80,7 @@ $PAGE->navbar->add(get_string('analysis', 'feedback'));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_title(format_string($feedback->name));
 echo $OUTPUT->header();
+echo $OUTPUT->heading(format_string($feedback->name));
 
 /// print the tabs
 require('tabs.php');
@@ -159,7 +158,7 @@ if ($check_anonymously) {
 } else {
     echo $OUTPUT->heading_with_help(get_string('insufficient_responses_for_this_group', 'feedback'),
                                     'insufficient_responses',
-                                    'feedback');
+                                    'feedback', '', '', 3);
 }
 echo '</td></tr></table></div>';
 echo $OUTPUT->box_end();

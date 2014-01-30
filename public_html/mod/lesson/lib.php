@@ -43,6 +43,8 @@ function lesson_add_instance($data, $mform) {
     global $DB;
 
     $cmid = $data->coursemodule;
+    $draftitemid = $data->mediafile;
+    $context = context_module::instance($cmid);
 
     lesson_process_pre_save($data);
 
@@ -50,14 +52,9 @@ function lesson_add_instance($data, $mform) {
     $lessonid = $DB->insert_record("lesson", $data);
     $data->id = $lessonid;
 
-    $context = get_context_instance(CONTEXT_MODULE, $cmid);
     $lesson = $DB->get_record('lesson', array('id'=>$lessonid), '*', MUST_EXIST);
 
-    if ($filename = $mform->get_new_filename('mediafilepicker')) {
-        if ($file = $mform->save_stored_file('mediafilepicker', $context->id, 'mod_lesson', 'mediafile', 0, '/', $filename)) {
-            $DB->set_field('lesson', 'mediafile', '/'.$file->get_filename(), array('id'=>$lesson->id));
-        }
-    }
+    lesson_update_media_file($lessonid, $context, $draftitemid);
 
     lesson_process_post_save($data);
 
@@ -80,22 +77,15 @@ function lesson_update_instance($data, $mform) {
 
     $data->id = $data->instance;
     $cmid = $data->coursemodule;
+    $draftitemid = $data->mediafile;
+    $context = context_module::instance($cmid);
 
     lesson_process_pre_save($data);
 
     unset($data->mediafile);
     $DB->update_record("lesson", $data);
 
-    $context = get_context_instance(CONTEXT_MODULE, $cmid);
-    if ($filename = $mform->get_new_filename('mediafilepicker')) {
-        if ($file = $mform->save_stored_file('mediafilepicker', $context->id, 'mod_lesson', 'mediafile', 0, '/', $filename, true)) {
-            $DB->set_field('lesson', 'mediafile', '/'.$file->get_filename(), array('id'=>$data->id));
-        } else {
-            $DB->set_field('lesson', 'mediafile', '', array('id'=>$data->id));
-        }
-    } else {
-        $DB->set_field('lesson', 'mediafile', '', array('id'=>$data->id));
-    }
+    lesson_update_media_file($data->id, $context, $draftitemid);
 
     lesson_process_post_save($data);
 
@@ -295,7 +285,7 @@ function lesson_print_overview($courses, &$htmlarray) {
             $str .= $OUTPUT->box(get_string('lessoncloseson', 'lesson', userdate($lesson->deadline)), 'info');
 
             // Attempt information
-            if (has_capability('mod/lesson:manage', get_context_instance(CONTEXT_MODULE, $lesson->coursemodule))) {
+            if (has_capability('mod/lesson:manage', context_module::instance($lesson->coursemodule))) {
                 // Number of user attempts
                 $attempts = $DB->count_records('lesson_attempts', array('lessonid'=>$lesson->id));
                 $str     .= $OUTPUT->box(get_string('xattempts', 'lesson', $attempts), 'info');
@@ -345,7 +335,7 @@ function lesson_get_user_grades($lesson, $userid=0) {
 
     $params = array("lessonid" => $lesson->id,"lessonid2" => $lesson->id);
 
-    if (isset($userid)) {
+    if (!empty($userid)) {
         $params["userid"] = $userid;
         $params["userid2"] = $userid;
         $user = "AND u.id = :userid";
@@ -393,8 +383,7 @@ function lesson_get_user_grades($lesson, $userid=0) {
 /**
  * Update grades in central gradebook
  *
- * @global stdclass
- * @global object
+ * @category grade
  * @param object $lesson
  * @param int $userid specific user only, 0 means all
  * @param bool $nullifnone
@@ -412,7 +401,7 @@ function lesson_update_grades($lesson, $userid=0, $nullifnone=true) {
     } else if ($userid and $nullifnone) {
         $grade = new stdClass();
         $grade->userid   = $userid;
-        $grade->rawgrade = NULL;
+        $grade->rawgrade = null;
         lesson_grade_item_update($lesson, $grade);
 
     } else {
@@ -453,14 +442,14 @@ function lesson_upgrade_grades() {
 /**
  * Create grade item for given lesson
  *
- * @global stdClass
+ * @category grade
  * @uses GRADE_TYPE_VALUE
  * @uses GRADE_TYPE_NONE
  * @param object $lesson object with extra cmidnumber
  * @param array|object $grades optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok, error code otherwise
  */
-function lesson_grade_item_update($lesson, $grades=NULL) {
+function lesson_grade_item_update($lesson, $grades=null) {
     global $CFG;
     if (!function_exists('grade_update')) { //workaround for buggy PHP versions
         require_once($CFG->libdir.'/gradelib.php');
@@ -485,7 +474,7 @@ function lesson_grade_item_update($lesson, $grades=NULL) {
 
     if ($grades  === 'reset') {
         $params['reset'] = true;
-        $grades = NULL;
+        $grades = null;
     } else if (!empty($grades)) {
         // Need to calculate raw grade (Note: $grades has many forms)
         if (is_object($grades)) {
@@ -513,39 +502,13 @@ function lesson_grade_item_update($lesson, $grades=NULL) {
 /**
  * Delete grade item for given lesson
  *
- * @global stdClass
+ * @category grade
  * @param object $lesson object
  * @return object lesson
  */
 function lesson_grade_item_delete($lesson) {
     global $CFG;
 
-}
-
-
-/**
- * Must return an array of user records (all data) who are participants
- * for a given instance of lesson. Must include every user involved
- * in the instance, independent of his role (student, teacher, admin...)
- *
- * @todo: deprecated - to be deleted in 2.2
- *
- * @param int $lessonid
- * @return array
- */
-function lesson_get_participants($lessonid) {
-    global $CFG, $DB;
-
-    //Get students
-    $params = array ("lessonid" => $lessonid);
-    $students = $DB->get_records_sql("SELECT DISTINCT u.id, u.id
-                                 FROM {user} u,
-                                      {lesson_attempts} a
-                                 WHERE a.lessonid = :lessonid and
-                                       u.id = a.userid", $params);
-
-    //Return students array (it contains an array of unique users)
-    return ($students);
 }
 
 /**
@@ -840,7 +803,7 @@ function lesson_extend_settings_navigation($settings, $lessonnode) {
  */
 function lesson_get_import_export_formats($type) {
     global $CFG;
-    $fileformats = get_plugin_list("qformat");
+    $fileformats = core_component::get_plugin_list("qformat");
 
     $fileformatname=array();
     foreach ($fileformats as $fileformat=>$fdir) {
@@ -869,15 +832,18 @@ function lesson_get_import_export_formats($type) {
 /**
  * Serves the lesson attachments. Implements needed access control ;-)
  *
- * @param object $course
- * @param object $cm
- * @param object $context
- * @param string $filearea
- * @param array $args
- * @param bool $forcedownload
+ * @package mod_lesson
+ * @category files
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function lesson_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+function lesson_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     global $CFG, $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -916,12 +882,16 @@ function lesson_pluginfile($course, $cm, $context, $filearea, $args, $forcedownl
     }
 
     // finally send the file
-    send_stored_file($file, 0, 0, $forcedownload); // download MUST be forced - security!
+    send_stored_file($file, 0, 0, $forcedownload, $options); // download MUST be forced - security!
 }
 
 /**
  * Returns an array of file areas
- * @return array
+ *
+ * @package  mod_lesson
+ * @category files
+ * @todo MDL-31048 localize
+ * @return array a list of available file areas
  */
 function lesson_get_file_areas() {
     $areas = array();
@@ -934,16 +904,18 @@ function lesson_get_file_areas() {
 /**
  * Returns a file_info_stored object for the file being requested here
  *
- * @global <type> $CFG
- * @param file_browse $browser
- * @param array $areas
- * @param object $course
- * @param object $cm
- * @param object $context
- * @param string $filearea
- * @param int $itemid
- * @param string $filepath
- * @param string $filename
+ * @package  mod_lesson
+ * @category files
+ * @global stdClass $CFG
+ * @param file_browse $browser file browser instance
+ * @param array $areas file areas
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param int $itemid item ID
+ * @param string $filepath file path
+ * @param string $filename file name
  * @return file_info_stored
  */
 function lesson_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
@@ -976,4 +948,34 @@ function lesson_page_type_list($pagetype, $parentcontext, $currentcontext) {
         'mod-lesson-view'=>get_string('page-mod-lesson-view', 'lesson'),
         'mod-lesson-edit'=>get_string('page-mod-lesson-edit', 'lesson'));
     return $module_pagetype;
+}
+
+/**
+ * Update the lesson activity to include any file
+ * that was uploaded, or if there is none, set the
+ * mediafile field to blank.
+ *
+ * @param int $lessonid the lesson id
+ * @param stdClass $context the context
+ * @param int $draftitemid the draft item
+ */
+function lesson_update_media_file($lessonid, $context, $draftitemid) {
+    global $DB;
+
+    // Set the filestorage object.
+    $fs = get_file_storage();
+    // Save the file if it exists that is currently in the draft area.
+    file_save_draft_area_files($draftitemid, $context->id, 'mod_lesson', 'mediafile', 0);
+    // Get the file if it exists.
+    $files = $fs->get_area_files($context->id, 'mod_lesson', 'mediafile', 0, 'itemid, filepath, filename', false);
+    // Check that there is a file to process.
+    if (count($files) == 1) {
+        // Get the first (and only) file.
+        $file = reset($files);
+        // Set the mediafile column in the lessons table.
+        $DB->set_field('lesson', 'mediafile', '/' . $file->get_filename(), array('id' => $lessonid));
+    } else {
+        // Set the mediafile column in the lessons table.
+        $DB->set_field('lesson', 'mediafile', '', array('id' => $lessonid));
+    }
 }

@@ -17,10 +17,9 @@
 /**
  * Strings for component 'quiz_grading', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package    quiz
- * @subpackage grading
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   quiz_grading
+ * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['alldoneredirecting'] = 'All selected attempts have been graded. Returning to the list of questions.';
@@ -31,7 +30,8 @@ $string['automaticallygraded'] = 'Automatically graded';
 $string['backtothelistofquestions'] = 'Back to the list of questions';
 $string['bydate'] = 'By date';
 $string['bystudentidnumber'] = 'By student id number';
-$string['bystudentname'] = 'By student name';
+$string['bystudentfirstname'] = 'By student first name';
+$string['bystudentlastname'] = 'By student last name';
 $string['cannotloadquestioninfo'] = 'Unable to load questiontype specific question information';
 $string['cannotgradethisattempt'] = 'Cannot grade this attempt.';
 $string['changeoptions'] = 'Change options';
@@ -64,6 +64,7 @@ $string['gradingungraded'] = '{$a} ungraded attempts';
 $string['hideautomaticallygraded'] = 'Hide questions that have been graded automatically';
 $string['inprogress'] = 'In progress';
 $string['noquestionsfound'] = 'No manually graded questions found';
+$string['nothingfound'] = 'Nothing to display';
 $string['options'] = 'Options';
 $string['orderattempts'] = 'Order attempts';
 $string['pluginname'] = 'Manual grading';

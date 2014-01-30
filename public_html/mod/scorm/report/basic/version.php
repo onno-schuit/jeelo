@@ -26,5 +26,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version  = 2011071100;
-$plugin->requires = 2011070800;
+$plugin->version  = 2013110500;
+$plugin->requires = 2013110500;
+$plugin->component = 'scormreport_basic';

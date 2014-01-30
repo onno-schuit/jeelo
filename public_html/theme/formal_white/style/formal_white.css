@@ -6,7 +6,7 @@ html, body {
     font-family:Arial, Verdana, Helvetica, sans-serif;
     margin:0;
     padding:0;
-    background-color:#EFEFEF;
+    background-color:[[setting:pagebackground]];
     font-size:[[setting:fontsizereference]];
 }
 
@@ -14,57 +14,86 @@ a:link {text-decoration:none;color:black;}
 a:visited {text-decoration:none;color:black;}
 a:hover {text-decoration:underline;color:black;}
 
+a.autolink {text-decoration:underline;}
+
 h1 {font-size:140%;font-weight:bold;}
 h2 {font-size:130%;}
 h3 {font-size:120%;}
 h4 {font-weight:bold;}
 
-h2.main, h3.main, h4.main {margin:0;padding:0;text-align: center;}
-
-#headerlogo {margin:0.3em;float:left;top:1em;}
 h1.headerheading {margin:14px 11px 8px 11px;float:left;font-size:200%;}
+h2, h3, h4 {padding:0;}
+
+/* page-header */
+#page-header{
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    width: 100%;
+}
+
+/* headerlogo */
+#headerlogo {
+    float: left;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    line-height: 0;
+}
+
+.dir-rtl #headerlogo {
+    float: right;
+}
 
 /* headermenu */
-#page-header{line-height:0;overflow:hidden;}
-/*#headerlogo img {margin:7px;}*/
-.headermenu {position:relative;line-height:1.7em;font-size:90%;margin:0.3em 0.3em 0.3em 0;right:0.3em;}
+.headermenu {
+    font-size: 90%;
+    line-height: 1.7em;
+    position: absolute;
+    top: 0;
+}
 
-#dock {background-color:[[setting:blockcontentbgc]];border-right:1px #000 dashed;}
+.dir-ltr .headermenu {
+     float: right;
+     margin: 1.7em [[calculated:headermenumargin]] 0 0;
+     right: 0;
+     text-align: right;
+ }
+
+.dir-rtl .headermenu {
+    float: left;
+    margin: 1.7em 0 0 [[calculated:headermenumargin]];
+    left: 0;
+    text-align: left;
+}
+
+.langmenu {
+    margin-right: 0.1em;
+}
+
+#dock {background-color:[[setting:blockcontentbgc]];border-right:1px dashed #000;}
 #dock .dockeditem_container {margin-top: 10px;}
-#dock #dockeditempanel .dockeditempanel_hd {background-image:url([[pix:theme|gradient_h]]);background-repeat:repeat-x;text-align:left;height:1.8em;background-color:#E3DFD4;}
+#dock #dockeditempanel .dockeditempanel_hd {background-image:url([[pix:theme|trend/__setting_trendcolor__/gradient_h]]);background-color:[[setting:blockheaderbackground]];background-repeat:repeat-x;text-align:left;height:1.8em;}
 #dock #dockeditempanel .dockeditempanel_hd h2 {display:block;padding-left:0.3em;margin-top:0;text-align:left;}
 #dock #dockeditempanel .dockeditempanel_hd .commands {position:absolute;right:0.3em;top:0.25em;}
 
 /* navbar */
-.navbar {width:auto;padding-top:0.35em;padding-bottom:0.15em;background-image:url([[pix:theme|bg_bread]]);background-color:#AB9D80;}
-.navbar li span {color:#E3DFD4;}
-.navbar li a:link, .navbar li a:visited {color:white;}
+.navbar {width:auto;background-image:url([[pix:theme|trend/__setting_trendcolor__/bg_bread]]);background-repeat:repeat-x;line-height:29px;} /* 30 pixel is the height if bg_bread */
+.navbar li span.arrow {color:black;font-size:50%;}
+.navbar li span {color:white;}
+.navbar li a:link, .navbar li a:visited {color:black;}
+
+#page-content {
+    /* min-width here is useless until min-width in frame.css/#frametop is gretaer enought to hold this #page-content min-width */
+    /* #page-content min-width is inherited by parent themes */
+    /* #page-content min-width = 0 frees me from possible related problems */
+    min-width:0;
+}
 
 /* navbutton */
 .navbutton {padding-right:0.5em;}
 .navbutton table td {padding:0;}
-
-/*.block_navigation .block_tree li.type_category.contains_branch>p span {
-    padding-left: 20px;
-    background-image: url([[pix:theme|folderopen]]);
-    background-repeat: no-repeat;
-    background-position: 0 -1px;
-}
-.block_navigation .block_tree li.type_category.contains_branch.collapsed>p span {
-    padding-left: 20px;
-    background-image: url([[pix:theme|folderclose]]);
-    background-repeat: no-repeat;
-    background-position: 0 -1px;
-}*/
-
-.block_settings .block_tree .tree_item a:link,
-.block_settings .block_tree .tree_item a:visited,
-.block_settings .block_tree .tree_item a:active,
-.block_navigation .block_tree .tree_item a:link,
-.block_navigation .block_tree .tree_item a:visited,
-.block_navigation .block_tree .tree_item a:active {
-    color:#000;
-}
 
 /* breadcrumb */
 .breadcrumb {margin-left:0.8em;}
@@ -80,30 +109,21 @@ h1.headerheading {margin:14px 11px 8px 11px;float:left;font-size:200%;}
 #page-enrol-instances .select.menujump {margin-left:0.5em;}
 
 /* environmenttable */
-.environmenttable .error {
-    background-color: red;
-}
-
-.environmenttable .warn {
-    background-color: yellow;
-}
-
-.environmenttable .ok {
-    background-color: lime;
-}
+.environmenttable .error {background-color:red;}
+.environmenttable .warn {background-color:yellow;}
+.environmenttable .ok {background-color:lime;}
 
 /* adminsettings */
-#adminsettings .form-overridden {
-    background-color: yellow;
-}
+#adminsettings .form-overridden {background-color:yellow;}
+#adminsettings .form-warning {color:red;}
 
 /* tables */
 .editcourse th,
 .editcourse td,
 .generaltable th,
 .generaltable td,
-#page-admin-course-category .generalbox th,
-#page-admin-course-category .generalbox td,
+#page-admin-course-manage .generalbox th,
+#page-admin-course-manage .generalbox td,
 #attempts th,
 #attempts td,
 .plugincompattable th,
@@ -116,13 +136,18 @@ h1.headerheading {margin:14px 11px 8px 11px;float:left;font-size:200%;}
     border-collapse: collapse;
 }
 
+/* Filter table - MDL-32869 */
+.path-admin .cell .singleselect {
+    margin:0;
+}
+
 th.header,
 .formtable tbody th,
 .generalbox th,
-.generaltable th.header {background-image:url([[pix:theme|gradient_h]]);background-repeat:repeat-x;border-top:1px #C6BDA8 solid;background-color:#E3DFD4;}
-/*#modules, .compatibleblockstable {margin-left:auto; margin-right:auto;} waiting for MDL-26760*/
-table.flexible .r0, table.generaltable .r0 {background-color: #F0F0F0;margin-bottom:-3px;}
-table.flexible .r1, table.generaltable .r1 {background-color: #FAFAFA;margin-bottom:-3px;}
+.generaltable th.header {background-image:url([[pix:theme|trend/__setting_trendcolor__/gradient_h]]);background-color:[[setting:blockheaderbackground]];background-repeat:repeat-x;border-top:1px solid #C6BDA8;}
+#modules, #compatibleblockstable {margin-left:auto; margin-right:auto;}
+table.flexible .r0, table.generaltable .r0 {background-color: #F0F0F0;}
+table.flexible .r1, table.generaltable .r1 {background-color: #FAFAFA;}
 
 /* admin pages */
 div#chooseuser {border:0 transparent none;}
@@ -130,36 +155,26 @@ table.groupmanagementtable,
 table.groupmanagementtable tr,
 table.groupmanagementtable td {border-width:0px;}
 table.groupmanagementtable td#buttonscell {vertical-align:middle;text-align:center;}
-table#defineroletable tr.rolecapheading {background-image:url([[pix:theme|gradient_h]]);background-repeat:repeat-x;background-color:#E3DFD4;}
-/*table#defineroletable tr.rolecap {border-top:1px #F30 dashed;}*/
-tr.rolecap {border-top:1px #F30 dashed;}
+table#defineroletable tr.rolecapheading {background-image:url([[pix:theme|trend/__setting_trendcolor__/gradient_h]]);background-color:[[setting:blockheaderbackground]];background-repeat:repeat-x;}
+/*table#defineroletable tr.rolecap {border-top:1px dashed #F30;}*/
+tr.rolecap {border-top:1px dashed #F30;}
 tr.rolecapheading + tr.rolecap {border-top:none;}
 
 /* course categories */
-#page-admin-course-index .editcourse td div.singleselect {text-align:left;}
+#page-admin-course-manage .editcourse td div.singleselect {text-align:left;}
 
 /* course */
 /* ul.topics .section span.commands {float:right;} /* distanza dei comandi dagli elementi del corso */
 ul.topics .section span.commands {position:absolute;right:1em;}
 
-.mform fieldset {border:1px #DDD solid;}
+.mform fieldset {border:1px solid #DDD;}
 .mform .fitem .fitemtitle {width:25%;}
 .mform .fitem .fitemtitle label {padding-right:5px;}
-.mform .fitem .felement {margin-left:26%;width:73%;}
+.mform .fitem .felement {margin-left:26%;width:73%;min-height: 0.8em;}
 /*.mform .fitem fieldset.felement {padding-left:0}*/
 .mform .fitem .fitemtitle .helplink img {margin-right:-5px;}
 .mform .fsubmit {text-align:left}
 table td.cell p {margin:0;}
-
-/* block */
-.block {border:1px #C6BDA8 solid;margin-bottom:0.5em;}
-.block .header h2 {margin:0;padding-left:0.3em;}
-.block .header .title {background-image:url([[pix:theme|gradient_h]]);background-repeat:repeat-x;clear:both;line-height:2em;background-color:#E3DFD4;}
-.block .header .title .commands {padding-left:0.3em;text-align:right;}
-.block .content {background-color:[[setting:blockcontentbgc]];}
-
-/* block login */
-.block_login .btn {margin-top:0.5em;text-align:center;}
 
 /* pagelayout-report */
 .pagelayout-report #page-header {float:left;}
@@ -171,12 +186,9 @@ table td.cell p {margin:0;}
 /* page-footer */
 #page-footer {text-align:center;width:100%;padding:0;}
 .noframefooter {background-color:#FFF;clear: both;float: left;width:100%;}
-#page-footer-content {text-align:center;border:7px #E3DFD4 double;margin:0;padding:0.5em;}
+#page-footer-content {text-align:center;border:7px double #E3DFD4;margin:0;padding:0.5em;}
 #page-footer .logininfo {padding:0.3em 0 0.7em 0;}
-#page-footer .moodledocs {text-align:center;background-color:#EFEFEF;padding:0.7em 0 0.8em 0;}
-
-/* js help messages */
-#helppopupbox .helpheading {margin-top:1em;}
+#page-footer .moodledocs {text-align:center;padding:0.7em 0 0.8em 0;}
 
 /* pre, code, tt */
 pre, code, tt {
@@ -208,23 +220,30 @@ pre, code, tt {
     background: none repeat scroll 0 0 [[setting:lblockcolumnbgc]];
 }
 
+.notifytiny {
+    font-size: 1em;
+}
+
 /* MDL-29403 */
-.capdefault {background-image:url([[pix:theme|gradient_h]]);background-repeat:repeat-x;background-color:#E3DFD4;}
+.capdefault {
+    background-image:url([[pix:theme|trend/__setting_trendcolor__/gradient_h]]);
+    background-color:[[setting:blockheaderbackground]];
+    background-repeat:repeat-x;
+}
 table#defineroletable th {border-top:none;}
 
 form.loginform .rememberusername {
-    padding-left:0.3em;
+    padding-left:13px;
     width: auto;
 }
 
-/* RSS - MDL-29367 */
-.block_rss_client .list li:first-child {
-    border-top-width: 0;
+form.loginform #rememberusername {
+    margin-right:0;
 }
 
+/* RSS - MDL-28561 */
 .block_rss_client .list li {
-    border-top: 1px solid #DDDDDD;
-    padding: 5px;
+    border-top-color: #DDD;
 }
 
 /* Upcoming events - MDL-29367 */

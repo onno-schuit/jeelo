@@ -37,7 +37,6 @@ add_to_log($course->id, 'folder', 'view all', "index.php?id=$course->id", '');
 
 $strfolder       = get_string('modulename', 'folder');
 $strfolders      = get_string('modulenameplural', 'folder');
-$strsectionname  = get_string('sectionname', 'format_'.$course->format);
 $strname         = get_string('name');
 $strintro        = get_string('moduleintro');
 $strlastmodified = get_string('lastmodified');
@@ -47,6 +46,7 @@ $PAGE->set_title($course->shortname.': '.$strfolders);
 $PAGE->set_heading($course->fullname);
 $PAGE->navbar->add($strfolders);
 echo $OUTPUT->header();
+echo $OUTPUT->heading($strfolders);
 
 if (!$folders = get_all_instances_in_course('folder', $course)) {
     notice(get_string('thereareno', 'moodle', $strfolders), "$CFG->wwwroot/course/view.php?id=$course->id");
@@ -54,14 +54,12 @@ if (!$folders = get_all_instances_in_course('folder', $course)) {
 }
 
 $usesections = course_format_uses_sections($course->format);
-if ($usesections) {
-    $sections = get_all_sections($course->id);
-}
 
 $table = new html_table();
 $table->attributes['class'] = 'generaltable mod_index';
 
 if ($usesections) {
+    $strsectionname = get_string('sectionname', 'format_'.$course->format);
     $table->head  = array ($strsectionname, $strname, $strintro);
     $table->align = array ('center', 'left', 'left');
 } else {
@@ -77,7 +75,7 @@ foreach ($folders as $folder) {
         $printsection = '';
         if ($folder->section !== $currentsection) {
             if ($folder->section) {
-                $printsection = get_section_name($course, $sections[$folder->section]);
+                $printsection = get_section_name($course, $folder->section);
             }
             if ($currentsection !== '') {
                 $table->data[] = 'hr';

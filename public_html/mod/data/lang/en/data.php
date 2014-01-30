@@ -29,9 +29,11 @@ $string['addcomment'] = 'Add comment';
 $string['addentries'] = 'Add entries';
 $string['addtemplate'] = 'Add template';
 $string['advancedsearch'] = 'Advanced search';
+$string['allowcomments'] = 'Allow comments on entries';
 $string['alttext'] = 'Alternative text';
 $string['approve'] = 'Approve';
 $string['approved'] = 'Approved';
+$string['areacontent'] = 'Fields';
 $string['ascending'] = 'Ascending';
 $string['asearchtemplate'] = 'Advanced search template';
 $string['atmaxentry'] = 'You have entered the maximum number of entries allowed!';
@@ -67,17 +69,20 @@ $string['commentsoff'] = 'Comments feature is not enabled';
 $string['configenablerssfeeds'] = 'This switch will enable the possibility of RSS feeds for all databases. You will still need to turn feeds on manually in the settings for each database.';
 $string['confirmdeletefield'] = 'You are about to delete this field, are you sure?';
 $string['confirmdeleterecord'] = 'Are you sure you want to delete this entry?';
+$string['confirmdeleterecords'] = 'Are you sure you want to delete these entries?';
 $string['csstemplate'] = 'CSS template';
 $string['csvfailed'] = 'Unable to read the raw data from the CSV file';
 $string['csvfile'] = 'CSV file';
 $string['csvimport'] = 'CSV file import';
 $string['csvimport_help'] = 'Entries may be imported via a plain text file with a list of field names as the first line, then the data, with one record per line.';
 $string['csvwithselecteddelimiter'] = '<acronym title="Comma Separated Values">CSV</acronym> text with selected delimiter:';
-$string['data:approve'] = 'Approve unapproved entries';
+$string['data:addinstance'] = 'Add a new database';
+$string['data:approve'] = 'Approve unapproved entries, or disapprove approved ones';
 $string['data:comment'] = 'Write comments';
 $string['data:exportallentries'] = 'Export all database entries';
 $string['data:exportentry'] = 'Export a database entry';
 $string['data:exportownentry'] = 'Export own database entry';
+$string['data:exportuserinfo'] = 'Export user information';
 $string['data:managecomments'] = 'Manage comments';
 $string['data:manageentries'] = 'Manage entries';
 $string['data:managetemplates'] = 'Manage templates';
@@ -95,6 +100,7 @@ $string['dateentered'] = 'Date entered';
 $string['defaultfielddelimiter'] = '(default is the comma character)';
 $string['defaultfieldenclosure'] = '(default is none)';
 $string['defaultsortfield'] = 'Default sort field';
+$string['delcheck'] = 'Bulk delete checkbox';
 $string['delete'] = 'Delete';
 $string['deleteallentries'] = 'Delete all entries';
 $string['deletecomment'] = 'Are you sure you want to delete this comment?';
@@ -104,6 +110,7 @@ $string['deletenotenrolled'] = 'Delete entries by users not enrolled';
 $string['deletewarning'] = 'Are you sure you want to delete this preset?';
 $string['descending'] = 'Descending';
 $string['directorynotapreset'] = '{$a->directory} Not a preset: missing files: {$a->missing_files}';
+$string['disapprove'] = 'Disapprove';
 $string['download'] = 'Download';
 $string['edit'] = 'Edit';
 $string['editcomment'] = 'Edit comment';
@@ -175,8 +182,11 @@ $string['chooseorupload'] = 'Choose file';
 $string['expired'] = 'Sorry, this activity closed on {$a} and is no longer available';
 $string['importentries'] = 'Import entries';
 $string['importsuccess'] = 'The preset has been successfully applied.';
+$string['includeapproval'] = 'Include approval status';
+$string['includetime'] = 'Include time added/modified';
+$string['includeuserdetails'] = 'Include user details';
 $string['insufficiententries'] = 'more entries needed to view this database';
-$string['intro'] = 'Introduction';
+$string['intro'] = 'Description';
 $string['invalidaccess'] = 'This page was not accessed correctly';
 $string['invalidfieldid'] = 'Field ID is incorrect';
 $string['invalidfieldname'] = 'Please choose another name for this field';
@@ -198,7 +208,7 @@ $string['longitude'] = 'Longitude';
 $string['mapexistingfield'] = 'Map to {$a}';
 $string['mapnewfield'] = 'Create a new field';
 $string['mappingwarning'] = 'All old fields not mapped to a new field will be lost and all data in that field will be removed.';
-$string['maxentries'] = 'Maximum entries';
+$string['maxentries'] = 'Maximum number of entries';
 $string['maxentries_help'] = 'The maximum number of entries a student is allowed to submit for this activity.';
 $string['maxsize'] = 'Maximum size';
 $string['menu'] = 'Menu';
@@ -206,7 +216,19 @@ $string['menuchoose'] = 'Choose...';
 $string['missingdata'] = 'Data id or object must be provided to field class';
 $string['missingfield'] = 'Programmer error: You must specify field and/or data when defining field class.';
 $string['modulename'] = 'Database';
-$string['modulename_help'] = 'The database activity module enables participants to create, maintain and search a bank of record entries. The format and structure of these entries can be almost unlimited, including images, files, URLs, numbers and text amongst other things.';
+$string['modulename_help'] = 'The database activity module enables participants to create, maintain and search a collection of entries (i.e. records).  The structure of the entries is defined by the teacher as a number of fields. Field types include checkbox, radio buttons, dropdown menu, text area, URL, picture and uploaded file.
+
+The visual layout of information when listing, viewing or editing database entries may be controlled by database templates. Database activities may be shared between courses as presets and a teacher may also import and export database entries.
+
+If the database auto-linking filter is enabled, any entries in a database will be automatically linked where the words or phrases appear within the course.
+
+A teacher can allow comments on entries. Entries can also be rated by teachers or students (peer evaluation). Ratings can be aggregated to form a final grade which is recorded in the gradebook.
+
+Database activities have many uses, such as
+
+* A collaborative collection of web links, books, book reviews, journal references etc
+* For displaying student-created photos, posters, websites or poems for peer comment and review';
+$string['modulename_link'] = 'mod/data/view';
 $string['modulenameplural'] = 'Databases';
 $string['more'] = 'More';
 $string['moreurl'] = 'More URL';
@@ -244,7 +266,7 @@ $string['notapproved'] = 'Entry is not approved yet.';
 $string['notinjectivemap'] = 'Not an injective map';
 $string['notopenyet'] = 'Sorry, this activity is not available until {$a}';
 $string['number'] = 'Number';
-$string['numberrssarticles'] = 'RSS articles';
+$string['numberrssarticles'] = 'Entries in the RSS feed';
 $string['numnotapproved'] = 'Pending';
 $string['numrecords'] = '{$a} entries';
 $string['ods'] = '<acronym title="OpenDocument Spreadsheet">ODS</acronym> (OpenOffice)';
@@ -267,11 +289,12 @@ $string['presets'] = 'Presets';
 $string['radiobutton'] = 'Radio buttons';
 $string['recordapproved'] = 'Entry approved';
 $string['recorddeleted'] = 'Entry deleted';
+$string['recorddisapproved'] = 'Entry disapproved';
 $string['recordsnotsaved'] = 'No entry was saved. Please check the format of the uploaded file.';
 $string['recordssaved'] = 'entries saved';
-$string['requireapproval'] = 'Require approval?';
+$string['requireapproval'] = 'Approval required';
 $string['requireapproval_help'] = 'If enabled, entries require approving by a teacher before they are viewable by everyone.';
-$string['requiredentries'] = 'Required entries';
+$string['requiredentries'] = 'Entries required for completion';
 $string['requiredentries_help'] = 'The number of entries a student is required to submit before the activity can be considered complete.';
 $string['requiredentriestoview'] = 'Entries required before viewing';
 $string['requiredentriestoview_help'] = 'The number of entries a student is required to submit before they can view entries from other students.
@@ -324,6 +347,7 @@ $string['uploadrecords_help'] = 'Entries may be uploaded via text file. The form
 The field enclosure is a character that surrounds each field in each record. It can normally be left unset.';
 $string['uploadrecords_link'] = 'mod/data/import';
 $string['url'] = 'Url';
+$string['usedate'] = 'Include in search.';
 $string['usestandard'] = 'Use a preset';
 $string['usestandard_help'] = 'To use a preset available to the whole site, select it from the list. (If you have added a preset to the list using the save as preset feature then you have the option of deleting it.)';
 $string['viewfromdate'] = 'Read only from';

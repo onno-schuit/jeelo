@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,9 +17,9 @@
 /**
  * Manual plugin external functions and service definitions.
  *
- * @package    enrol
- * @subpackage manual
- * @author 2011 Jerome Mouneyrac
+ * @package    enrol_manual
+ * @category   webservice
+ * @copyright  2011 Jerome Mouneyrac
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

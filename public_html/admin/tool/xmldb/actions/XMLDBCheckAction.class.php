@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2008 onwards Tim Hunt
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,14 +24,13 @@
  * This is a base class for the various actions that interate over all the
  * tables and check some aspect of their definition.
  *
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2008 onwards Tim Hunt
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class XMLDBCheckAction extends XMLDBAction {
     /**
-     * This string is displayed with a yes/no choice before the report is run.
+     * @var string This string is displayed with a yes/no choice before the report is run.
      * You must set this to the name of a lang string in xmldb.php before calling init.
      */
     protected $introstr = '';
@@ -92,7 +90,7 @@ abstract class XMLDBCheckAction extends XMLDBAction {
 
         // If  not confirmed, show confirmation box
         if (!$confirmed) {
-            $o = '<table class="generalbox" border="0" cellpadding="5" cellspacing="0" id="notice">';
+            $o = '<table class="generaltable" border="0" cellpadding="5" cellspacing="0" id="notice">';
             $o.= '  <tr><td class="generalboxcontent">';
             $o.= '    <p class="centerpara">' . $this->str[$this->introstr] . '</p>';
             $o.= '    <table class="boxaligncenter" cellpadding="20"><tr><td>';
@@ -117,7 +115,7 @@ abstract class XMLDBCheckAction extends XMLDBAction {
 
             // Iterate over $XMLDB->dbdirs, loading their XML data to memory
             if ($XMLDB->dbdirs) {
-                $dbdirs =& $XMLDB->dbdirs;
+                $dbdirs = $XMLDB->dbdirs;
                 $o='<ul>';
                 foreach ($dbdirs as $dbdir) {
                     // Only if the directory exists

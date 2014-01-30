@@ -18,8 +18,7 @@
 /**
  * Keeps track of upgrades to the enrol_mnet plugin
  *
- * @package    enrol
- * @subpackage mnet
+ * @package    enrol_mnet
  * @copyright  2010 David Mudrak <david@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,20 +26,22 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_enrol_mnet_upgrade($oldversion) {
-    global $CFG, $DB, $OUTPUT;
+    global $CFG, $DB;
 
-    // when core upgraded all legacy enrol mnet plugins, it created instances of the plugin
-    // here we set customint1 to 0 which means 'open for all hosts' (legacy behaviour)
-    if ($oldversion < 2010071701) {
-        $DB->set_field('enrol', 'customint1', 0, array('enrol' => 'mnet', 'customint1' => null));
-        upgrade_plugin_savepoint(true, 2010071701, 'enrol', 'mnet');
-    }
+    $dbman = $DB->get_manager();
 
-    // Moodle v2.1.0 release upgrade line
+
+    // Moodle v2.3.0 release upgrade line
     // Put any upgrade step following this
 
-    // Moodle v2.2.0 release upgrade line
+
+    // Moodle v2.4.0 release upgrade line
     // Put any upgrade step following this
+
+
+    // Moodle v2.5.0 release upgrade line.
+    // Put any upgrade step following this.
+
 
     return true;
 }

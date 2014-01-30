@@ -40,7 +40,7 @@ abstract class backup_factory {
         global $CFG;
 
         $dfltloglevel = backup::LOG_WARNING; // Default logging level
-        if (debugging('', DEBUG_DEVELOPER)) { // Debug developer raises default logging level
+        if ($CFG->debugdeveloper) { // Debug developer raises default logging level
             $dfltloglevel = backup::LOG_DEBUG;
         }
 
@@ -139,7 +139,7 @@ abstract class backup_factory {
             throw new backup_task_exception('section_task_section_not_found', $sectionid);
         }
 
-        return new backup_section_task(empty($section->name) ? $section->section : $section->name, $sectionid);
+        return new backup_section_task((string)$section->name === '' ? $section->section : $section->name, $sectionid);
     }
 
     /**

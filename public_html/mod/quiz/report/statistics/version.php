@@ -17,15 +17,14 @@
 /**
  * Quiz statistics report version information.
  *
- * @package    quiz
- * @subpackage statistics
- * @copyright  2008 Jamie Pratt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   quiz_statistics
+ * @copyright 2008 Jamie Pratt
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2011122300;
-$plugin->requires  = 2011060313;
+$plugin->version   = 2013110500;
+$plugin->requires  = 2013110500;
 $plugin->cron      = 18000;
 $plugin->component = 'quiz_statistics';

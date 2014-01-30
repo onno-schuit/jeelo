@@ -27,7 +27,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 1999 onwards Martin Dougiamas  http://dougiamas.com
  *
- * This page displays the site registration form.
+ * This page displays the site registration form for Moodle.org/MOOCH or for a different hub.
  * It handles redirection to the hub to continue the registration workflow process.
  * It also handles update operation by web service.
  */
@@ -39,15 +39,17 @@ require_once($CFG->dirroot . '/' . $CFG->admin . '/registration/forms.php');
 require_once($CFG->dirroot . '/webservice/lib.php');
 require_once($CFG->dirroot . '/' . $CFG->admin . '/registration/lib.php');
 
-admin_externalpage_setup('registrationindex');
-
 $huburl = required_param('huburl', PARAM_URL);
 $huburl = rtrim($huburl, "/");
+
+if ($huburl == HUB_MOODLEORGHUBURL) { // register to Moodle.org
+    admin_externalpage_setup('registrationmoodleorg');
+} else { //register to a hub
+    admin_externalpage_setup('registrationhub');
+}
+
 $password = optional_param('password', '', PARAM_TEXT);
 $hubname = optional_param('hubname', '', PARAM_TEXT);
-if (!confirm_sesskey()) {
-    throw new moodle_exception('missingparameter');
-}
 
 $registrationmanager = new registration_manager();
 
@@ -60,7 +62,18 @@ $siteregistrationform = new site_registration_form('',
 $fromform = $siteregistrationform->get_data();
 
 if (!empty($fromform) and confirm_sesskey()) {
-    //save the settings
+
+    // Set to -1 all optional data marked as "don't send" by the admin.
+    // The function get_site_info() will not calculate the optional data if config is set to -1.
+    $inputnames = array('courses', 'users', 'roleassignments', 'posts', 'questions', 'resources',
+        'badges', 'issuedbadges', 'modulenumberaverage', 'participantnumberaverage');
+    foreach ($inputnames as $inputname) {
+        if (empty($fromform->{$inputname})) {
+            $fromform->{$inputname} = -1;
+        }
+    }
+
+    // Save the settings.
     $cleanhuburl = clean_param($huburl, PARAM_ALPHANUMEXT);
     set_config('site_name_' . $cleanhuburl, $fromform->name, 'hub');
     set_config('site_description_' . $cleanhuburl, $fromform->description, 'hub');
@@ -82,6 +95,8 @@ if (!empty($fromform) and confirm_sesskey()) {
     set_config('site_postsnumber_' . $cleanhuburl, $fromform->posts, 'hub');
     set_config('site_questionsnumber_' . $cleanhuburl, $fromform->questions, 'hub');
     set_config('site_resourcesnumber_' . $cleanhuburl, $fromform->resources, 'hub');
+    set_config('site_badges_' . $cleanhuburl, $fromform->badges, 'hub');
+    set_config('site_issuedbadges_' . $cleanhuburl, $fromform->issuedbadges, 'hub');
     set_config('site_modulenumberaverage_' . $cleanhuburl, $fromform->modulenumberaverage, 'hub');
     set_config('site_participantnumberaverage_' . $cleanhuburl, $fromform->participantnumberaverage, 'hub');
 }
@@ -111,6 +126,21 @@ if ($update and confirm_sesskey()) {
 if (!empty($fromform) and empty($update) and confirm_sesskey()) {
 
     if (!empty($fromform) and confirm_sesskey()) { // if the register button has been clicked
+
+        // Retrieve the optional info (specially course number, user number, module number average...).
+        $siteinfo = $registrationmanager->get_site_info($huburl);
+        $fromform->courses = $siteinfo['courses'];
+        $fromform->users = $siteinfo['users'];
+        $fromform->enrolments = $siteinfo['enrolments'];
+        $fromform->posts = $siteinfo['posts'];
+        $fromform->questions = $siteinfo['questions'];
+        $fromform->resources = $siteinfo['resources'];
+        $fromform->badges = $siteinfo['badges'];
+        $fromform->issuedbadges = $siteinfo['issuedbadges'];
+        $fromform->modulenumberaverage = $siteinfo['modulenumberaverage'];
+        $fromform->participantnumberaverage = $siteinfo['participantnumberaverage'];
+        $fromform->street = $siteinfo['street'];
+
         $params = (array) $fromform; //we are using the form input as the redirection parameters (token, url and name)
 
         $unconfirmedhub = $registrationmanager->get_unconfirmedhub($huburl);
@@ -143,6 +173,13 @@ if (!empty($registeredhub->confirmed)) {
 
 if (!empty($error)) {
     echo $error;
+}
+
+//some Moodle.org resitration explanation
+if ($huburl == HUB_MOODLEORGHUBURL) {
+    echo $OUTPUT->heading(get_string('registerwithmoodleorg', 'admin'));
+    $renderer = $PAGE->get_renderer('core', 'register');
+    echo $renderer->moodleorg_registration_message();
 }
 
 $siteregistrationform->display();

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,34 +17,31 @@
 /**
  * Cohort enrolment plugin event handler definition.
  *
- * @package    enrol
- * @subpackage cohort
- * @copyright  2010 Petr Skoda {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package enrol_cohort
+ * @category event
+ * @copyright 2010 Petr Skoda {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/* List of handlers */
-$handlers = array (
-    'cohort_member_added' => array (
-        'handlerfile'      => '/enrol/cohort/locallib.php',
-        'handlerfunction'  => array('enrol_cohort_handler', 'member_added'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+$observers = array(
+
+    array(
+        'eventname' => '\core\event\cohort_member_added',
+        'callback' => 'enrol_cohort_handler::member_added',
+        'includefile' => '/enrol/cohort/locallib.php'
     ),
 
-    'cohort_member_removed' => array (
-        'handlerfile'      => '/enrol/cohort/locallib.php',
-        'handlerfunction'  => array('enrol_cohort_handler', 'member_removed'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname' => '\core\event\cohort_member_removed',
+        'callback' => 'enrol_cohort_handler::member_removed',
+        'includefile' => '/enrol/cohort/locallib.php'
     ),
 
-    'cohort_deleted' => array (
-        'handlerfile'      => '/enrol/cohort/locallib.php',
-        'handlerfunction'  => array('enrol_cohort_handler', 'deleted'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname' => '\core\event\cohort_deleted',
+        'callback' => 'enrol_cohort_handler::deleted',
+        'includefile' => '/enrol/cohort/locallib.php'
     ),
 );

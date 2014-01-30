@@ -54,11 +54,22 @@ class workshop_manual_allocator implements workshop_allocator {
 
     /**
      * Allocate submissions as requested by user
+     *
+     * @return workshop_allocation_result
      */
     public function init() {
         global $PAGE;
 
         $mode = optional_param('mode', 'display', PARAM_ALPHA);
+        $perpage = optional_param('perpage', null, PARAM_INT);
+
+        if ($perpage and $perpage > 0 and $perpage <= 1000) {
+            require_sesskey();
+            set_user_preference('workshopallocation_manual_perpage', $perpage);
+            redirect($PAGE->url);
+        }
+
+        $result = new workshop_allocation_result($this);
 
         switch ($mode) {
         case 'new':
@@ -124,6 +135,9 @@ class workshop_manual_allocator implements workshop_allocator {
             }
             break;
         }
+
+        $result->set_status(workshop_allocation_result::STATUS_VOID);
+        return $result;
     }
 
     /**
@@ -134,9 +148,9 @@ class workshop_manual_allocator implements workshop_allocator {
 
         $output     = $PAGE->get_renderer('workshopallocation_manual');
 
-        $pagingvar  = 'page';
-        $page       = optional_param($pagingvar, 0, PARAM_INT);
-        $perpage    = 10;   // todo let the user modify this
+        $page       = optional_param('page', 0, PARAM_INT);
+        $perpage    = get_user_preferences('workshopallocation_manual_perpage', 10);
+        $groupid    = groups_get_activity_group($this->workshop->cm, true);
 
         $hlauthorid     = -1;           // highlight this author
         $hlreviewerid   = -1;           // highlight this reviewer
@@ -193,36 +207,35 @@ class workshop_manual_allocator implements workshop_allocator {
             }
         }
 
-        // fetch the list of ids of all workshop participants - this may get really long so fetch just id
-        $participants = get_users_by_capability($PAGE->context, array('mod/workshop:submit', 'mod/workshop:peerassess'),
-                                            'u.id', 'u.lastname,u.firstname,u.id', '', '', '', '', false, false, true);
-
-        $numofparticipants = count($participants);  // we will need later for the pagination
+        // fetch the list of ids of all workshop participants
+        $numofparticipants = $this->workshop->count_participants(false, $groupid);
+        $participants = $this->workshop->get_participants(false, $groupid, $perpage * $page, $perpage);
 
         if ($hlauthorid > 0 and $hlreviewerid > 0) {
             // display just those two users
             $participants = array_intersect_key($participants, array($hlauthorid => null, $hlreviewerid => null));
             $button = $output->single_button($PAGE->url, get_string('showallparticipants', 'workshopallocation_manual'), 'get');
         } else {
-            // slice the list of participants according to the current page
-            $participants = array_slice($participants, $page * $perpage, $perpage, true);
             $button = '';
         }
 
         // this will hold the information needed to display user names and pictures
-        $userinfo = $DB->get_records_list('user', 'id', array_keys($participants), '', user_picture::fields());
+        $userinfo = $participants;
 
         // load the participants' submissions
         $submissions = $this->workshop->get_submissions(array_keys($participants));
+        $allnames = get_all_user_name_fields();
         foreach ($submissions as $submission) {
             if (!isset($userinfo[$submission->authorid])) {
                 $userinfo[$submission->authorid]            = new stdclass();
                 $userinfo[$submission->authorid]->id        = $submission->authorid;
-                $userinfo[$submission->authorid]->firstname = $submission->authorfirstname;
-                $userinfo[$submission->authorid]->lastname  = $submission->authorlastname;
                 $userinfo[$submission->authorid]->picture   = $submission->authorpicture;
                 $userinfo[$submission->authorid]->imagealt  = $submission->authorimagealt;
                 $userinfo[$submission->authorid]->email     = $submission->authoremail;
+                foreach ($allnames as $addname) {
+                    $temp = 'author' . $addname;
+                    $userinfo[$submission->authorid]->$addname = $submission->$temp;
+                }
             }
         }
 
@@ -230,8 +243,8 @@ class workshop_manual_allocator implements workshop_allocator {
         $reviewers = array();
         if ($submissions) {
             list($submissionids, $params) = $DB->get_in_or_equal(array_keys($submissions), SQL_PARAMS_NAMED);
-            $sql = "SELECT a.id AS assessmentid, a.submissionid,
-                           r.id AS reviewerid, r.lastname, r.firstname, r.picture, r.imagealt, r.email,
+            $picturefields = user_picture::fields('r', array(), 'reviewerid');
+            $sql = "SELECT a.id AS assessmentid, a.submissionid, $picturefields,
                            s.id AS submissionid, s.authorid
                       FROM {workshop_assessments} a
                       JOIN {user} r ON (a.reviewerid = r.id)
@@ -242,11 +255,12 @@ class workshop_manual_allocator implements workshop_allocator {
                 if (!isset($userinfo[$reviewer->reviewerid])) {
                     $userinfo[$reviewer->reviewerid]            = new stdclass();
                     $userinfo[$reviewer->reviewerid]->id        = $reviewer->reviewerid;
-                    $userinfo[$reviewer->reviewerid]->firstname = $reviewer->firstname;
-                    $userinfo[$reviewer->reviewerid]->lastname  = $reviewer->lastname;
                     $userinfo[$reviewer->reviewerid]->picture   = $reviewer->picture;
                     $userinfo[$reviewer->reviewerid]->imagealt  = $reviewer->imagealt;
                     $userinfo[$reviewer->reviewerid]->email     = $reviewer->email;
+                    foreach ($allnames as $addname) {
+                        $userinfo[$reviewer->reviewerid]->$addname = $reviewer->$addname;
+                    }
                 }
             }
         }
@@ -255,11 +269,12 @@ class workshop_manual_allocator implements workshop_allocator {
         $reviewees = array();
         if ($participants) {
             list($participantids, $params) = $DB->get_in_or_equal(array_keys($participants), SQL_PARAMS_NAMED);
+            $namefields = get_all_user_name_fields(true, 'e');
             $params['workshopid'] = $this->workshop->id;
             $sql = "SELECT a.id AS assessmentid, a.submissionid,
                            u.id AS reviewerid,
                            s.id AS submissionid,
-                           e.id AS revieweeid, e.lastname, e.firstname, e.picture, e.imagealt, e.email
+                           e.id AS revieweeid, e.lastname, e.firstname, $namefields, e.picture, e.imagealt, e.email
                       FROM {user} u
                       JOIN {workshop_assessments} a ON (a.reviewerid = u.id)
                       JOIN {workshop_submissions} s ON (a.submissionid = s.id)
@@ -275,6 +290,9 @@ class workshop_manual_allocator implements workshop_allocator {
                     $userinfo[$reviewee->revieweeid]->picture   = $reviewee->picture;
                     $userinfo[$reviewee->revieweeid]->imagealt  = $reviewee->imagealt;
                     $userinfo[$reviewee->revieweeid]->email     = $reviewee->email;
+                    foreach ($allnames as $addname) {
+                        $userinfo[$reviewee->revieweeid]->$addname = $reviewee->$addname;
+                    }
                 }
             }
         }
@@ -308,6 +326,7 @@ class workshop_manual_allocator implements workshop_allocator {
 
         // prepare data to be rendered
         $data                   = new workshopallocation_manual_allocations();
+        $data->workshop         = $this->workshop;
         $data->allocations      = $allocations;
         $data->userinfo         = $userinfo;
         $data->authors          = $this->workshop->get_potential_authors();
@@ -316,11 +335,15 @@ class workshop_manual_allocator implements workshop_allocator {
         $data->hlreviewerid     = $hlreviewerid;
         $data->selfassessment   = $this->workshop->useselfassessment;
 
-        // prepare paging bar
-        $pagingbar              = new paging_bar($numofparticipants, $page, $perpage, $PAGE->url, $pagingvar);
-        $pagingbarout           = $output->render($pagingbar);
+        // prepare the group selector
+        $groupselector = $output->container(groups_print_activity_menu($this->workshop->cm, $PAGE->url, true), 'groupwidget');
 
-        return $pagingbarout . $output->render($message) . $output->render($data) . $button . $pagingbarout;
+        // prepare paging bar
+        $pagingbar              = new paging_bar($numofparticipants, $page, $perpage, $PAGE->url, 'page');
+        $pagingbarout           = $output->render($pagingbar);
+        $perpageselector        = $output->perpage_selector($perpage);
+
+        return $groupselector . $pagingbarout . $output->render($message) . $output->render($data) . $button . $pagingbarout . $perpageselector;
     }
 
     /**
@@ -343,11 +366,28 @@ class workshop_manual_allocator implements workshop_allocator {
  * @see workshop_manual_allocator::ui()
  */
 class workshopallocation_manual_allocations implements renderable {
+
+    /** @var workshop module instance */
+    public $workshop;
+
+    /** @var array of stdClass, indexed by userid, properties userid, submissionid, (array)reviewedby, (array)reviewerof */
     public $allocations;
+
+    /** @var array of stdClass contains the data needed to display the user name and picture */
     public $userinfo;
+
+    /* var array of stdClass potential authors */
     public $authors;
+
+    /* var array of stdClass potential reviewers */
     public $reviewers;
+
+    /* var int the id of the user to highlight as the author */
     public $hlauthorid;
+
+    /* var int the id of the user to highlight as the reviewer */
     public $hlreviewerid;
+
+    /* var bool should the selfassessment be allowed */
     public $selfassessment;
 }

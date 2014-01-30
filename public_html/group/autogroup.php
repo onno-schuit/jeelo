@@ -1,11 +1,26 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
 /**
- * Create and allocate users go groups
+ * Create and allocate users to groups
  *
- * @author  Matt Clarkson mattc@catalyst.net.nz
- * @version 0.0.1
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License
- * @package groups
+ * @package    core_group
+ * @copyright  Matt Clarkson mattc@catalyst.net.nz
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once('../config.php');
@@ -26,8 +41,7 @@ if (!$course = $DB->get_record('course', array('id'=>$courseid))) {
 // Make sure that the user has permissions to manage groups.
 require_login($course);
 
-$context       = get_context_instance(CONTEXT_COURSE, $courseid);
-$systemcontext = get_context_instance(CONTEXT_SYSTEM);
+$context       = context_course::instance($courseid);
 require_capability('moodle/course:managegroups', $context);
 
 $returnurl = $CFG->wwwroot.'/group/index.php?id='.$course->id;
@@ -40,13 +54,8 @@ $strautocreategroups = get_string('autocreategroups', 'group');
 $preview = '';
 $error = '';
 
-/// Get applicable roles
-$rolenames = array();
-if ($roles = get_profile_roles($context)) {
-    foreach ($roles as $role) {
-        $rolenames[$role->id] = strip_tags(role_get_name($role, $context));   // Used in menus etc later on
-    }
-}
+/// Get applicable roles - used in menus etc later on
+$rolenames = role_fix_names(get_profile_roles($context), $context, ROLENAME_ALIAS, true);
 
 /// Create the form
 $editform = new autogroup_form(null, array('roles' => $rolenames));
@@ -199,9 +208,13 @@ if ($editform->is_cancelled()) {
                 groups_add_member($groupid, $user->id);
             }
             if ($grouping) {
-                groups_assign_grouping($grouping->id, $groupid);
+                // Ask this function not to invalidate the cache, we'll do that manually once at the end.
+                groups_assign_grouping($grouping->id, $groupid, null, false);
             }
         }
+
+        // Invalidate the course groups cache seeing as we've changed it.
+        cache_helper::invalidate_by_definition('core', 'groupdata', array(), array($courseid));
 
         if ($failed) {
             foreach ($createdgroups as $groupid) {

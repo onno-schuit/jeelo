@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,7 +17,7 @@
 /**
  * This file is responsible for serving the one huge CSS of each theme.
  *
- * @package   moodlecore
+ * @package   core
  * @copyright 2009 Petr Skoda (skodak)  {@link http://skodak.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,14 +30,52 @@ define('NO_DEBUG_DISPLAY', true);
 // we need just the values from config.php and minlib.php
 define('ABORT_AFTER_CONFIG', true);
 require('../config.php'); // this stops immediately at the beginning of lib/setup.php
+require_once($CFG->dirroot.'/lib/csslib.php');
 
-$themename = min_optional_param('theme', 'standard', 'SAFEDIR');
-$type      = min_optional_param('type', 'all', 'SAFEDIR');
-$rev       = min_optional_param('rev', 0, 'INT');
+if (!defined('THEME_DESIGNER_CACHE_LIFETIME')) {
+    define('THEME_DESIGNER_CACHE_LIFETIME', 4); // this can be also set in config.php
+}
 
-if (!in_array($type, array('all', 'ie', 'editor', 'plugins', 'parents', 'theme'))) {
-    header('HTTP/1.0 404 not found');
-    die('Theme was not found, sorry.');
+if ($slashargument = min_get_slash_argument()) {
+    $slashargument = ltrim($slashargument, '/');
+    if (substr_count($slashargument, '/') < 2) {
+        css_send_css_not_found();
+    }
+
+    if (strpos($slashargument, '_s/') === 0) {
+        // Can't use SVG
+        $slashargument = substr($slashargument, 3);
+        $usesvg = false;
+    } else {
+        $usesvg = true;
+    }
+
+    $chunk = null;
+    if (preg_match('#/(chunk(\d+)(/|$))#', $slashargument, $matches)) {
+        $chunk = (int)$matches[2];
+        $slashargument = str_replace($matches[1], '', $slashargument);
+    }
+
+    list($themename, $rev, $type) = explode('/', $slashargument, 3);
+    $themename = min_clean_param($themename, 'SAFEDIR');
+    $rev       = min_clean_param($rev, 'INT');
+    $type      = min_clean_param($type, 'SAFEDIR');
+
+} else {
+    $themename = min_optional_param('theme', 'standard', 'SAFEDIR');
+    $rev       = min_optional_param('rev', 0, 'INT');
+    $type      = min_optional_param('type', 'all', 'SAFEDIR');
+    $chunk     = min_optional_param('chunk', null, 'INT');
+    $usesvg    = (bool)min_optional_param('svg', '1', 'INT');
+}
+
+if ($type === 'editor') {
+    // The editor CSS is never chunked.
+    $chunk = null;
+} else if ($type === 'all') {
+    // We're fine.
+} else {
+    css_send_css_not_found();
 }
 
 if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
@@ -50,24 +87,29 @@ if (file_exists("$CFG->dirroot/theme/$themename/config.php")) {
     die('Theme was not found, sorry.');
 }
 
-if ($type === 'ie') {
-    send_ie_css($themename, $rev);
+$candidatedir = "$CFG->localcachedir/theme/$rev/$themename/css";
+$etag = "$rev/$themename/$type";
+$candidatename = $type;
+if (!$usesvg) {
+    // Add to the sheet name, one day we'll be able to just drop this.
+    $candidatedir .= '/nosvg';
+    $etag .= '/nosvg';
 }
 
-$candidatesheet = "$CFG->cachedir/theme/$themename/css/$type.css";
+if ($chunk !== null) {
+    $etag .= '/chunk'.$chunk;
+    $candidatename .= '.'.$chunk;
+}
+$candidatesheet = "$candidatedir/$candidatename.css";
+$etag = sha1($etag);
 
 if (file_exists($candidatesheet)) {
     if (!empty($_SERVER['HTTP_IF_NONE_MATCH']) || !empty($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
         // we do not actually need to verify the etag value because our files
         // never change in cache because we increment the rev parameter
-        $lifetime = 60*60*24*30; // 30 days
-        header('HTTP/1.1 304 Not Modified');
-        header('Expires: '. gmdate('D, d M Y H:i:s', time() + $lifetime) .' GMT');
-        header('Cache-Control: max-age='.$lifetime);
-        header('Content-Type: text/css; charset=utf-8');
-        die;
+        css_send_unmodified(filemtime($candidatesheet), $etag);
     }
-    send_cached_css($candidatesheet, $rev);
+    css_send_cached_css($candidatesheet, $etag);
 }
 
 //=================================================================================
@@ -78,21 +120,60 @@ define('NO_MOODLE_COOKIES', true); // Session not used here
 define('NO_UPGRADE_CHECK', true);  // Ignore upgrade check
 
 require("$CFG->dirroot/lib/setup.php");
-// setup include path
-set_include_path($CFG->libdir . '/minify/lib' . PATH_SEPARATOR . get_include_path());
-require_once('Minify.php');
 
 $theme = theme_config::load($themename);
+$theme->force_svg_use($usesvg);
+
+$themerev = theme_get_revision();
+
+$cache = true;
+if ($themerev <= 0 or $themerev != $rev) {
+    $rev = $themerev;
+    $cache = false;
+
+    $candidatedir = "$CFG->cachedir/theme/$rev/$themename/css";
+    $etag = "$rev/$themename/$type";
+    $candidatename = $type;
+    if (!$usesvg) {
+        // Add to the sheet name, one day we'll be able to just drop this.
+        $candidatedir .= '/nosvg';
+        $etag .= '/nosvg';
+    }
+
+    if ($chunk !== null) {
+        $etag .= '/chunk'.$chunk;
+        $candidatename .= '.'.$chunk;
+    }
+    $candidatesheet = "$candidatedir/$candidatename.css";
+    $etag = sha1($etag);
+}
+
+make_localcache_directory('theme', false);
 
 if ($type === 'editor') {
-    $files = $theme->editor_css_files();
-    store_css($theme, $candidatesheet, $files);
+    $cssfiles = $theme->editor_css_files();
+    css_store_css($theme, "$candidatedir/editor.css", $cssfiles, false);
+
 } else {
+    // Older IEs require smaller chunks.
     $css = $theme->css_files();
-    $allfiles = array();
-    foreach ($css as $key=>$value) {
-        $cssfiles = array();
-        foreach($value as $val) {
+    $relroot = preg_replace('|^http.?://[^/]+|', '', $CFG->wwwroot);
+    if (!empty($slashargument)) {
+        if ($usesvg) {
+            $chunkurl = "{$relroot}/theme/styles.php/{$themename}/{$rev}/all";
+        } else {
+            $chunkurl = "{$relroot}/theme/styles.php/_s/{$themename}/{$rev}/all";
+        }
+    } else {
+        if ($usesvg) {
+            $chunkurl = "{$relroot}/theme/styles.php?theme={$themename}&rev={$rev}&type=all";
+        } else {
+            $chunkurl = "{$relroot}/theme/styles.php?theme={$themename}&rev={$rev}&type=all&svg=0";
+        }
+    }
+    $cssfiles = array();
+    foreach ($css as $key => $value) {
+        foreach ($value as $val) {
             if (is_array($val)) {
                 foreach ($val as $k=>$v) {
                     $cssfiles[] = $v;
@@ -101,94 +182,25 @@ if ($type === 'editor') {
                 $cssfiles[] = $val;
             }
         }
-        $cssfile = "$CFG->cachedir/theme/$themename/css/$key.css";
-        store_css($theme, $cssfile, $cssfiles);
-        $allfiles = array_merge($allfiles, $cssfiles);
     }
-    $cssfile = "$CFG->cachedir/theme/$themename/css/all.css";
-    store_css($theme, $cssfile, $allfiles);
-}
-send_cached_css($candidatesheet, $rev);
-
-//=================================================================================
-//=== utility functions ==
-// we are not using filelib because we need to fine tune all header
-// parameters to get the best performance.
-
-function store_css(theme_config $theme, $csspath, $cssfiles) {
-    $css = $theme->post_process(minify($cssfiles));
-    // note: cache reset might have purged our cache dir structure,
-    //       make sure we do not use stale file stat cache in the next check_dir_exists()
-    clearstatcache();
-    check_dir_exists(dirname($csspath));
-    $fp = fopen($csspath, 'w');
-    fwrite($fp, $css);
-    fclose($fp);
+    css_store_css($theme, "$candidatedir/all.css", $cssfiles, true, $chunkurl);
 }
 
-function send_ie_css($themename, $rev) {
-    $lifetime = 60*60*24*30; // 30 days
-
-    $css = <<<EOF
-/** Unfortunately IE6/7 does not support more than 4096 selectors in one CSS file, which means we have to use some ugly hacks :-( **/
-@import url(styles.php?theme=$themename&rev=$rev&type=plugins);
-@import url(styles.php?theme=$themename&rev=$rev&type=parents);
-@import url(styles.php?theme=$themename&rev=$rev&type=theme);
-
-EOF;
-
-    header('Etag: '.md5($rev));
-    header('Content-Disposition: inline; filename="styles.php"');
-    header('Last-Modified: '. gmdate('D, d M Y H:i:s', time()) .' GMT');
-    header('Expires: '. gmdate('D, d M Y H:i:s', time() + $lifetime) .' GMT');
-    header('Pragma: ');
-    header('Cache-Control: max-age='.$lifetime);
-    header('Accept-Ranges: none');
-    header('Content-Type: text/css; charset=utf-8');
-    header('Content-Length: '.strlen($css));
-
-    echo $css;
-    die;
-}
-
-function send_cached_css($csspath, $rev) {
-    $lifetime = 60*60*24*30; // 30 days
-
-    header('Content-Disposition: inline; filename="styles.php"');
-    header('Last-Modified: '. gmdate('D, d M Y H:i:s', filemtime($csspath)) .' GMT');
-    header('Expires: '. gmdate('D, d M Y H:i:s', time() + $lifetime) .' GMT');
-    header('Pragma: ');
-    header('Cache-Control: max-age='.$lifetime);
-    header('Accept-Ranges: none');
-    header('Content-Type: text/css; charset=utf-8');
-    if (!min_enable_zlib_compression()) {
-        header('Content-Length: '.filesize($csspath));
+// verify nothing failed in cache file creation
+clearstatcache();
+if (!file_exists($candidatesheet)) {
+    // We need to send at least something, IE does not get it chunked properly but who cares.
+    $css = '';
+    foreach ($cssfiles as $file) {
+        $css .= file_get_contents($file)."\n";
     }
+    css_send_uncached_css($css, false);
 
-    readfile($csspath);
-    die;
-}
+} else if (!$cache) {
+    // Do not pollute browser caches if invalid revision requested.
+    css_send_uncached_css(file_get_contents($candidatesheet), false);
 
-function minify($files) {
-    if (0 === stripos(PHP_OS, 'win')) {
-        Minify::setDocRoot(); // IIS may need help
-    }
-    // disable all caching, we do it in moodle
-    Minify::setCache(null, false);
-
-    $options = array(
-        'bubbleCssImports' => false,
-        // Don't gzip content we just want text for storage
-        'encodeOutput' => false,
-        // Maximum age to cache, not used but required
-        'maxAge' => (60*60*24*20),
-        // The files to minify
-        'files' => $files,
-        // Turn orr URI rewriting
-        'rewriteCssUris' => false,
-        // This returns the CSS rather than echoing it for display
-        'quiet' => true
-    );
-    $result = Minify::serve('Files', $options);
-    return $result['content'];
+} else {
+    // This is the expected result!
+    css_send_cached_css($candidatesheet, $etag);
 }

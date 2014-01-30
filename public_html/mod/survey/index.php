@@ -17,7 +17,6 @@
     add_to_log($course->id, "survey", "view all", "index.php?id=$course->id", "");
 
     $strsurveys = get_string("modulenameplural", "survey");
-    $strsectionname  = get_string('sectionname', 'format_'.$course->format);
     $strname = get_string("name");
     $strstatus = get_string("status");
     $strdone  = get_string("done", "survey");
@@ -27,20 +26,19 @@
     $PAGE->set_title($strsurveys);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
+    echo $OUTPUT->heading($strsurveys);
 
     if (! $surveys = get_all_instances_in_course("survey", $course)) {
         notice(get_string('thereareno', 'moodle', $strsurveys), "../../course/view.php?id=$course->id");
     }
 
     $usesections = course_format_uses_sections($course->format);
-    if ($usesections) {
-        $sections = get_all_sections($course->id);
-    }
 
     $table = new html_table();
     $table->width = '100%';
 
     if ($usesections) {
+        $strsectionname = get_string('sectionname', 'format_'.$course->format);
         $table->head  = array ($strsectionname, $strname, $strstatus);
     } else {
         $table->head  = array ($strname, $strstatus);
@@ -58,7 +56,7 @@
         if ($usesections) {
             if ($survey->section !== $currentsection) {
                 if ($survey->section) {
-                    $printsection = get_section_name($course, $sections[$survey->section]);
+                    $printsection = get_section_name($course, $survey->section);
                 }
                 if ($currentsection !== "") {
                     $table->data[] = 'hr';

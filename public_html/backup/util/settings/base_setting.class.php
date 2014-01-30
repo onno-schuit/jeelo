@@ -86,6 +86,15 @@ abstract class base_setting {
      */
     protected $help = array();
 
+    /**
+     * Instantiates a setting object
+     *
+     * @param string $name Name of the setting
+     * @param string $vtype Type of the setting, eg {@link self::IS_TEXT}
+     * @param mixed $value Value of the setting
+     * @param bool $visibility Is the setting visible in the UI, eg {@link self::VISIBLE}
+     * @param int $status Status of the setting with regards to the locking, eg {@link self::NOT_LOCKED}
+     */
     public function __construct($name, $vtype, $value = null, $visibility = self::VISIBLE, $status = self::NOT_LOCKED) {
         // Check vtype
         if ($vtype !== self::IS_BOOLEAN && $vtype !== self::IS_INTEGER &&
@@ -393,6 +402,27 @@ abstract class base_setting {
         }
         $this->dependencies[$dependentsetting->get_name()] = $dependency;
         $dependency->get_dependent_setting()->register_dependent_dependency($dependency);
+    }
+
+    /**
+     * Get the PARAM_XXXX validation to be applied to the setting
+     *
+     * @return string The PARAM_XXXX constant of null if the setting type is not defined
+     */
+    public function get_param_validation() {
+        switch ($this->vtype) {
+            case self::IS_BOOLEAN:
+                return PARAM_BOOL;
+            case self::IS_INTEGER:
+                return PARAM_INT;
+            case self::IS_FILENAME:
+                return PARAM_FILE;
+            case self::IS_PATH:
+                return PARAM_PATH;
+            case self::IS_TEXT:
+                return PARAM_TEXT;
+        }
+        return null;
     }
 
 // Protected API starts here

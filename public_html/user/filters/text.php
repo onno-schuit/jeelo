@@ -42,6 +42,7 @@ class user_filter_text extends user_filter_type {
         $objs[] =& $mform->createElement('select', $this->_name.'_op', null, $this->getOperators());
         $objs[] =& $mform->createElement('text', $this->_name, null);
         $grp =& $mform->addElement('group', $this->_name.'_grp', $this->_label, $objs, '', false);
+        $mform->setType($this->_name, PARAM_RAW);
         $mform->disabledIf($this->_name, $this->_name.'_op', 'eq', 5);
         if ($this->_advanced) {
             $mform->setAdvanced($this->_name.'_grp');
@@ -62,7 +63,12 @@ class user_filter_text extends user_filter_type {
                 // no data - no change except for empty filter
                 return false;
             }
-            return array('operator'=>(int)$formdata->$operator, 'value'=>$formdata->$field);
+            // If field value is set then use it, else it's null.
+            $fieldvalue = null;
+            if (isset($formdata->$field)) {
+                $fieldvalue = $formdata->$field;
+            }
+            return array('operator' => (int)$formdata->$operator, 'value' =>  $fieldvalue);
         }
 
         return false;
@@ -111,7 +117,7 @@ class user_filter_text extends user_filter_type {
                 break;
             case 5: // empty
                 $res = "$field = :$name";
-                $params[$name] = $DB->sql_empty();
+                $params[$name] = '';
                 break;
             default:
                 return '';

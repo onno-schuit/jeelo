@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,8 +25,7 @@
  * with the physical DB implementation, reporting about all the missing
  * indexes to be created to be 100% ok.
  *
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -132,7 +130,7 @@ class check_indexes extends XMLDBCheckAction {
         $dbman = $DB->get_manager();
 
         $s = '';
-        $r = '<table class="generalbox boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
+        $r = '<table class="generaltable boxaligncenter boxwidthwide" border="0" cellpadding="5" cellspacing="0" id="results">';
         $r.= '  <tr><td class="generalboxcontent">';
         $r.= '    <h2 class="main">' . $this->str['searchresults'] . '</h2>';
         $r.= '    <p class="centerpara">' . $this->str['missingindexes'] . ': ' . count($missing_indexes) . '</p>';

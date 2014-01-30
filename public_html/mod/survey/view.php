@@ -37,8 +37,8 @@
     }
 
     $PAGE->set_url('/mod/survey/view.php', array('id'=>$id));
-    require_login($course->id, false, $cm);
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    require_login($course, false, $cm);
+    $context = context_module::instance($cm->id);
 
     require_capability('mod/survey:participate', $context);
 
@@ -66,6 +66,7 @@ $completion->set_module_viewed($cm);
     $PAGE->set_title(format_string($survey->name));
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
+    echo $OUTPUT->heading($survey->name);
 
 /// Check to see if groups are being used in this survey
     if ($groupmode = groups_get_activity_groupmode($cm)) {   // Groups are being used
@@ -100,8 +101,8 @@ $completion->set_module_viewed($cm);
         $numusers = survey_count_responses($survey->id, $currentgroup, $groupingid);
 
         if ($showscales) {
-            echo $OUTPUT->heading(get_string("surveycompleted", "survey"));
-            echo $OUTPUT->heading(get_string("peoplecompleted", "survey", $numusers));
+            echo $OUTPUT->box(get_string("surveycompleted", "survey"));
+            echo $OUTPUT->box(get_string("peoplecompleted", "survey", $numusers));
             echo '<div class="resultgraph">';
             survey_print_graph("id=$cm->id&amp;sid=$USER->id&amp;group=$currentgroup&amp;type=student.png");
             echo '</div>';
@@ -109,7 +110,7 @@ $completion->set_module_viewed($cm);
         } else {
 
             echo $OUTPUT->box(format_module_intro('survey', $survey, $cm->id), 'generalbox', 'intro');
-            echo $OUTPUT->spacer(array('height'=>30, 'width'=>1, 'br'=>true)); // should be done with CSS instead
+            echo $OUTPUT->spacer(array('height'=>30, 'width'=>1), true);  // should be done with CSS instead
 
             $questions = $DB->get_records_list("survey_questions", "id", explode(',', $survey->questions));
             $questionorder = explode(",", $survey->questions);
@@ -122,7 +123,7 @@ $completion->set_module_viewed($cm);
                         $table->align = array ("left");
                         $table->data[] = array(s($answer->answer1));//no html here, just plain text
                         echo html_writer::table($table);
-                        echo $OUTPUT->spacer(clone($spacer)) . '<br />';
+                        echo $OUTPUT->spacer(array('height'=>30, 'width'=>1), true);
                     }
                 }
             }
@@ -198,10 +199,14 @@ $completion->set_module_viewed($cm);
            $checkarray['questions'][] = Array('question'=>$question, 'default'=>$default);
        }
     }
-    $PAGE->requires->js('/mod/survey/survey.js');
     $PAGE->requires->data_for_js('surveycheck', $checkarray);
+    $module = array(
+        'name'      => 'mod_survey',
+        'fullpath'  => '/mod/survey/survey.js',
+        'requires'  => array('yui2-event'),
+    );
     $PAGE->requires->string_for_js('questionsnotanswered', 'survey');
-    $PAGE->requires->js_function_call('survey_attach_onsubmit');
+    $PAGE->requires->js_init_call('M.mod_survey.init', $checkarray, true, $module);
 
     echo '<br />';
     echo '<input type="submit" value="'.get_string("clicktocontinue", "survey").'" />';

@@ -258,46 +258,13 @@ function survey_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    echo $OUTPUT->heading(get_string('newsurveyresponses', 'survey').':');
+    echo $OUTPUT->heading(get_string('newsurveyresponses', 'survey').':', 3);
     foreach ($surveys as $survey) {
         $url = $CFG->wwwroot.'/mod/survey/view.php?id='.$survey->cmid;
         print_recent_activity_note($survey->time, $survey, $survey->name, $url, false, $viewfullnames);
     }
 
     return true;
-}
-
-/**
- * Returns the users with data in one survey
- * (users with records in survey_analysis and survey_answers, students)
- *
- * @todo: deprecated - to be deleted in 2.2
- *
- * @param int $surveyid
- * @return array
- */
-function survey_get_participants($surveyid) {
-    global $DB;
-
-    //Get students from survey_analysis
-    $st_analysis = $DB->get_records_sql("SELECT DISTINCT u.id, u.id
-                                           FROM {user} u, {survey_analysis} a
-                                          WHERE a.survey = ? AND
-                                                u.id = a.userid", array($surveyid));
-    //Get students from survey_answers
-    $st_answers = $DB->get_records_sql("SELECT DISTINCT u.id, u.id
-                                          FROM {user} u, {survey_answers} a
-                                         WHERE a.survey = ? AND
-                                               u.id = a.userid", array($surveyid));
-
-    //Add st_answers to st_analysis
-    if ($st_answers) {
-        foreach ($st_answers as $st_answer) {
-            $st_analysis[$st_answer->id] = $st_answer;
-        }
-    }
-    //Return st_analysis array (it contains an array of unique users)
-    return ($st_analysis);
 }
 
 // SQL FUNCTIONS ////////////////////////////////////////////////////////
@@ -536,13 +503,27 @@ function survey_print_multi($question) {
     $strdefault    = get_string('notyetanswered', 'survey');
     $strresponses  = get_string('responses', 'survey');
 
-    echo $OUTPUT->heading($question->text, 3, 'questiontext');
+    echo $OUTPUT->heading($question->text, 3);
     echo "\n<table width=\"90%\" cellpadding=\"4\" cellspacing=\"1\" border=\"0\" class=\"surveytable\">";
 
     $options = explode( ",", $question->options);
     $numoptions = count($options);
 
+    // COLLES Actual (which is having questions of type 1) and COLLES Preferred (type 2)
+    // expect just one answer per question. COLLES Actual and Preferred (type 3) expects
+    // two answers per question. ATTLS (having a single question of type 1) expects one
+    // answer per question. CIQ is not using multiquestions (i.e. a question with subquestions).
+    // Note that the type of subquestions does not really matter, it's the type of the
+    // question itself that determines everything.
     $oneanswer = ($question->type == 1 || $question->type == 2) ? true : false;
+
+    // COLLES Preferred (having questions of type 2) will use the radio elements with the name
+    // like qP1, qP2 etc. COLLES Actual and ATTLS have radios like q1, q2 etc.
+    if ($question->type == 2) {
+        $P = "P";
+    } else {
+        $P = "";
+    }
 
     echo "<tr class=\"smalltext\"><th scope=\"row\">$strresponses</th>";
     echo "<th scope=\"col\" class=\"hresponse\">". get_string('notyetanswered', 'survey'). "</th>";
@@ -551,26 +532,19 @@ function survey_print_multi($question) {
     }
     echo "</tr>\n";
 
-    if ($oneanswer) {
-        echo "<tr><th scope=\"col\" colspan=\"7\">$question->intro</th></tr>\n";
-    } else {
-        echo "<tr><th scope=\"col\" colspan=\"7\">$question->intro</th></tr>\n";
-    }
+    echo "<tr><th scope=\"col\" colspan=\"7\">$question->intro</th></tr>\n";
 
     $subquestions = $DB->get_records_list("survey_questions", "id", explode(',', $question->multi));
 
     foreach ($subquestions as $q) {
         $qnum++;
-        $rowclass = survey_question_rowclass($qnum);
+        if ($oneanswer) {
+            $rowclass = survey_question_rowclass($qnum);
+        } else {
+            $rowclass = survey_question_rowclass(round($qnum / 2));
+        }
         if ($q->text) {
             $q->text = get_string($q->text, "survey");
-        }
-
-        $oneanswer = ($q->type == 1 || $q->type == 2) ? true : false;
-        if ($q->type == 2) {
-            $P = "P";
-        } else {
-            $P = "";
         }
 
         echo "<tr class=\"$rowclass rblock\">";
@@ -590,15 +564,14 @@ function survey_print_multi($question) {
             $checklist["q$P$q->id"] = 0;
 
         } else {
-            // yu : fix for MDL-7501, possibly need to use user flag as this is quite ugly.
             echo "<th scope=\"row\" class=\"optioncell\">";
             echo "<b class=\"qnumtopcell\">$qnum</b> &nbsp; ";
             $qnum++;
-            echo "<span class=\"preferthat smalltext\">$stripreferthat</span> &nbsp; ";
+            echo "<span class=\"preferthat\">$stripreferthat</span> &nbsp; ";
             echo "<span class=\"option\">$q->text</span></th>\n";
 
             $default = get_accesshide($strdefault);
-            echo '<td class="whitecell"><label for="qP'. $P.$q->id .'"><input type="radio" name="qP'.$P.$q->id. '" id="qP'. $q->id .'" value="0" checked="checked" />'.$default.'</label></td>';
+            echo '<td class="whitecell"><label for="qP'.$q->id.'"><input type="radio" name="qP'.$q->id.'" id="qP'.$q->id.'" value="0" checked="checked" />'.$default.'</label></td>';
 
 
             for ($i=1;$i<=$numoptions;$i++) {
@@ -611,7 +584,7 @@ function survey_print_multi($question) {
             echo "<tr class=\"$rowclass rblock\">";
             echo "<th scope=\"row\" class=\"optioncell\">";
             echo "<b class=\"qnumtopcell\">$qnum</b> &nbsp; ";
-            echo "<span class=\"foundthat smalltext\">$strifoundthat</span> &nbsp; ";
+            echo "<span class=\"foundthat\">$strifoundthat</span> &nbsp; ";
             echo "<span class=\"option\">$q->text</span></th>\n";
 
             $default = get_accesshide($strdefault);
@@ -698,13 +671,8 @@ function survey_question_rowclass($qnum) {
 function survey_print_graph($url) {
     global $CFG, $SURVEY_GHEIGHT, $SURVEY_GWIDTH;
 
-    if (empty($CFG->gdversion)) {
-        echo "(".get_string("gdneed").")";
-
-    } else {
-        echo "<img class='resultgraph' height=\"$SURVEY_GHEIGHT\" width=\"$SURVEY_GWIDTH\"".
-             " src=\"$CFG->wwwroot/mod/survey/graph.php?$url\" alt=\"".get_string("surveygraph", "survey")."\" />";
-    }
+    echo "<img class='resultgraph' height=\"$SURVEY_GHEIGHT\" width=\"$SURVEY_GWIDTH\"".
+         " src=\"$CFG->wwwroot/mod/survey/graph.php?$url\" alt=\"".get_string("surveygraph", "survey")."\" />";
 }
 
 /**

@@ -582,6 +582,8 @@ function clam_handle_infected_file($file, $userid=0, $basiconly=false) {
  * @return boolean
  */
 function clam_replace_infected_file($file) {
+    global $CFG;
+
     $newcontents = get_string('virusplaceholder');
     if (!$f = fopen($file, 'w')) {
         return false;
@@ -589,6 +591,7 @@ function clam_replace_infected_file($file) {
     if (!fwrite($f, $newcontents)) {
         return false;
     }
+    @chmod($file, $CFG->filepermissions);
     return true;
 }
 
@@ -650,7 +653,7 @@ function clam_scan_moodle_file(&$file, $course) {
     case 1:  // bad wicked evil, we have a virus.
         $info = new stdClass();
         if (!empty($course)) {
-            $info->course = format_string($course->fullname, true, array('context' => get_context_instance(CONTEXT_COURSE, $course->id)));
+            $info->course = format_string($course->fullname, true, array('context' => context_course::instance($course->id)));
         }
         else {
             $info->course = 'No course';

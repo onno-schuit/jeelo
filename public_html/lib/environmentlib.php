@@ -70,6 +70,10 @@ defined('MOODLE_INTERNAL') || die();
     define('CUSTOM_CHECK_FUNCTION_MISSING',     14);
     /** XML Processing Error */
     define('NO_PHP_SETTINGS_NAME_FOUND',        15);
+    /** XML Processing Error */
+    define('INCORRECT_FEEDBACK_FOR_REQUIRED',   16);
+    /** XML Processing Error */
+    define('INCORRECT_FEEDBACK_FOR_OPTIONAL',   17);
 
 /// Define algorithm used to select the xml file
     /** To select the newer file available to perform checks */
@@ -438,6 +442,10 @@ function environment_check($version, $env_select) {
     $results[] = environment_check_database($version, $env_select);
     $results[] = environment_check_php($version, $env_select);
 
+    if ($result = environment_check_pcre_unicode($version, $env_select)) {
+        $results[] = $result;
+    }
+
     $phpext_results = environment_check_php_extensions($version, $env_select);
     $results = array_merge($results, $phpext_results);
 
@@ -715,7 +723,12 @@ function environment_check_moodle($version, $env_select) {
     }
 
 /// Now search the version we are using
-    $current_version = normalize_version(get_config('', 'release'));
+    $release = get_config('', 'release');
+    $current_version = normalize_version($release);
+    if (strpos($release, 'dev') !== false) {
+        // when final version is required, dev is NOT enough!
+        $current_version = $current_version - 0.1;
+    }
 
 /// And finally compare them, saving results
     if (version_compare($current_version, $needed_version, '>=')) {
@@ -724,7 +737,7 @@ function environment_check_moodle($version, $env_select) {
         $result->setStatus(false);
     }
     $result->setLevel('required');
-    $result->setCurrentVersion($current_version);
+    $result->setCurrentVersion($release);
     $result->setNeededVersion($needed_version);
 
     return $result;
@@ -789,6 +802,46 @@ function environment_check_php($version, $env_select) {
     return $result;
 }
 
+/**
+ * Looks for buggy PCRE implementation, we need unicode support in Moodle...
+ * @param string $version xml version we are going to use to test this server
+ * @param int $env_select one of ENV_SELECT_NEWER | ENV_SELECT_DATAROOT | ENV_SELECT_RELEASE decide xml to use.
+ * @return stdClass results encapsulated in one environment_result object, null if irrelevant
+ */
+function environment_check_pcre_unicode($version, $env_select) {
+    $result = new environment_results('pcreunicode');
+
+    // Get the environment version we need
+    if (!$data = get_environment_for_version($version, $env_select)) {
+        // Error. No version data found!
+        $result->setStatus(false);
+        $result->setErrorCode(NO_VERSION_DATA_FOUND);
+        return $result;
+    }
+
+    if (!isset($data['#']['PCREUNICODE'])) {
+        return null;
+    }
+
+    $level = get_level($data['#']['PCREUNICODE']['0']);
+    $result->setLevel($level);
+
+    if (!function_exists('preg_match')) {
+        // The extension test fails instead.
+        return null;
+
+    } else if (@preg_match('/\pL/u', 'a') and @preg_match('/á/iu', 'Á')) {
+        $result->setStatus(true);
+
+    } else {
+        $result->setStatus(false);
+    }
+
+    // Do any actions defined in the XML file.
+    process_environment_result($data['#']['PCREUNICODE'][0], $result);
+
+    return $result;
+}
 
 /**
  * This function will check if unicode database requirements are satisfied
@@ -909,7 +962,7 @@ function environment_check_database($version, $env_select) {
     }
 
 /// Now search the version we are using (depending of vendor)
-    $current_vendor = $DB->get_dbfamily();
+    $current_vendor = $DB->get_dbvendor();
 
     $dbinfo = $DB->get_server_info();
     $current_version = normalize_version($dbinfo['version']);
@@ -1017,6 +1070,8 @@ function process_environment_restrict($xml, &$result) {
  * This function will detect if there is some message available to be added to the
  * result in order to clarify enviromental details.
  *
+ * @uses INCORRECT_FEEDBACK_FOR_REQUIRED
+ * @uses INCORRECT_FEEDBACK_FOR_OPTIONAL
  * @param string xmldata containing the feedback data
  * @param object reult object to be updated
  */
@@ -1025,6 +1080,15 @@ function process_environment_messages($xml, &$result) {
 /// If there is feedback info
     if (is_array($xml['#']) && isset($xml['#']['FEEDBACK'][0]['#'])) {
         $feedbackxml = $xml['#']['FEEDBACK'][0]['#'];
+
+        // Detect some incorrect feedback combinations.
+        if ($result->getLevel() == 'required' and isset($feedbackxml['ON_CHECK'])) {
+            $result->setStatus(false);
+            $result->setErrorCode(INCORRECT_FEEDBACK_FOR_REQUIRED);
+        } else if ($result->getLevel() == 'optional' and isset($feedbackxml['ON_ERROR'])) {
+            $result->setStatus(false);
+            $result->setErrorCode(INCORRECT_FEEDBACK_FOR_OPTIONAL);
+        }
 
         if (!$result->status and $result->getLevel() == 'required') {
             if (isset($feedbackxml['ON_ERROR'][0]['@']['message'])) {

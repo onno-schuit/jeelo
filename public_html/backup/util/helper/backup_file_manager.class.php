@@ -61,6 +61,11 @@ class backup_file_manager {
     public static function copy_file_moodle2backup($backupid, $filerecorid) {
         global $DB;
 
+        if (!backup_controller_dbops::backup_includes_files($backupid)) {
+            // Only include the files if required by the controller.
+            return;
+        }
+
         // Normalise param
         if (!is_object($filerecorid)) {
             $filerecorid = $DB->get_record('files', array('id' => $filerecorid));
@@ -73,6 +78,10 @@ class backup_file_manager {
 
         $fs = get_file_storage();
         $file = $fs->get_file_instance($filerecorid);
+        // If the file is external file, skip copying.
+        if ($file->is_external_file()) {
+            return;
+        }
 
         // Calculate source and target paths (use same subdirs strategy for both)
         $targetfilepath = self::get_backup_storage_base_dir($backupid) . '/' .

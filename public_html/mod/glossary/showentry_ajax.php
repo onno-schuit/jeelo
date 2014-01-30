@@ -54,14 +54,14 @@ if ($entries) {
         }
         // make sure the entry is approved (or approvable by current user)
         if (!$entry->approved and ($USER->id != $entry->userid)) {
-            $context = get_context_instance(CONTEXT_MODULE, $entry->cmid);
+            $context = context_module::instance($entry->cmid);
             if (!has_capability('mod/glossary:approve', $context)) {
                 unset($entries[$key]);
                 continue;
             }
         }
 
-        $context = get_context_instance(CONTEXT_MODULE, $entry->cmid);
+        $context = context_module::instance($entry->cmid);
         $definition = file_rewrite_pluginfile_urls($entry->definition, 'pluginfile.php', $context->id, 'mod_glossary', 'entry', $entry->id);
 
         $options = new stdClass();
@@ -69,6 +69,12 @@ if ($entries) {
         $options->trusted = $entry->definitiontrust;
         $options->context = $context;
         $entries[$key]->definition = format_text($definition, $entry->definitionformat, $options);
+
+        $entries[$key]->attachments = '';
+        if (!empty($entries[$key]->attachment)) {
+            $attachments = glossary_print_attachments($entry, $cm, 'html');
+            $entries[$key]->attachments = html_writer::tag('p', $attachments);
+        }
 
         $entries[$key]->footer = "<p style=\"text-align:right\">&raquo;&nbsp;<a href=\"$CFG->wwwroot/mod/glossary/view.php?g=$entry->glossaryid\">".format_string($entry->glossaryname,true)."</a></p>";
         add_to_log($entry->courseid, 'glossary', 'view entry', "showentry.php?eid=$entry->id", $entry->id, $entry->cmid);

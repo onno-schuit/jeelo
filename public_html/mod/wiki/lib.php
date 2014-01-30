@@ -161,7 +161,7 @@ function wiki_reset_userdata($data) {
             if (!$cm = get_coursemodule_from_instance('wiki', $wiki->id)) {
                 continue;
             }
-            $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $context = context_module::instance($cm->id);
             $DB->delete_records_select('comments', "contextid = ? AND commentarea='wiki_page'", array($context->id));
             $status[] = array('component'=>$componentstr, 'item'=>get_string('deleteallcomments'), 'error'=>false);
         }
@@ -279,16 +279,18 @@ function wiki_supports($feature) {
 function wiki_print_recent_activity($course, $viewfullnames, $timestart) {
     global $CFG, $DB, $OUTPUT;
 
-    $sql = "SELECT p.*, w.id as wikiid, sw.groupid
+    $usernamefields = get_all_user_name_fields(true, 'u');
+    $sql = "SELECT p.*, w.id as wikiid, sw.groupid, $usernamefields
             FROM {wiki_pages} p
                 JOIN {wiki_subwikis} sw ON sw.id = p.subwikiid
                 JOIN {wiki} w ON w.id = sw.wikiid
+                JOIN {user} u ON u.id = sw.userid
             WHERE p.timemodified > ? AND w.course = ?
             ORDER BY p.timemodified ASC";
     if (!$pages = $DB->get_records_sql($sql, array($timestart, $course->id))) {
         return false;
     }
-    $modinfo =& get_fast_modinfo($course);
+    $modinfo = get_fast_modinfo($course);
 
     $wikis = array();
 
@@ -303,7 +305,7 @@ function wiki_print_recent_activity($course, $viewfullnames, $timestart) {
         if (!$cm->uservisible) {
             continue;
         }
-        $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $context = context_module::instance($cm->id);
 
         if (!has_capability('mod/wiki:viewpage', $context)) {
             continue;
@@ -377,21 +379,6 @@ function wiki_grades($wikiid) {
 }
 
 /**
- * Must return an array of user records (all data) who are participants
- * for a given instance of wiki. Must include every user involved
- * in the instance, independient of his role (student, teacher, admin...)
- * See other modules as example.
- *
- * @todo: deprecated - to be deleted in 2.2
- *
- * @param int $wikiid ID of an instance of this module
- * @return mixed boolean/array of students
- **/
-function wiki_get_participants($wikiid) {
-    return false;
-}
-
-/**
  * This function returns if a scale is being used by one wiki
  * it it has support for grading and scales. Commented code should be
  * modified if necessary. See forum, glossary or journal modules
@@ -434,11 +421,21 @@ function wiki_scale_used_anywhere($scaleid) {
 }
 
 /**
- * Pluginfile hook
+ * file serving callback
  *
- * @author Josep Arus
+ * @copyright Josep Arus
+ * @package  mod_wiki
+ * @category files
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if the file was not found, just send the file otherwise and do not return anything
  */
-function wiki_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
+function wiki_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     global $CFG;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -467,9 +464,7 @@ function wiki_pluginfile($course, $cm, $context, $filearea, $args, $forcedownloa
             return false;
         }
 
-        $lifetime = isset($CFG->filelifetime) ? $CFG->filelifetime : 86400;
-
-        send_stored_file($file, $lifetime, 0);
+        send_stored_file($file, null, 0, $options);
     }
 }
 
@@ -479,11 +474,13 @@ function wiki_search_form($cm, $search = '') {
     $output = '<div class="wikisearch">';
     $output .= '<form method="post" action="' . $CFG->wwwroot . '/mod/wiki/search.php" style="display:inline">';
     $output .= '<fieldset class="invisiblefieldset">';
-    $output .= '<input name="searchstring" type="text" size="18" value="' . s($search, true) . '" alt="search" />';
+    $output .= '<legend class="accesshide">'. get_string('searchwikis', 'wiki') .'</legend>';
+    $output .= '<label class="accesshide" for="searchwiki">' . get_string("searchterms", "wiki") . '</label>';
+    $output .= '<input id="searchwiki" name="searchstring" type="text" size="18" value="' . s($search, true) . '" alt="search" />';
     $output .= '<input name="courseid" type="hidden" value="' . $cm->course . '" />';
     $output .= '<input name="cmid" type="hidden" value="' . $cm->id . '" />';
     $output .= '<input name="searchwikicontent" type="hidden" value="1" />';
-    $output .= ' <input value="' . get_string('searchwikis', 'wiki') . '" type="submit" />';
+    $output .= '<input value="' . get_string('searchwikis', 'wiki') . '" type="submit" />';
     $output .= '</fieldset>';
     $output .= '</form>';
     $output .= '</div>';
@@ -495,7 +492,7 @@ function wiki_extend_navigation(navigation_node $navref, $course, $module, $cm) 
 
     require_once($CFG->dirroot . '/mod/wiki/locallib.php');
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     $url = $PAGE->url;
     $userid = 0;
     if ($module->wikimode == 'individual') {
@@ -535,7 +532,7 @@ function wiki_extend_navigation(navigation_node $navref, $course, $module, $cm) 
             $node = $navref->add(get_string('view', 'wiki'), $link, navigation_node::TYPE_SETTING);
         }
 
-        if (has_capability('mod/wiki:editpage', $context)) {
+        if (wiki_user_can_edit($subwiki)) {
             $link = new moodle_url('/mod/wiki/edit.php', array('pageid' => $pageid));
             $node = $navref->add(get_string('edit', 'wiki'), $link, navigation_node::TYPE_SETTING);
         }
@@ -583,6 +580,9 @@ function wiki_get_extra_capabilities() {
  * Capability check has been done in comment->check_permissions(), we
  * don't need to do it again here.
  *
+ * @package  mod_wiki
+ * @category comment
+ *
  * @param stdClass $comment_param {
  *              context  => context the context object
  *              courseid => int course id
@@ -606,6 +606,10 @@ function wiki_comment_permissions($comment_param) {
  *              commentarea => string comment area
  *              itemid      => int itemid
  * }
+ *
+ * @package  mod_wiki
+ * @category comment
+ *
  * @return boolean
  */
 function wiki_comment_validate($comment_param) {
@@ -631,7 +635,7 @@ function wiki_comment_validate($comment_param) {
     if (!$cm = get_coursemodule_from_instance('wiki', $wiki->id, $course->id)) {
         throw new comment_exception('invalidcoursemodule');
     }
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     // group access
     if ($subwiki->groupid) {
         $groupmode = groups_get_activity_groupmode($cm, $course);

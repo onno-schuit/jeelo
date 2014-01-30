@@ -13,11 +13,20 @@ class user_editadvanced_form extends moodleform {
         global $USER, $CFG, $COURSE;
 
         $mform =& $this->_form;
+        $editoroptions = null;
+        $filemanageroptions = null;
+        $userid = $USER->id;
 
-        if (is_array($this->_customdata) && array_key_exists('editoroptions', $this->_customdata)) {
-            $editoroptions = $this->_customdata['editoroptions'];
-        } else {
-            $editoroptions = null;
+        if (is_array($this->_customdata)) {
+            if (array_key_exists('editoroptions', $this->_customdata)) {
+                $editoroptions = $this->_customdata['editoroptions'];
+            }
+            if (array_key_exists('filemanageroptions', $this->_customdata)) {
+                $filemanageroptions = $this->_customdata['filemanageroptions'];
+            }
+            if (array_key_exists('userid', $this->_customdata)) {
+                $userid = $this->_customdata['userid'];
+            }
         }
 
         //Accessibility: "Required" is bad legend text.
@@ -37,16 +46,24 @@ class user_editadvanced_form extends moodleform {
         $mform->addRule('username', $strrequired, 'required', null, 'client');
         $mform->setType('username', PARAM_RAW);
 
-        $auths = get_plugin_list('auth');
-        $auth_options = array();
+        $auths = core_component::get_plugin_list('auth');
+        $enabled = get_string('pluginenabled', 'core_plugin');
+        $disabled = get_string('plugindisabled', 'core_plugin');
+        $auth_options = array($enabled=>array(), $disabled=>array());
         foreach ($auths as $auth => $unused) {
-            $auth_options[$auth] = get_string('pluginname', "auth_{$auth}");
+            if (is_enabled_auth($auth)) {
+                $auth_options[$enabled][$auth] = get_string('pluginname', "auth_{$auth}");
+            } else {
+                $auth_options[$disabled][$auth] = get_string('pluginname', "auth_{$auth}");
+            }
         }
-        $mform->addElement('select', 'auth', get_string('chooseauthmethod','auth'), $auth_options);
+        $mform->addElement('selectgroups', 'auth', get_string('chooseauthmethod','auth'), $auth_options);
         $mform->addHelpButton('auth', 'chooseauthmethod', 'auth');
 
         $mform->addElement('advcheckbox', 'suspended', get_string('suspended','auth'));
         $mform->addHelpButton('suspended', 'suspended', 'auth');
+
+        $mform->addElement('checkbox', 'createpassword', get_string('createpassword','auth'));
 
         if (!empty($CFG->passwordpolicy)){
             $mform->addElement('static', 'passwordpolicyinfo', '', print_password_policy());
@@ -54,16 +71,25 @@ class user_editadvanced_form extends moodleform {
         $mform->addElement('passwordunmask', 'newpassword', get_string('newpassword'), 'size="20"');
         $mform->addHelpButton('newpassword', 'newpassword');
         $mform->setType('newpassword', PARAM_RAW);
+        $mform->disabledIf('newpassword', 'createpassword', 'checked');
 
         $mform->addElement('advcheckbox', 'preference_auth_forcepasswordchange', get_string('forcepasswordchange'));
         $mform->addHelpButton('preference_auth_forcepasswordchange', 'forcepasswordchange');
+        $mform->disabledIf('preference_auth_forcepasswordchange', 'createpassword', 'checked');
+
         /// shared fields
-        useredit_shared_definition($mform, $editoroptions);
+        useredit_shared_definition($mform, $editoroptions, $filemanageroptions);
 
         /// Next the customisable profile fields
-        profile_definition($mform);
+        profile_definition($mform, $userid);
 
-        $this->add_action_buttons(false, get_string('updatemyprofile'));
+        if ($userid == -1) {
+            $btnstring = get_string('createuser');
+        } else {
+            $btnstring = get_string('updatemyprofile');
+        }
+
+        $this->add_action_buttons(false, $btnstring);
     }
 
     function definition_after_data() {
@@ -101,8 +127,10 @@ class user_editadvanced_form extends moodleform {
         }
 
         // require password for new users
-        if ($userid == -1) {
-            $mform->addRule('newpassword', get_string('required'), 'required', null, 'client');
+        if ($userid > 0) {
+            if ($mform->elementExists('createpassword')) {
+                $mform->removeElement('createpassword');
+            }
         }
 
         if ($user and is_mnet_remote_user($user)) {
@@ -119,9 +147,9 @@ class user_editadvanced_form extends moodleform {
         }
 
         // print picture
-        if (!empty($CFG->gdversion) and empty($USER->newadminuser)) {
+        if (empty($USER->newadminuser)) {
             if ($user) {
-                $context = get_context_instance(CONTEXT_USER, $user->id, MUST_EXIST);
+                $context = context_user::instance($user->id, MUST_EXIST);
                 $fs = get_file_storage();
                 $hasuploadedpicture = ($fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.png') || $fs->file_exists($context->id, 'user', 'icon', 0, '/', 'f2.jpg'));
                 if (!empty($user->picture) && $hasuploadedpicture) {
@@ -153,10 +181,19 @@ class user_editadvanced_form extends moodleform {
         $user = $DB->get_record('user', array('id'=>$usernew->id));
         $err = array();
 
-        if (!empty($usernew->newpassword)) {
-            $errmsg = '';//prevent eclipse warning
-            if (!check_password_policy($usernew->newpassword, $errmsg)) {
-                $err['newpassword'] = $errmsg;
+        if (!$user and !empty($usernew->createpassword)) {
+            if ($usernew->suspended) {
+                // Show some error because we can not mail suspended users.
+                $err['suspended'] = get_string('error');
+            }
+        } else {
+            if (!empty($usernew->newpassword)) {
+                $errmsg = ''; // Prevent eclipse warning.
+                if (!check_password_policy($usernew->newpassword, $errmsg)) {
+                    $err['newpassword'] = $errmsg;
+                }
+            } else if (!$user) {
+                $err['newpassword'] = get_string('required');
             }
         }
 
@@ -169,7 +206,7 @@ class user_editadvanced_form extends moodleform {
                 $err['username'] = get_string('usernameexists');
             }
             //check allowed characters
-            if ($usernew->username !== moodle_strtolower($usernew->username)) {
+            if ($usernew->username !== core_text::strtolower($usernew->username)) {
                 $err['username'] = get_string('usernamelowercase');
             } else {
                 if ($usernew->username !== clean_param($usernew->username, PARAM_USERNAME)) {

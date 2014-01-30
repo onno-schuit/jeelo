@@ -16,11 +16,16 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    moodlecore
- * @subpackage backup-moodle2
- * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Defines restore_plugin class
+ *
+ * @package     core_backup
+ * @subpackage  moodle2
+ * @category    backup
+ * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class implementing the plugins support for moodle2 restore
@@ -113,7 +118,7 @@ abstract class restore_plugin {
     static public function get_restore_decode_contents($plugintype) {
         $decodecontents = array();
         // Check the requested plugintype is a valid one
-        if (!array_key_exists($plugintype, get_plugin_types($plugintype))) {
+        if (!array_key_exists($plugintype, core_component::get_plugin_types($plugintype))) {
              throw new backup_step_exception('incorrect_plugin_type', $plugintype);
         }
         // Check the base plugin class exists
@@ -130,7 +135,7 @@ abstract class restore_plugin {
         // (only the needed ones have been loaded, so they will
         // be the ones being asked here). Fetch their restore contents
         // by calling (if exists) to their define_decode_contents() method
-        $plugins = get_plugin_list($plugintype);
+        $plugins = core_component::get_plugin_list($plugintype);
         foreach ($plugins as $plugin => $plugindir) {
             $classname = 'restore_' . $plugintype . '_' . $plugin . '_plugin';
             if (class_exists($classname)) {

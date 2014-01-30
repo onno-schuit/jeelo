@@ -101,11 +101,17 @@ abstract class restore_structure_step extends restore_step {
             $xmlprocessor->add_path($element->get_path(), $element->is_grouped());
         }
 
+        // Set up progress tracking.
+        $progress = $this->get_task()->get_progress();
+        $progress->start_progress($this->get_name(), core_backup_progress::INDETERMINATE);
+        $xmlparser->set_progress($progress);
+
         // And process it, dispatch to target methods in step will start automatically
         $xmlparser->process();
 
         // Have finished, launch the after_execute method of all the processing objects
         $this->launch_after_execute_methods();
+        $progress->end_progress();
     }
 
     /**
@@ -217,9 +223,26 @@ abstract class restore_structure_step extends restore_step {
      * Add all the existing file, given their component and filearea and one backup_ids itemname to match with
      */
     public function add_related_files($component, $filearea, $mappingitemname, $filesctxid = null, $olditemid = null) {
+        // If the current progress object is set up and ready to receive
+        // indeterminate progress, then use it, otherwise don't. (This check is
+        // just in case this function is ever called from somewhere not within
+        // the execute() method here, which does set up progress like this.)
+        $progress = $this->get_task()->get_progress();
+        if (!$progress->is_in_progress_section() ||
+                $progress->get_current_max() !== core_backup_progress::INDETERMINATE) {
+            $progress = null;
+        }
+
         $filesctxid = is_null($filesctxid) ? $this->task->get_old_contextid() : $filesctxid;
-        restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), $component,
-                                          $filearea, $filesctxid, $this->task->get_userid(), $mappingitemname, $olditemid);
+        $results = restore_dbops::send_files_to_pool($this->get_basepath(), $this->get_restoreid(), $component,
+                $filearea, $filesctxid, $this->task->get_userid(), $mappingitemname, $olditemid, null, false,
+                $progress);
+        $resultstoadd = array();
+        foreach ($results as $result) {
+            $this->log($result->message, $result->level);
+            $resultstoadd[$result->code] = true;
+        }
+        $this->task->add_result($resultstoadd);
     }
 
     /**
@@ -256,7 +279,7 @@ abstract class restore_structure_step extends restore_step {
 
         // Re-enforce 'moodle/restore:rolldates' capability for the user in the course, just in case
         } else if (!has_capability('moodle/restore:rolldates',
-                                   get_context_instance(CONTEXT_COURSE, $this->get_courseid()),
+                                   context_course::instance($this->get_courseid()),
                                    $this->task->get_userid())) {
             $cache[$this->get_restoreid()] = 0;
 
@@ -272,6 +295,7 @@ abstract class restore_structure_step extends restore_step {
     /**
      * As far as restore structure steps are implementing restore_plugin stuff, they need to
      * have the parent task available for wrapping purposes (get course/context....)
+     * @return restore_task|null
      */
     public function get_task() {
         return $this->task;
@@ -282,7 +306,7 @@ abstract class restore_structure_step extends restore_step {
     /**
      * Add plugin structure to any element in the structure restore tree
      *
-     * @param string $plugintype type of plugin as defined by get_plugin_types()
+     * @param string $plugintype type of plugin as defined by core_component::get_plugin_types()
      * @param restore_path_element $element element in the structure restore tree that
      *                                       we are going to add plugin information to
      */
@@ -291,12 +315,12 @@ abstract class restore_structure_step extends restore_step {
         global $CFG;
 
         // Check the requested plugintype is a valid one
-        if (!array_key_exists($plugintype, get_plugin_types($plugintype))) {
+        if (!array_key_exists($plugintype, core_component::get_plugin_types($plugintype))) {
              throw new restore_step_exception('incorrect_plugin_type', $plugintype);
         }
 
         // Get all the restore path elements, looking across all the plugin dirs
-        $pluginsdirs = get_plugin_list($plugintype);
+        $pluginsdirs = core_component::get_plugin_list($plugintype);
         foreach ($pluginsdirs as $name => $pluginsdir) {
             // We need to add also backup plugin classes on restore, they may contain
             // some stuff used both in backup & restore
@@ -395,6 +419,8 @@ abstract class restore_structure_step extends restore_step {
                 $pobject->launch_after_restore_methods();
             }
         }
+        // Finally execute own (restore_structure_step) after_restore method
+        $this->after_restore();
     }
 
     /**
@@ -405,6 +431,16 @@ abstract class restore_structure_step extends restore_step {
      * overwrite in in your steps if needed
      */
     protected function after_execute() {
+        // do nothing by default
+    }
+
+    /**
+     * This method will be executed after the rest of the restore has been processed.
+     *
+     * Use if you need to update IDs based on things which are restored after this
+     * step has completed.
+     */
+    protected function after_restore() {
         // do nothing by default
     }
 

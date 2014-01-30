@@ -42,6 +42,12 @@ class qtype_essay_renderer extends qtype_renderer {
 
         // Answer field.
         $step = $qa->get_last_step_with_qt_var('answer');
+
+        if (!$step->has_qt_var('answer') && empty($options->readonly)) {
+            // Question has never been answered, fill it with response template.
+            $step = new question_attempt_step(array('answer'=>$question->responsetemplate));
+        }
+
         if (empty($options->readonly)) {
             $answer = $responseoutput->response_area_input('answer', $qa,
                     $step, $question->responsefieldlines, $options->context);
@@ -84,9 +90,8 @@ class qtype_essay_renderer extends qtype_renderer {
         $output = array();
 
         foreach ($files as $file) {
-            $mimetype = $file->get_mimetype();
             $output[] = html_writer::tag('p', html_writer::link($qa->get_response_file_url($file),
-                    $this->output->pix_icon(file_mimetype_icon($mimetype), $mimetype,
+                    $this->output->pix_icon(file_file_icon($file), get_mimetype_description($file),
                     'moodle', array('class' => 'icon')) . ' ' . s($file->get_filename())));
         }
         return implode($output);
@@ -110,11 +115,14 @@ class qtype_essay_renderer extends qtype_renderer {
         $pickeroptions->itemid = $qa->prepare_response_files_draft_itemid(
                 'attachments', $options->context->id);
         $pickeroptions->context = $options->context;
+        $pickeroptions->return_types = FILE_INTERNAL;
 
         $pickeroptions->itemid = $qa->prepare_response_files_draft_itemid(
                 'attachments', $options->context->id);
 
-        return form_filemanager_render($pickeroptions) . html_writer::empty_tag(
+        $fm = new form_filemanager($pickeroptions);
+        $filesrenderer = $this->page->get_renderer('core', 'files');
+        return $filesrenderer->render($fm). html_writer::empty_tag(
                 'input', array('type' => 'hidden', 'name' => $qa->get_qt_field_name('attachments'),
                 'value' => $pickeroptions->itemid));
     }
@@ -203,7 +211,7 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
             $formats[$fid] = $strformats[$fid];
         }
 
-        list($draftitemid, $reponse) = $this->prepare_response_for_editing(
+        list($draftitemid, $response) = $this->prepare_response_for_editing(
                 $name, $step, $context);
 
         $editor->use_editor($id, $this->get_editor_options($context),
@@ -213,16 +221,18 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('div', array('class' =>
                 $this->class_name() . ' qtype_essay_response'));
 
-        $output .= html_writer::tag('div', html_writer::tag('textarea', s($reponse),
+        $output .= html_writer::tag('div', html_writer::tag('textarea', s($response),
                 array('id' => $id, 'name' => $inputname, 'rows' => $lines, 'cols' => 60)));
 
         $output .= html_writer::start_tag('div');
-        if (count($formats == 1)) {
+        if (count($formats) == 1) {
             reset($formats);
             $output .= html_writer::empty_tag('input', array('type' => 'hidden',
                     'name' => $inputname . 'format', 'value' => key($formats)));
 
         } else {
+            $output .= html_writer::label(get_string('format'), 'menu' . $inputname . 'format', false);
+            $output .= ' ';
             $output .= html_writer::select($formats, $inputname . 'format', $responseformat, '');
         }
         $output .= html_writer::end_tag('div');
@@ -279,7 +289,7 @@ class qtype_essay_format_editor_renderer extends plugin_renderer_base {
      * @return array filepicker options for the editor.
      */
     protected function get_filepicker_options($context, $draftitemid) {
-        return array();
+        return array('return_types'  => FILE_INTERNAL | FILE_EXTERNAL);
     }
 
     /**

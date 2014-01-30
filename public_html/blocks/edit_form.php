@@ -87,10 +87,11 @@ class block_edit_form extends moodleform {
 
         $regionoptions = $this->page->theme->get_all_block_regions();
 
-        $parentcontext = get_context_instance_by_id($this->block->instance->parentcontextid);
+        $parentcontext = context::instance_by_id($this->block->instance->parentcontextid);
         $mform->addElement('hidden', 'bui_parentcontextid', $parentcontext->id);
+        $mform->setType('bui_parentcontextid', PARAM_INT);
 
-        $mform->addElement('static', 'bui_homecontext', get_string('createdat', 'block'), print_context_name($parentcontext));
+        $mform->addElement('static', 'bui_homecontext', get_string('createdat', 'block'), $parentcontext->get_context_name());
         $mform->addHelpButton('bui_homecontext', 'createdat', 'block');
 
         // For pre-calculated (fixed) pagetype lists
@@ -114,6 +115,7 @@ class block_edit_form extends moodleform {
 
         // Let the form to know about that, can be useful later
         $mform->addElement('hidden', 'bui_editingatfrontpage', (int)$editingatfrontpage);
+        $mform->setType('bui_editingatfrontpage', PARAM_INT);
 
         // Front page, show the page-contexts element and set $pagetypelist to 'any page' (*)
         // as unique option. Processign the form will do any change if needed
@@ -140,11 +142,12 @@ class block_edit_form extends moodleform {
             // module context doesn't have child contexts, so display in current context only
             $mform->addElement('hidden', 'bui_contexts', BUI_CONTEXTS_CURRENT);
         } else {
-            $parentcontextname = print_context_name($parentcontext);
+            $parentcontextname = $parentcontext->get_context_name();
             $contextoptions[BUI_CONTEXTS_CURRENT]      = get_string('showoncontextonly', 'block', $parentcontextname);
             $contextoptions[BUI_CONTEXTS_CURRENT_SUBS] = get_string('showoncontextandsubs', 'block', $parentcontextname);
             $mform->addElement('select', 'bui_contexts', get_string('contexts', 'block'), $contextoptions);
         }
+        $mform->setType('bui_contexts', PARAM_INT);
 
         // Generate pagetype patterns by callbacks if necessary (has not been set specifically)
         if (empty($pagetypelist)) {
@@ -172,8 +175,10 @@ class block_edit_form extends moodleform {
 
             $mform->addElement('select', 'bui_pagetypepattern', get_string('restrictpagetypes', 'block'), $pagetypelist);
         } else {
-            $value = array_pop(array_keys($pagetypelist));
+            $values = array_keys($pagetypelist);
+            $value = array_pop($values);
             $mform->addElement('hidden', 'bui_pagetypepattern', $value);
+            $mform->setType('bui_pagetypepattern', PARAM_RAW);
             // Now we are really hiding a lot (both page-contexts and page-type-patterns),
             // specially in some systemcontext pages having only one option (my/user...)
             // so, until it's decided if we are going to add the 'bring-back' pattern to
@@ -198,6 +203,7 @@ class block_edit_form extends moodleform {
         if ($this->page->subpage) {
             if ($parentcontext->contextlevel == CONTEXT_USER) {
                 $mform->addElement('hidden', 'bui_subpagepattern', '%@NULL@%');
+                $mform->setType('bui_subpagepattern', PARAM_RAW);
             } else {
                 $subpageoptions = array(
                     '%@NULL@%' => get_string('anypagematchingtheabove', 'block'),
@@ -264,7 +270,7 @@ class block_edit_form extends moodleform {
             $defaults->bui_subpagepattern = '%@NULL@%';
         }
 
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
         if ($defaults->parentcontextid == $systemcontext->id) {
             $defaults->bui_contexts = BUI_CONTEXTS_ENTIRE_SITE; // System-wide and sticky
         } else {

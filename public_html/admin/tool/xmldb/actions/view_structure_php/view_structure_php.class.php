@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,8 +24,7 @@
  * This class will show the PHP needed (upgrade block) to perform
  * the desired DDL action with the specified table
  *
- * @package    tool
- * @subpackage xmldb
+ * @package    tool_xmldb
  * @copyright  2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -73,16 +71,16 @@ class view_structure_php extends XMLDBAction {
 
         // Get the correct dirs
         if (!empty($XMLDB->dbdirs)) {
-            $dbdir =& $XMLDB->dbdirs[$dirpath];
+            $dbdir = $XMLDB->dbdirs[$dirpath];
         } else {
             return false;
         }
         if (!empty($XMLDB->editeddirs)) {
-            $editeddir =& $XMLDB->editeddirs[$dirpath];
-            $structure =& $editeddir->xml_file->getStructure();
+            $editeddir = $XMLDB->editeddirs[$dirpath];
+            $structure = $editeddir->xml_file->getStructure();
         }
 
-        $tables =& $structure->getTables();
+        $tables = $structure->getTables();
         $table = reset($tables);
         $defaulttable = null;
         if ($table) {
@@ -116,7 +114,7 @@ class view_structure_php extends XMLDBAction {
         $o.= '    <input type="hidden" name ="dir" value="' . str_replace($CFG->dirroot, '', $dirpath) . '" />';
         $o.= '    <input type="hidden" name ="action" value="view_structure_php" />';
         $o.= '    <table id="formelements" class="boxaligncenter" cellpadding="5">';
-        $o.= '      <tr><td><label for="action" accesskey="c">' . $this->str['selectaction'] .' </label>' . html_writer::select($popcommands, 'command', $commandparam, false) . '&nbsp;<label for="table" accesskey="t">' . $this->str['selecttable'] . ' </label>' .html_writer::select($poptables, 'table', $tableparam, false) . '</td></tr>';
+        $o.= '      <tr><td><label for="menucommand" accesskey="c">' . $this->str['selectaction'] .' </label>' . html_writer::select($popcommands, 'command', $commandparam, false) . '&nbsp;<label for="menutable" accesskey="t">' . $this->str['selecttable'] . ' </label>' .html_writer::select($poptables, 'table', $tableparam, false) . '</td></tr>';
         $o.= '      <tr><td colspan="2" align="center"><input type="submit" value="' .$this->str['view'] . '" /></td></tr>';
         $o.= '    </table>';
         $o.= '</div></form>';
@@ -172,10 +170,10 @@ class view_structure_php extends XMLDBAction {
 
         // Add contents
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Define table ' . $table->getName() . ' to be created' . XMLDB_LINEFEED;
+        $result .= '        // Define table ' . $table->getName() . ' to be created.' . XMLDB_LINEFEED;
         $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Adding fields to table ' . $table->getName() . XMLDB_LINEFEED;
+        $result .= '        // Adding fields to table ' . $table->getName() . '.' . XMLDB_LINEFEED;
         // Iterate over each field
         foreach ($table->getFields() as $field) {
             // The field header, with name
@@ -188,7 +186,7 @@ class view_structure_php extends XMLDBAction {
         // Iterate over each key
         if ($keys = $table->getKeys()) {
             $result .= XMLDB_LINEFEED;
-            $result .= '        // Adding keys to table ' . $table->getName() . XMLDB_LINEFEED;
+            $result .= '        // Adding keys to table ' . $table->getName() . '.' . XMLDB_LINEFEED;
             foreach ($keys as $key) {
                 // The key header, with name
                 $result .= '        $table->add_key(' . "'" . $key->getName() . "', ";
@@ -201,7 +199,7 @@ class view_structure_php extends XMLDBAction {
         // Iterate over each index
         if ($indexes = $table->getIndexes()) {
             $result .= XMLDB_LINEFEED;
-            $result .= '        // Adding indexes to table ' . $table->getName() . XMLDB_LINEFEED;
+            $result .= '        // Adding indexes to table ' . $table->getName() . '.' . XMLDB_LINEFEED;
             foreach ($indexes as $index) {
                 // The index header, with name
                 $result .= '        $table->add_index(' . "'" . $index->getName() . "', ";
@@ -214,7 +212,7 @@ class view_structure_php extends XMLDBAction {
 
         // Launch the proper DDL
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Conditionally launch create table for ' . $table->getName() . XMLDB_LINEFEED;
+        $result .= '        // Conditionally launch create table for ' . $table->getName() . '.' . XMLDB_LINEFEED;
         $result .= '        if (!$dbman->table_exists($table)) {' . XMLDB_LINEFEED;
         $result .= '            $dbman->create_table($table);' . XMLDB_LINEFEED;
         $result .= '        }' . XMLDB_LINEFEED;
@@ -252,12 +250,12 @@ class view_structure_php extends XMLDBAction {
 
         // Add contents
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Define table ' . $table->getName() . ' to be dropped' . XMLDB_LINEFEED;
+        $result .= '        // Define table ' . $table->getName() . ' to be dropped.' . XMLDB_LINEFEED;
         $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
 
         // Launch the proper DDL
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Conditionally launch drop table for ' . $table->getName() . XMLDB_LINEFEED;
+        $result .= '        // Conditionally launch drop table for ' . $table->getName() . '.' . XMLDB_LINEFEED;
         $result .= '        if ($dbman->table_exists($table)) {' . XMLDB_LINEFEED;
         $result .= '            $dbman->drop_table($table);' . XMLDB_LINEFEED;
         $result .= '        }' . XMLDB_LINEFEED;
@@ -295,12 +293,12 @@ class view_structure_php extends XMLDBAction {
 
         // Add contents
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Define table ' . $table->getName() . ' to be renamed to NEWNAMEGOESHERE' . XMLDB_LINEFEED;
+        $result .= '        // Define table ' . $table->getName() . ' to be renamed to NEWNAMEGOESHERE.' . XMLDB_LINEFEED;
         $result .= '        $table = new xmldb_table(' . "'" . $table->getName() . "'" . ');' . XMLDB_LINEFEED;
 
         // Launch the proper DDL
         $result .= XMLDB_LINEFEED;
-        $result .= '        // Launch rename table for ' . $table->getName() . XMLDB_LINEFEED;
+        $result .= '        // Launch rename table for ' . $table->getName() . '.' . XMLDB_LINEFEED;
         $result .= '        $dbman->rename_table($table, ' . "'NEWNAMEGOESHERE'" . ');' . XMLDB_LINEFEED;
 
         // Add the proper upgrade_xxxx_savepoint call

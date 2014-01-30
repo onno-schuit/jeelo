@@ -16,10 +16,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
- * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Defines backup_plan_builder class
+ *
+ * @package     core_backup
+ * @subpackage  moodle2
+ * @category    backup
+ * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -36,6 +39,7 @@ require_once($CFG->dirroot . '/backup/moodle2/backup_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_qtype_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_gradingform_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_format_plugin.class.php');
+require_once($CFG->dirroot . '/backup/moodle2/backup_local_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_theme_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_report_plugin.class.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_coursereport_plugin.class.php');
@@ -46,7 +50,7 @@ require_once($CFG->dirroot . '/backup/moodle2/backup_stepslib.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_custom_fields.php');
 
 // Load all the activity tasks for moodle2 format
-$mods = get_plugin_list('mod');
+$mods = core_component::get_plugin_list('mod');
 foreach ($mods as $mod => $moddir) {
     $taskpath = $moddir . '/backup/moodle2/backup_' . $mod . '_activity_task.class.php';
     if (plugin_supports('mod', $mod, FEATURE_BACKUP_MOODLE2)) {
@@ -57,7 +61,7 @@ foreach ($mods as $mod => $moddir) {
 }
 
 // Load all the block tasks for moodle2 format
-$blocks = get_plugin_list('block');
+$blocks = core_component::get_plugin_list('block');
 foreach ($blocks as $block => $blockdir) {
     $taskpath = $blockdir . '/backup/moodle2/backup_' . $block . '_block_task.class.php';
     if (file_exists($taskpath)) {

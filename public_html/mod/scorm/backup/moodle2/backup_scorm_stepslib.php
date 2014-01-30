@@ -42,15 +42,16 @@ class backup_scorm_activity_structure_step extends backup_activity_structure_ste
             'whatgrade', 'maxattempt', 'forcecompleted', 'forcenewattempt',
             'lastattemptlock', 'displayattemptstatus', 'displaycoursestructure', 'updatefreq',
             'sha1hash', 'md5hash', 'revision', 'launch',
-            'skipview', 'hidebrowse', 'hidetoc', 'hidenav',
+            'skipview', 'hidebrowse', 'hidetoc', 'nav', 'navpositionleft', 'navpositiontop',
             'auto', 'popup', 'options', 'width',
-            'height', 'timeopen', 'timeclose', 'timemodified'));
+            'height', 'timeopen', 'timeclose', 'timemodified',
+            'completionstatusrequired', 'completionscorerequired'));
 
         $scoes = new backup_nested_element('scoes');
 
         $sco = new backup_nested_element('sco', array('id'), array(
             'manifest', 'organization', 'parent', 'identifier',
-            'launch', 'scormtype', 'title'));
+            'launch', 'scormtype', 'title', 'sortorder'));
 
         $scodatas = new backup_nested_element('sco_datas');
 
@@ -126,25 +127,19 @@ class backup_scorm_activity_structure_step extends backup_activity_structure_ste
         // Define sources
         $scorm->set_source_table('scorm', array('id' => backup::VAR_ACTIVITYID));
 
-        $sco->set_source_table('scorm_scoes', array('scorm' => backup::VAR_PARENTID));
-
-        $scodata->set_source_table('scorm_scoes_data', array('scoid' => backup::VAR_PARENTID));
-
-        $seqrulecond->set_source_table('scorm_seq_ruleconds', array('scoid' => backup::VAR_PARENTID));
-
-        $seqrulecondsdata->set_source_table('scorm_seq_rulecond', array('ruleconditionsid' => backup::VAR_PARENTID));
-
-        $seqrolluprule->set_source_table('scorm_seq_rolluprule', array('scoid' => backup::VAR_PARENTID));
-
-        $seqrolluprulecond->set_source_table('scorm_seq_rolluprulecond', array('rollupruleid' => backup::VAR_PARENTID));
-
-        $seqobjective->set_source_table('scorm_seq_objective', array('scoid' => backup::VAR_PARENTID));
-
-        $seqmapinfo->set_source_table('scorm_seq_mapinfo', array('objectiveid' => backup::VAR_PARENTID));
+        // Order is important for several SCORM calls (especially scorm_scoes) in the following calls to set_source_table
+        $sco->set_source_table('scorm_scoes', array('scorm' => backup::VAR_PARENTID), 'sortorder, id');
+        $scodata->set_source_table('scorm_scoes_data', array('scoid' => backup::VAR_PARENTID), 'id ASC');
+        $seqrulecond->set_source_table('scorm_seq_ruleconds', array('scoid' => backup::VAR_PARENTID), 'id ASC');
+        $seqrulecondsdata->set_source_table('scorm_seq_rulecond', array('ruleconditionsid' => backup::VAR_PARENTID), 'id ASC');
+        $seqrolluprule->set_source_table('scorm_seq_rolluprule', array('scoid' => backup::VAR_PARENTID), 'id ASC');
+        $seqrolluprulecond->set_source_table('scorm_seq_rolluprulecond', array('rollupruleid' => backup::VAR_PARENTID), 'id ASC');
+        $seqobjective->set_source_table('scorm_seq_objective', array('scoid' => backup::VAR_PARENTID), 'id ASC');
+        $seqmapinfo->set_source_table('scorm_seq_mapinfo', array('objectiveid' => backup::VAR_PARENTID), 'id ASC');
 
         // All the rest of elements only happen if we are including user info
         if ($userinfo) {
-            $scotrack->set_source_table('scorm_scoes_track', array('scoid' => backup::VAR_PARENTID));
+            $scotrack->set_source_table('scorm_scoes_track', array('scoid' => backup::VAR_PARENTID), 'id ASC');
         }
 
         // Define id annotations

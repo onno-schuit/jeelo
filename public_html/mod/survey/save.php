@@ -45,9 +45,9 @@
     }
 
     $PAGE->set_url('/mod/survey/save.php', array('id'=>$id));
-    require_login($course->id, false, $cm);
+    require_login($course, false, $cm);
 
-    $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+    $context = context_module::instance($cm->id);
     require_capability('mod/survey:participate', $context);
 
     if (! $survey = $DB->get_record("survey", array("id"=>$cm->instance))) {
@@ -61,6 +61,7 @@
     $PAGE->set_title($strsurveysaved);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
+    echo $OUTPUT->heading($survey->name);
 
     if (survey_already_done($survey->id, $USER->id)) {
         notice(get_string("alreadysubmitted", "survey"), $_SERVER["HTTP_REFERER"]);

@@ -42,13 +42,13 @@ class mod_quiz_mod_form extends moodleform_mod {
 
     public function __construct($current, $section, $cm, $course) {
         self::$reviewfields = array(
-            'attempt' => get_string('theattempt', 'quiz'),
-            'correctness' => get_string('whethercorrect', 'question'),
-            'marks' => get_string('marks', 'question'),
-            'specificfeedback' => get_string('specificfeedback', 'question'),
-            'generalfeedback' => get_string('generalfeedback', 'question'),
-            'rightanswer' => get_string('rightanswer', 'question'),
-            'overallfeedback' => get_string('overallfeedback', 'quiz'),
+            'attempt'          => array('theattempt', 'quiz'),
+            'correctness'      => array('whethercorrect', 'question'),
+            'marks'            => array('marks', 'quiz'),
+            'specificfeedback' => array('specificfeedback', 'question'),
+            'generalfeedback'  => array('generalfeedback', 'question'),
+            'rightanswer'      => array('rightanswer', 'question'),
+            'overallfeedback'  => array('reviewoverallfeedback', 'quiz'),
         );
         parent::__construct($current, $section, $cm, $course);
     }
@@ -58,7 +58,7 @@ class mod_quiz_mod_form extends moodleform_mod {
         $quizconfig = get_config('quiz');
         $mform = $this->_form;
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Name.
@@ -69,9 +69,13 @@ class mod_quiz_mod_form extends moodleform_mod {
             $mform->setType('name', PARAM_CLEANHTML);
         }
         $mform->addRule('name', null, 'required', null, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
         // Introduction.
         $this->add_intro_editor(false, get_string('introduction', 'quiz'));
+
+        // -------------------------------------------------------------------------------
+        $mform->addElement('header', 'timing', get_string('timing', 'quiz'));
 
         // Open and close dates.
         $mform->addElement('date_time_selector', 'timeopen', get_string('quizopen', 'quiz'),
@@ -87,6 +91,32 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->addHelpButton('timelimit', 'timelimit', 'quiz');
         $mform->setAdvanced('timelimit', $quizconfig->timelimit_adv);
         $mform->setDefault('timelimit', $quizconfig->timelimit);
+
+        // What to do with overdue attempts.
+        $mform->addElement('select', 'overduehandling', get_string('overduehandling', 'quiz'),
+                quiz_get_overdue_handling_options());
+        $mform->addHelpButton('overduehandling', 'overduehandling', 'quiz');
+        $mform->setAdvanced('overduehandling', $quizconfig->overduehandling_adv);
+        $mform->setDefault('overduehandling', $quizconfig->overduehandling);
+        // TODO Formslib does OR logic on disableif, and we need AND logic here.
+        // $mform->disabledIf('overduehandling', 'timelimit', 'eq', 0);
+        // $mform->disabledIf('overduehandling', 'timeclose', 'eq', 0);
+
+        // Grace period time.
+        $mform->addElement('duration', 'graceperiod', get_string('graceperiod', 'quiz'),
+                array('optional' => true));
+        $mform->addHelpButton('graceperiod', 'graceperiod', 'quiz');
+        $mform->setAdvanced('graceperiod', $quizconfig->graceperiod_adv);
+        $mform->setDefault('graceperiod', $quizconfig->graceperiod);
+        $mform->disabledIf('graceperiod', 'overduehandling', 'neq', 'graceperiod');
+
+        // -------------------------------------------------------------------------------
+        // Grade settings.
+        $this->standard_grading_coursemodule_elements();
+
+        $mform->removeElement('grade');
+        $mform->addElement('hidden', 'grade', $quizconfig->maximumgrade);
+        $mform->setType('grade', PARAM_FLOAT);
 
         // Number of attempts.
         $attemptoptions = array('0' => get_string('unlimited'));
@@ -106,15 +136,7 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setDefault('grademethod', $quizconfig->grademethod);
         $mform->disabledIf('grademethod', 'attempts', 'eq', 1);
 
-        //-------------------------------------------------------------------------------
-        // Grade settings
-        $this->standard_grading_coursemodule_elements();
-
-        $mform->removeElement('grade');
-        $mform->addElement('hidden', 'grade', $quizconfig->maximumgrade);
-        $mform->setType('grade', PARAM_NUMBER);
-
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'layouthdr', get_string('layout', 'quiz'));
 
         // Shuffle questions.
@@ -144,9 +166,16 @@ class mod_quiz_mod_form extends moodleform_mod {
             $pagegroup[] = $mform->createElement('checkbox', 'repaginatenow', '',
                     get_string('repaginatenow', 'quiz'), array('id' => 'id_repaginatenow'));
             $mform->disabledIf('repaginatenow', 'shufflequestions', 'eq', 1);
-            $PAGE->requires->yui2_lib('event');
-            $PAGE->requires->js('/mod/quiz/edit.js');
-            $PAGE->requires->js_init_call('quiz_settings_init');
+
+            $PAGE->requires->js('/question/qengine.js');
+            $module = array(
+                'name'      => 'mod_quiz_edit',
+                'fullpath'  => '/mod/quiz/edit.js',
+                'requires'  => array('yui2-dom', 'yui2-event', 'yui2-container'),
+                'strings'   => array(),
+                'async'     => false,
+            );
+            $PAGE->requires->js_init_call('quiz_settings_init', null, false, $module);
         }
 
         $mform->addGroup($pagegroup, 'questionsperpagegrp',
@@ -154,7 +183,14 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->addHelpButton('questionsperpagegrp', 'newpage', 'quiz');
         $mform->setAdvanced('questionsperpagegrp', $quizconfig->questionsperpage_adv);
 
-        //-------------------------------------------------------------------------------
+        // Navigation method.
+        $mform->addElement('select', 'navmethod', get_string('navmethod', 'quiz'),
+                quiz_get_navigation_options());
+        $mform->addHelpButton('navmethod', 'navmethod', 'quiz');
+        $mform->setAdvanced('navmethod', $quizconfig->navmethod_adv);
+        $mform->setDefault('navmethod', $quizconfig->navmethod);
+
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'interactionhdr', get_string('questionbehaviour', 'quiz'));
 
         // Shuffle within questions.
@@ -183,14 +219,14 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setDefault('attemptonlast', $quizconfig->attemptonlast);
         $mform->disabledIf('attemptonlast', 'attempts', 'eq', 1);
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'reviewoptionshdr',
                 get_string('reviewoptionsheading', 'quiz'));
         $mform->addHelpButton('reviewoptionshdr', 'reviewoptionsheading', 'quiz');
 
         // Review options.
         $this->add_review_options_group($mform, $quizconfig, 'during',
-                mod_quiz_display_options::DURING);
+                mod_quiz_display_options::DURING, true);
         $this->add_review_options_group($mform, $quizconfig, 'immediately',
                 mod_quiz_display_options::IMMEDIATELY_AFTER);
         $this->add_review_options_group($mform, $quizconfig, 'open',
@@ -210,12 +246,14 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->disabledIf('overallfeedbackduring', 'preferredbehaviour',
                 'neq', 'wontmatch');
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'display', get_string('display', 'form'));
 
         // Show user picture.
-        $mform->addElement('selectyesno', 'showuserpicture',
-                get_string('showuserpicture', 'quiz'));
+        $mform->addElement('select', 'showuserpicture', get_string('showuserpicture', 'quiz'), array(
+                QUIZ_SHOWIMAGE_NONE => get_string('shownoimage', 'quiz'),
+                QUIZ_SHOWIMAGE_SMALL => get_string('showsmallimage', 'quiz'),
+                QUIZ_SHOWIMAGE_LARGE => get_string('showlargeimage', 'quiz')));
         $mform->addHelpButton('showuserpicture', 'showuserpicture', 'quiz');
         $mform->setAdvanced('showuserpicture', $quizconfig->showuserpicture_adv);
         $mform->setDefault('showuserpicture', $quizconfig->showuserpicture);
@@ -242,13 +280,13 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->setAdvanced('questiondecimalpoints', $quizconfig->questiondecimalpoints_adv);
         $mform->setDefault('questiondecimalpoints', $quizconfig->questiondecimalpoints);
 
-        // Show blocks during quiz attempt
+        // Show blocks during quiz attempt.
         $mform->addElement('selectyesno', 'showblocks', get_string('showblocks', 'quiz'));
         $mform->addHelpButton('showblocks', 'showblocks', 'quiz');
         $mform->setAdvanced('showblocks', $quizconfig->showblocks_adv);
         $mform->setDefault('showblocks', $quizconfig->showblocks);
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'security', get_string('extraattemptrestrictions', 'quiz'));
 
         // Require password to begin quiz attempt.
@@ -281,7 +319,7 @@ class mod_quiz_mod_form extends moodleform_mod {
         $mform->disabledIf('delay2', 'attempts', 'eq', 1);
         $mform->disabledIf('delay2', 'attempts', 'eq', 2);
 
-        // 'Secure' window.
+        // Browser security choices.
         $mform->addElement('select', 'browsersecurity', get_string('browsersecurity', 'quiz'),
                 quiz_access_manager::get_browser_security_choices());
         $mform->addHelpButton('browsersecurity', 'browsersecurity', 'quiz');
@@ -291,7 +329,7 @@ class mod_quiz_mod_form extends moodleform_mod {
         // Any other rule plugins.
         quiz_access_manager::add_settings_form_fields($this, $mform);
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'overallfeedbackhdr', get_string('overallfeedback', 'quiz'));
         $mform->addHelpButton('overallfeedbackhdr', 'overallfeedback', 'quiz');
 
@@ -310,10 +348,10 @@ class mod_quiz_mod_form extends moodleform_mod {
 
         $repeatarray = array();
         $repeatedoptions = array();
-        $repeatarray[] = MoodleQuickForm::createElement('editor', 'feedbacktext',
-                get_string('feedback', 'quiz'), null, array('maxfiles' => EDITOR_UNLIMITED_FILES,
+        $repeatarray[] = $mform->createElement('editor', 'feedbacktext',
+                get_string('feedback', 'quiz'), array('rows' => 3), array('maxfiles' => EDITOR_UNLIMITED_FILES,
                         'noclean' => true, 'context' => $this->context));
-        $repeatarray[] = MoodleQuickForm::createElement('text', 'feedbackboundaries',
+        $repeatarray[] = $mform->createElement('text', 'feedbackboundaries',
                 get_string('gradeboundary', 'quiz'), array('size' => 10));
         $repeatedoptions['feedbacktext']['type'] = PARAM_RAW;
         $repeatedoptions['feedbackboundaries']['type'] = PARAM_RAW;
@@ -330,13 +368,13 @@ class mod_quiz_mod_form extends moodleform_mod {
                 $repeatedoptions, 'boundary_repeats', 'boundary_add_fields', 3,
                 get_string('addmoreoverallfeedbacks', 'quiz'), true);
 
-        // Put some extra elements in before the button
-        $mform->insertElementBefore(MoodleQuickForm::createElement('editor',
-                "feedbacktext[$nextel]", get_string('feedback', 'quiz'), null,
+        // Put some extra elements in before the button.
+        $mform->insertElementBefore($mform->createElement('editor',
+                "feedbacktext[$nextel]", get_string('feedback', 'quiz'), array('rows' => 3),
                 array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true,
                       'context' => $this->context)),
                 'boundary_add_fields');
-        $mform->insertElementBefore(MoodleQuickForm::createElement('static',
+        $mform->insertElementBefore($mform->createElement('static',
                 'gradeboundarystatic2', get_string('gradeboundary', 'quiz'), '0%'),
                 'boundary_add_fields');
 
@@ -347,17 +385,33 @@ class mod_quiz_mod_form extends moodleform_mod {
             $mform->disabledIf('feedbacktext[' . ($i + 1) . ']', 'grade', 'eq', 0);
         }
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $this->standard_coursemodule_elements();
 
-        //-------------------------------------------------------------------------------
-        // buttons
+        // Check and act on whether setting outcomes is considered an advanced setting.
+        $mform->setAdvanced('modoutcomes', !empty($quizconfig->outcomes_adv));
+
+        // The standard_coursemodule_elements method sets this to 100, but the
+        // quiz has its own setting, so use that.
+        $mform->setDefault('grade', $quizconfig->maximumgrade);
+
+        // -------------------------------------------------------------------------------
         $this->add_action_buttons();
     }
 
-    protected function add_review_options_group($mform, $quizconfig, $whenname, $when) {
+    protected function add_review_options_group($mform, $quizconfig, $whenname,
+            $when, $withhelp = false) {
+        global $OUTPUT;
+
         $group = array();
-        foreach (self::$reviewfields as $field => $label) {
+        foreach (self::$reviewfields as $field => $string) {
+            list($identifier, $component) = $string;
+
+            $label = get_string($identifier, $component);
+            if ($withhelp) {
+                $label .= ' ' . $OUTPUT->help_icon($identifier, $component);
+            }
+
             $group[] = $mform->createElement('checkbox', $field . $whenname, '', $label);
         }
         $mform->addGroup($group, $whenname . 'optionsgrp',
@@ -398,13 +452,13 @@ class mod_quiz_mod_form extends moodleform_mod {
             foreach ($this->_feedbacks as $feedback) {
                 $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
                 $toform['feedbacktext['.$key.']']['text'] = file_prepare_draft_area(
-                    $draftid,               // draftid
-                    $this->context->id,     // context
-                    'mod_quiz',             // component
-                    'feedback',             // filarea
-                    !empty($feedback->id) ? (int) $feedback->id : null, // itemid
+                    $draftid,               // Draftid.
+                    $this->context->id,     // Context.
+                    'mod_quiz',             // Component.
+                    'feedback',             // Filarea.
+                    !empty($feedback->id) ? (int) $feedback->id : null, // Itemid.
                     null,
-                    $feedback->feedbacktext // text
+                    $feedback->feedbacktext // Text.
                 );
                 $toform['feedbacktext['.$key.']']['format'] = $feedback->feedbacktextformat;
                 $toform['feedbacktext['.$key.']']['itemid'] = $draftid;
@@ -466,15 +520,28 @@ class mod_quiz_mod_form extends moodleform_mod {
             $errors['timeclose'] = get_string('closebeforeopen', 'quiz');
         }
 
+        // Check that the grace period is not too short.
+        if ($data['overduehandling'] == 'graceperiod') {
+            $graceperiodmin = get_config('quiz', 'graceperiodmin');
+            if ($data['graceperiod'] <= $graceperiodmin) {
+                $errors['graceperiod'] = get_string('graceperiodtoosmall', 'quiz', format_time($graceperiodmin));
+            }
+        }
+
         // Check the boundary value is a number or a percentage, and in range.
         $i = 0;
         while (!empty($data['feedbackboundaries'][$i] )) {
             $boundary = trim($data['feedbackboundaries'][$i]);
-            if (strlen($boundary) > 0 && $boundary[strlen($boundary) - 1] == '%') {
-                $boundary = trim(substr($boundary, 0, -1));
-                if (is_numeric($boundary)) {
-                    $boundary = $boundary * $data['grade'] / 100.0;
-                } else {
+            if (strlen($boundary) > 0) {
+                if ($boundary[strlen($boundary) - 1] == '%') {
+                    $boundary = trim(substr($boundary, 0, -1));
+                    if (is_numeric($boundary)) {
+                        $boundary = $boundary * $data['grade'] / 100.0;
+                    } else {
+                        $errors["feedbackboundaries[$i]"] =
+                                get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
+                    }
+                } else if (!is_numeric($boundary)) {
                     $errors["feedbackboundaries[$i]"] =
                             get_string('feedbackerrorboundaryformat', 'quiz', $i + 1);
                 }
@@ -510,6 +577,9 @@ class mod_quiz_mod_form extends moodleform_mod {
                         get_string('feedbackerrorjunkinfeedback', 'quiz', $i + 1);
             }
         }
+
+        // Any other rule plugins.
+        $errors = quiz_access_manager::validate_settings_form_fields($errors, $data, $files, $this);
 
         return $errors;
     }

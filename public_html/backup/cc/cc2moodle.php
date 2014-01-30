@@ -71,6 +71,11 @@ class cc2moodle {
             return false;
         }
 
+        // Before iterate over directories, try to find one manifest at top level
+        if (file_exists($folder . '/imsmanifest.xml')) {
+            return $folder . '/imsmanifest.xml';
+        }
+
         $result = false;
         try {
             $dirIter = new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::KEY_AS_PATHNAME);
@@ -144,7 +149,7 @@ class cc2moodle {
         $cdir = static::$path_to_manifest_folder . DIRECTORY_SEPARATOR . 'course_files';
 
         if (!file_exists($cdir)) {
-            mkdir($cdir);
+            mkdir($cdir, $CFG->directorypermissions, true);
         }
 
         $sheet_base = static::loadsheet(SHEET_BASE);
@@ -615,15 +620,23 @@ class cc2moodle {
                 $array_index++;
 
                 if ($item->nodeName == "item")  {
+                    $identifierref = '';
+                    if ($item->hasAttribute('identifierref')) {
+                      $identifierref = $item->getAttribute('identifierref');
+                    }
 
-                    $identifierref = $xpath->query('@identifierref', $item);
-                    $identifierref = !empty($identifierref->item(0)->nodeValue) ? $identifierref->item(0)->nodeValue : '';
-
-                    $title = $xpath->query('imscc:title', $item);
-                    $title = !empty($title->item(0)->nodeValue) ? $title->item(0)->nodeValue : '';
+                    $title = '';
+                    $titles = $xpath->query('imscc:title', $item);
+                    if ($titles->length > 0) {
+                        $title = $titles->item(0)->nodeValue;
+                    }
 
                     $cc_type = $this->get_item_cc_type($identifierref);
                     $moodle_type = $this->convert_to_moodle_type($cc_type);
+                    //Fix the label issue - MDL-33523
+                    if (empty($identifierref) && empty($title)) {
+                      $moodle_type = TYPE_UNKNOWN;
+                    }
                 }
                 elseif ($item->nodeName == "resource")  {
 

@@ -59,7 +59,7 @@ class feedback_item_label extends feedback_item_base {
                              'items'=>$feedbackitems,
                              'feedback'=>$feedback->id);
 
-        $this->context = get_context_instance(CONTEXT_MODULE, $cm->id);
+        $this->context = context_module::instance($cm->id);
 
         //preparing the editor for new file-api
         $item->presentationformat = FORMAT_HTML;
@@ -146,14 +146,14 @@ class feedback_item_label extends feedback_item_base {
         if (!$item->feedback AND $item->template) {
             $template = $DB->get_record('feedback_template', array('id'=>$item->template));
             if ($template->ispublic) {
-                $context = get_system_context();
+                $context = context_system::instance();
             } else {
-                $context = get_context_instance(CONTEXT_COURSE, $template->course);
+                $context = context_course::instance($template->course);
             }
             $filearea = 'template';
         } else {
             $cm = get_coursemodule_from_instance('feedback', $item->feedback);
-            $context = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $context = context_module::instance($cm->id);
             $filearea = 'item';
         }
 
@@ -232,7 +232,7 @@ class feedback_item_label extends feedback_item_base {
     public function postupdate($item) {
         global $DB;
 
-        $context = get_context_instance(CONTEXT_MODULE, $item->cmid);
+        $context = context_module::instance($item->cmid);
         $item = file_postupdate_standard_editor($item,
                                                 'presentation',
                                                 $this->presentationoptions,
@@ -269,5 +269,11 @@ class feedback_item_label extends feedback_item_base {
     public function get_printval($item, $value) {
     }
     public function get_analysed($item, $groupid = false, $courseid = false) {
+    }
+    public function value_type() {
+        return PARAM_BOOL;
+    }
+    public function clean_input_value($value) {
+        return '';
     }
 }

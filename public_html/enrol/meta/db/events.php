@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -18,55 +17,39 @@
 /**
  * Meta course enrolment plugin event handler definition.
  *
- * @package    enrol
- * @subpackage meta
- * @copyright  2010 Petr Skoda {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package enrol_meta
+ * @category event
+ * @copyright 2010 Petr Skoda {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/* List of handlers */
-$handlers = array (
-    'role_assigned' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'role_assigned'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
-    ),
+// List of observers.
+$observers = array(
 
-    'role_unassigned' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'role_unassigned'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname'   => '\core\event\user_enrolment_created',
+        'callback'    => 'enrol_meta_observer::user_enrolment_created',
     ),
-
-    'user_enrolled' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'user_enrolled'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname'   => '\core\event\user_enrolment_deleted',
+        'callback'    => 'enrol_meta_observer::user_enrolment_deleted',
     ),
-
-    'user_unenrolled' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'user_unenrolled'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname'   => '\core\event\user_enrolment_updated',
+        'callback'    => 'enrol_meta_observer::user_enrolment_updated',
     ),
-
-    'user_enrol_modified' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'user_enrol_modified'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname'   => '\core\event\role_assigned',
+        'callback'    => 'enrol_meta_observer::role_assigned',
     ),
-
-    'course_deleted' => array (
-        'handlerfile'      => '/enrol/meta/locallib.php',
-        'handlerfunction'  => array('enrol_meta_handler', 'course_deleted'),
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname'   => '\core\event\role_unassigned',
+        'callback'    => 'enrol_meta_observer::role_unassigned',
+    ),
+    array(
+        'eventname'   => '\core\event\course_deleted',
+        'callback'    => 'enrol_meta_observer::course_deleted',
     ),
 );

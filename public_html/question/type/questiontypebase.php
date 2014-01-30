@@ -47,7 +47,7 @@ require_once($CFG->dirroot . '/question/engine/lib.php');
  */
 class question_type {
     protected $fileoptions = array(
-        'subdirs' => false,
+        'subdirs' => true,
         'maxfiles' => -1,
         'maxbytes' => 0,
     );
@@ -74,11 +74,7 @@ class question_type {
      * You should not need to override this method, the default behaviour should be fine.
      */
     public function local_name() {
-        if (get_string_manager()->string_exists('pluginname', $this->plugin_name())) {
-            return get_string('pluginname', $this->plugin_name());
-        } else {
-            return get_string($this->name(), $this->plugin_name());
-        }
+        return get_string('pluginname', $this->plugin_name());
     }
 
     /**
@@ -133,7 +129,7 @@ class question_type {
      * method, and the question_definition class must implement the
      * classify_response method.
      *
-     * @return bool whether this report can analyse all the student reponses
+     * @return bool whether this report can analyse all the student responses
      * for things like the quiz statistics report.
      */
     public function can_analyse_responses() {
@@ -249,11 +245,7 @@ class question_type {
         global $OUTPUT;
         $heading = $this->get_heading(empty($question->id));
 
-        if (get_string_manager()->string_exists('pluginname_help', $this->plugin_name())) {
-            echo $OUTPUT->heading_with_help($heading, 'pluginname', $this->plugin_name());
-        } else {
-            echo $OUTPUT->heading_with_help($heading, $this->name(), $this->plugin_name());
-        }
+        echo $OUTPUT->heading_with_help($heading, 'pluginname', $this->plugin_name());
 
         $permissionstrs = array();
         if (!empty($question->id)) {
@@ -288,16 +280,10 @@ class question_type {
     public function get_heading($adding = false) {
         if ($adding) {
             $string = 'pluginnameadding';
-            $fallback = 'adding' . $this->name();
         } else {
             $string = 'pluginnameediting';
-            $fallback = 'editing' . $this->name();
         }
-        if (get_string_manager()->string_exists($string, $this->plugin_name())) {
-            return get_string($string, $this->plugin_name());
-        } else {
-            return get_string($fallback, $this->plugin_name());
-        }
+        return get_string($string, $this->plugin_name());
     }
 
     /**
@@ -347,7 +333,7 @@ class question_type {
         // This default implementation is suitable for most
         // question types.
 
-        // First, save the basic question itself
+        // First, save the basic question itself.
         $question->name = trim($form->name);
         $question->parent = isset($form->parent) ? $form->parent : 0;
         $question->length = $this->actual_number_of_questions($question);
@@ -356,7 +342,7 @@ class question_type {
         if (empty($form->questiontext['text'])) {
             $question->questiontext = '';
         } else {
-            $question->questiontext = trim($form->questiontext['text']);;
+            $question->questiontext = trim($form->questiontext['text']);
         }
         $question->questiontextformat = !empty($form->questiontext['format']) ?
                 $form->questiontext['format'] : 0;
@@ -386,7 +372,7 @@ class question_type {
 
         // If the question is new, create it.
         if (empty($question->id)) {
-            // Set the unique code
+            // Set the unique code.
             $question->stamp = make_unique_id_code();
             $question->createdby = $USER->id;
             $question->timecreated = time();
@@ -395,7 +381,7 @@ class question_type {
 
         // Now, whether we are updating a existing question, or creating a new
         // one, we have to do the files processing and update the record.
-        /// Question already exists, update.
+        // Question already exists, update.
         $question->modifiedby = $USER->id;
         $question->timemodified = time();
 
@@ -412,13 +398,13 @@ class question_type {
         }
         $DB->update_record('question', $question);
 
-        // Now to save all the answers and type-specific options
+        // Now to save all the answers and type-specific options.
         $form->id = $question->id;
         $form->qtype = $question->qtype;
         $form->category = $question->category;
         $form->questiontext = $question->questiontext;
         $form->questiontextformat = $question->questiontextformat;
-        // current context
+        // Current context.
         $form->context = $context;
 
         $result = $this->save_question_options($form);
@@ -436,7 +422,7 @@ class question_type {
                     '$result->noticeyesno no longer supported in save_question.');
         }
 
-        // Give the question a unique version stamp determined by question_hash()
+        // Give the question a unique version stamp determined by question_hash().
         $DB->set_field('question', 'version', question_hash($question),
                 array('id' => $question->id));
 
@@ -468,21 +454,12 @@ class question_type {
                 $options->$questionidcolname = $question->id;
             }
             foreach ($extraquestionfields as $field) {
-                if (!isset($question->$field)) {
-                    $result = new stdClass();
-                    $result->error = "No data for field $field when saving " .
-                            $this->name() . ' question id ' . $question->id;
-                    return $result;
+                if (property_exists($question, $field)) {
+                    $options->$field = $question->$field;
                 }
-                $options->$field = $question->$field;
             }
 
-            if (!$DB->{$function}($question_extension_table, $options)) {
-                $result = new stdClass();
-                $result->error = 'Could not save question options for ' .
-                        $this->name() . ' question id ' . $question->id;
-                return $result;
-            }
+            $DB->{$function}($question_extension_table, $options);
         }
 
         $extraanswerfields = $this->extra_answer_fields();
@@ -496,25 +473,8 @@ class question_type {
         $oldhints = $DB->get_records('question_hints',
                 array('questionid' => $formdata->id), 'id ASC');
 
-        if (!empty($formdata->hint)) {
-            $numhints = max(array_keys($formdata->hint)) + 1;
-        } else {
-            $numhints = 0;
-        }
 
-        if ($withparts) {
-            if (!empty($formdata->hintclearwrong)) {
-                $numclears = max(array_keys($formdata->hintclearwrong)) + 1;
-            } else {
-                $numclears = 0;
-            }
-            if (!empty($formdata->hintshownumcorrect)) {
-                $numshows = max(array_keys($formdata->hintshownumcorrect)) + 1;
-            } else {
-                $numshows = 0;
-            }
-            $numhints = max($numhints, $numclears, $numshows);
-        }
+        $numhints = $this->count_hints_on_form($formdata, $withparts);
 
         for ($i = 0; $i < $numhints; $i += 1) {
             if (html_is_blank($formdata->hint[$i]['text'])) {
@@ -526,8 +486,7 @@ class question_type {
                 $shownumcorrect = !empty($formdata->hintshownumcorrect[$i]);
             }
 
-            if (empty($formdata->hint[$i]['text']) && empty($clearwrong) &&
-                    empty($shownumcorrect)) {
+            if ($this->is_hint_empty_in_form_data($formdata, $i, $withparts)) {
                 continue;
             }
 
@@ -547,6 +506,7 @@ class question_type {
                 $hint->clearwrong = $clearwrong;
                 $hint->shownumcorrect = $shownumcorrect;
             }
+            $hint->options = $this->save_hint_options($formdata, $i, $withparts);
             $DB->update_record('question_hints', $hint);
         }
 
@@ -556,6 +516,65 @@ class question_type {
             $fs->delete_area_files($context->id, 'question', 'hint', $oldhint->id);
             $DB->delete_records('question_hints', array('id' => $oldhint->id));
         }
+    }
+
+    /**
+     * Count number of hints on the form.
+     * Overload if you use custom hint controls.
+     * @param object $formdata the data from the form.
+     * @param bool $withparts whether to take into account clearwrong and shownumcorrect options.
+     * @return int count of hints on the form.
+     */
+    protected function count_hints_on_form($formdata, $withparts) {
+        if (!empty($formdata->hint)) {
+            $numhints = max(array_keys($formdata->hint)) + 1;
+        } else {
+            $numhints = 0;
+        }
+
+        if ($withparts) {
+            if (!empty($formdata->hintclearwrong)) {
+                $numclears = max(array_keys($formdata->hintclearwrong)) + 1;
+            } else {
+                $numclears = 0;
+            }
+            if (!empty($formdata->hintshownumcorrect)) {
+                $numshows = max(array_keys($formdata->hintshownumcorrect)) + 1;
+            } else {
+                $numshows = 0;
+            }
+            $numhints = max($numhints, $numclears, $numshows);
+        }
+        return $numhints;
+    }
+
+    /**
+     * Determine if the hint with specified number is not empty and should be saved.
+     * Overload if you use custom hint controls.
+     * @param object $formdata the data from the form.
+     * @param int $number number of hint under question.
+     * @param bool $withparts whether to take into account clearwrong and shownumcorrect options.
+     * @return bool is this particular hint data empty.
+     */
+    protected function is_hint_empty_in_form_data($formdata, $number, $withparts) {
+        if ($withparts) {
+            return empty($formdata->hint[$number]['text']) && empty($formdata->hintclearwrong[$number]) &&
+                    empty($formdata->hintshownumcorrect[$number]);
+        } else {
+            return  empty($formdata->hint[$number]['text']);
+        }
+    }
+
+    /**
+     * Save additional question type data into the hint optional field.
+     * Overload if you use custom hint information.
+     * @param object $formdata the data from the form.
+     * @param int $number number of hint to get options from.
+     * @param bool $withparts whether question have parts.
+     * @return string value to save into the options field of question_hints table.
+     */
+    protected function save_hint_options($formdata, $number, $withparts) {
+        return null;    // By default, options field is unused.
     }
 
     /**
@@ -702,12 +721,12 @@ class question_type {
         $question->createdby = $questiondata->createdby;
         $question->modifiedby = $questiondata->modifiedby;
 
-        //Fill extra question fields values
+        // Fill extra question fields values.
         $extraquestionfields = $this->extra_question_fields();
         if (is_array($extraquestionfields)) {
-            //omit table name
+            // Omit table name.
             array_shift($extraquestionfields);
-            foreach($extraquestionfields as $field) {
+            foreach ($extraquestionfields as $field) {
                 $question->$field = $questiondata->options->$field;
             }
         }
@@ -828,7 +847,7 @@ class question_type {
      *                         Question type specific information is included.
      */
     public function actual_number_of_questions($question) {
-        // By default, each question is given one number
+        // By default, each question is given one number.
         return 1;
     }
 
@@ -908,11 +927,11 @@ class question_type {
      * @return bool      Whether the wizard's last page was submitted or not.
      */
     public function finished_edit_wizard($form) {
-        //In the default case there is only one edit page.
+        // In the default case there is only one edit page.
         return true;
     }
 
-    /// IMPORT/EXPORT FUNCTIONS /////////////////
+    // IMPORT/EXPORT FUNCTIONS --------------------------------- .
 
     /*
      * Imports question from the Moodle XML format
@@ -920,7 +939,7 @@ class question_type {
      * Imports question using information from extra_question_fields function
      * If some of you fields contains id's you'll need to reimplement this
      */
-    public function import_from_xml($data, $question, $format, $extra=null) {
+    public function import_from_xml($data, $question, qformat_xml $format, $extra=null) {
         $question_type = $data['@']['type'];
         if ($question_type != $this->name()) {
             return false;
@@ -931,7 +950,7 @@ class question_type {
             return false;
         }
 
-        //omit table name
+        // Omit table name.
         array_shift($extraquestionfields);
         $qo = $format->import_headers($data);
         $qo->qtype = $question_type;
@@ -940,7 +959,7 @@ class question_type {
             $qo->$field = $format->getpath($data, array('#', $field, 0, '#'), '');
         }
 
-        // run through the answers
+        // Run through the answers.
         $answers = $data['#']['answer'];
         $a_count = 0;
         $extraanswersfields = $this->extra_answer_fields();
@@ -973,13 +992,13 @@ class question_type {
      * Export question using information from extra_question_fields function
      * If some of you fields contains id's you'll need to reimplement this
      */
-    public function export_to_xml($question, $format, $extra=null) {
+    public function export_to_xml($question, qformat_xml $format, $extra=null) {
         $extraquestionfields = $this->extra_question_fields();
         if (!is_array($extraquestionfields)) {
             return false;
         }
 
-        //omit table name
+        // Omit table name.
         array_shift($extraquestionfields);
         $expout='';
         foreach ($extraquestionfields as $field) {
@@ -1019,7 +1038,7 @@ class question_type {
         $form->penalty = 0.3333333;
         $form->generalfeedback = "Well done";
 
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $newcategory = question_make_default_categories(array($context));
         $form->category = $newcategory->id . ',1';
 
@@ -1037,7 +1056,7 @@ class question_type {
     protected function get_context_by_category_id($category) {
         global $DB;
         $contextid = $DB->get_field('question_categories', 'contextid', array('id'=>$category));
-        $context = get_context_instance_by_id($contextid);
+        $context = context::instance_by_id($contextid, IGNORE_MISSING);
         return $context;
     }
 
@@ -1261,8 +1280,10 @@ class question_possible_response {
      * {@link question_type::get_possible_responses()}.
      */
     public $responseclass;
-    /** @var string the actual response the student gave to this part. */
+
+    /** @var string the (partial) credit awarded for this responses. */
     public $fraction;
+
     /**
      * Constructor, just an easy way to set the fields.
      * @param string $responseclassid see the field descriptions above.

@@ -33,6 +33,7 @@
     text-align: left;
     border-right: 1px solid #ddd;
 }
+.path-mod-forum.dir-rtl .forumheaderlist th {text-align: right;}
 
 .forumnodiscuss,
 .path-mod-forum .forumheaderlist .replies {
@@ -62,7 +63,7 @@
     text-align:right;
 }
 
-/* Database
+/* Folder
 ------------------------*/
 
 .path-mod-folder #pageintro {
@@ -72,9 +73,13 @@
 }
 
 .path-mod-folder .foldertree {
-    width: 60%;
+    width: 90%;
     margin: 1.5em auto;
     padding: 10px;
+}
+
+#page-mod-folder-edit .foldertree {
+    width: 100%;
 }
 
 /* Assignment
@@ -158,7 +163,7 @@
     text-align: center;
 }
 
-#page-mod-assignment-view h3.main {
+#page-mod-assignment-view h3 {
     padding-top: 1em;
 }
 
@@ -454,12 +459,13 @@
     margin-top: 1em;
 }
 
-#page-mod-folder-edit .foldertree {
-    width: 65%;
-}
 
 /* Quiz
 --------------------------------*/
 .que {
     border-color: #eee;
 }
+
+/* SCORM Player
+-------------------------*/
+#page-mod-scorm-player div.singleselect {margin: -20px 0 0;}

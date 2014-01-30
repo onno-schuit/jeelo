@@ -26,7 +26,7 @@
  class block_rss_client extends block_base {
 
     function init() {
-        $this->title = get_string('feedstitle', 'block_rss_client');
+        $this->title = get_string('pluginname', 'block_rss_client');
     }
 
     function preferred_width() {
@@ -223,7 +223,7 @@
 
         if(empty($title)){
             // no title present, use portion of description
-            $title = textlib::substr(strip_tags($description), 0, 20) . '...';
+            $title = core_text::substr(strip_tags($description), 0, 20) . '...';
         }else{
             $title = break_up_long_words($title, 30);
         }
@@ -231,26 +231,31 @@
         if(empty($link)){
             $link = $item->get_id();
         } else {
-            //URLs in our RSS cache will be escaped (correctly as theyre store in XML)
-            //html_writer::link() will re-escape them. To prevent double escaping unescape here.
-            //This can by done using htmlspecialchars_decode() but moodle_url also has that effect
-            $link = new moodle_url($link);
+            try {
+                // URLs in our RSS cache will be escaped (correctly as theyre store in XML)
+                // html_writer::link() will re-escape them. To prevent double escaping unescape here.
+                // This can by done using htmlspecialchars_decode() but moodle_url also has that effect.
+                $link = new moodle_url($link);
+            } catch (moodle_exception $e) {
+                // Catching the exception to prevent the whole site to crash in case of malformed RSS feed
+                $link = '';
+            }
         }
 
         $r = html_writer::start_tag('li');
             $r.= html_writer::start_tag('div',array('class'=>'link'));
-                $r.= html_writer::link(clean_param($link,PARAM_URL), s($title), array('onclick'=>'this.target="_blank"'));
+                $r.= html_writer::link($link, s($title), array('onclick'=>'this.target="_blank"'));
             $r.= html_writer::end_tag('div');
 
             if($this->config->display_description && !empty($description)){
-
-                $description = break_up_long_words($description, 30);
 
                 $formatoptions = new stdClass();
                 $formatoptions->para = false;
 
                 $r.= html_writer::start_tag('div',array('class'=>'description'));
-                    $r.= format_text($description, FORMAT_HTML, $formatoptions, $this->page->course->id);
+                    $description = format_text($description, FORMAT_HTML, $formatoptions, $this->page->course->id);
+                    $description = break_up_long_words($description, 30);
+                    $r.= $description;
                 $r.= html_writer::end_tag('div');
             }
         $r.= html_writer::end_tag('li');
@@ -267,13 +272,10 @@
      */
     function format_title($title,$max=64) {
 
-        // Loading the textlib singleton instance. We are going to need it.
-        $textlib = textlib_get_instance();
-
-        if ($textlib->strlen($title) <= $max) {
+        if (core_text::strlen($title) <= $max) {
             return s($title);
         } else {
-            return s($textlib->substr($title,0,$max-3).'...');
+            return s(core_text::substr($title,0,$max-3).'...');
         }
     }
 

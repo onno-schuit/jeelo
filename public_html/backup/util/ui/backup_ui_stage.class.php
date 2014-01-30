@@ -124,6 +124,8 @@ class backup_ui_stage_initial extends backup_ui_stage {
             // Store as a variable so we can iterate by reference
             $tasks = $this->ui->get_tasks();
             // Iterate all tasks by reference
+            $add_settings = array();
+            $dependencies = array();
             foreach ($tasks as &$task) {
                 // For the initial stage we are only interested in the root settings
                 if ($task instanceof backup_root_task) {
@@ -134,16 +136,22 @@ class backup_ui_stage_initial extends backup_ui_stage {
                         if ($setting->get_name() == 'filename') {
                             continue;
                         }
-                        $form->add_setting($setting, $task);
+                        $add_settings[] = array($setting, $task);
                     }
                     // Then add all dependencies
                     foreach ($settings as &$setting) {
                         if ($setting->get_name() == 'filename') {
                             continue;
                         }
-                        $form->add_dependencies($setting);
+                        $dependencies[] = $setting;
                     }
                 }
+            }
+            // Add all settings at once.
+            $form->add_settings($add_settings);
+            // Add dependencies.
+            foreach ($dependencies as $depsetting) {
+                $form->add_dependencies($depsetting);
             }
             $this->stageform = $form;
         }
@@ -162,6 +170,11 @@ class backup_ui_stage_initial extends backup_ui_stage {
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_ui_stage_schema extends backup_ui_stage {
+    /**
+     * @var int Maximum number of settings to add to form at once
+     */
+    const MAX_SETTINGS_BATCH = 1000;
+
     /**
      * Schema stage constructor
      * @param backup_moodleform $ui
@@ -226,6 +239,16 @@ class backup_ui_stage_schema extends backup_ui_stage {
             $tasks = $this->ui->get_tasks();
             $content = '';
             $courseheading = false;
+            $add_settings = array();
+            $dependencies = array();
+
+            // Track progress through each stage.
+            $progress = $this->ui->get_controller()->get_progress();
+            $progress->start_progress('Initialise stage form', 3);
+
+            // Get settings for all tasks.
+            $progress->start_progress('', count($tasks));
+            $done = 1;
             foreach ($tasks as $task) {
                 if (!($task instanceof backup_root_task)) {
                     if (!$courseheading) {
@@ -235,11 +258,11 @@ class backup_ui_stage_schema extends backup_ui_stage {
                     }
                     // First add each setting
                     foreach ($task->get_settings() as $setting) {
-                        $form->add_setting($setting, $task);
+                        $add_settings[] = array($setting, $task);
                     }
                     // The add all the dependencies
                     foreach ($task->get_settings() as $setting) {
-                        $form->add_dependencies($setting);
+                        $dependencies[] = $setting;
                     }
                 } else if ($this->ui->enforce_changed_dependencies()) {
                     // Only show these settings if dependencies changed them.
@@ -253,7 +276,37 @@ class backup_ui_stage_schema extends backup_ui_stage {
                         }
                     }
                 }
+                // Update progress.
+                $progress->progress($done++);
             }
+            $progress->end_progress();
+
+            // Add settings for tasks in batches of up to 1000. Adding settings
+            // in larger batches improves performance, but if it takes too long,
+            // we won't be able to update the progress bar so the backup might
+            // time out. 1000 is chosen to balance this.
+            $numsettings = count($add_settings);
+            $progress->start_progress('', ceil($numsettings / self::MAX_SETTINGS_BATCH));
+            $start = 0;
+            $done = 1;
+            while($start < $numsettings) {
+                $length = min(self::MAX_SETTINGS_BATCH, $numsettings - $start);
+                $form->add_settings(array_slice($add_settings, $start, $length));
+                $start += $length;
+                $progress->progress($done++);
+            }
+            $progress->end_progress();
+
+            $progress->start_progress('', count($dependencies));
+            $done = 1;
+            foreach ($dependencies as $depsetting) {
+                $form->add_dependencies($depsetting);
+                $progress->progress($done++);
+            }
+            $progress->end_progress();
+
+            // End overall progress through creating form.
+            $progress->end_progress();
             $this->stageform = $form;
         }
         return $this->stageform;
@@ -343,7 +396,13 @@ class backup_ui_stage_confirmation extends backup_ui_stage {
                 }
             }
 
-            foreach ($this->ui->get_tasks() as $task) {
+            // Track progress through tasks.
+            $progress = $this->ui->get_controller()->get_progress();
+            $tasks = $this->ui->get_tasks();
+            $progress->start_progress('initialise_stage_form', count($tasks));
+            $done = 1;
+
+            foreach ($tasks as $task) {
                 if ($task instanceof backup_root_task) {
                     // If its a backup root add a root settings heading to group nicely
                     $form->add_heading('rootsettings', get_string('rootsettings', 'backup'));
@@ -359,7 +418,10 @@ class backup_ui_stage_confirmation extends backup_ui_stage {
                         $form->add_fixed_setting($setting, $task);
                     }
                 }
+                // Update progress.
+                $progress->progress($done++);
             }
+            $progress->end_progress();
             $this->stageform = $form;
         }
         return $this->stageform;
@@ -410,7 +472,7 @@ class backup_ui_stage_final extends backup_ui_stage {
     /**
      * should NEVER be called... throws an exception
      */
-    public function display() {
+    public function display(core_backup_renderer $renderer) {
         throw new backup_ui_exception('backup_ui_must_execute_first');
     }
 }
@@ -444,13 +506,13 @@ class backup_ui_stage_complete extends backup_ui_stage_final {
     /**
      * Displays the completed backup stage.
      *
-     * Currently this just envolves redirecting to the file browser with an
+     * Currently this just involves redirecting to the file browser with an
      * appropriate message.
      *
-     * @global core_renderer $OUTPUT
+     * @param core_backup_renderer $renderer
+     * @return string HTML code to echo
      */
-    public function display() {
-        global $OUTPUT;
+    public function display(core_backup_renderer $renderer) {
 
         // Get the resulting stored_file record
         $type = $this->get_ui()->get_controller()->get_type();
@@ -459,18 +521,27 @@ class backup_ui_stage_complete extends backup_ui_stage_final {
         case 'activity':
             $cmid = $this->get_ui()->get_controller()->get_id();
             $cm = get_coursemodule_from_id(null, $cmid, $courseid);
-            $modcontext = get_context_instance(CONTEXT_MODULE, $cm->id);
+            $modcontext = context_module::instance($cm->id);
             $restorerul = new moodle_url('/backup/restorefile.php', array('contextid'=>$modcontext->id));
             break;
         case 'course':
         default:
-            $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
+            $coursecontext = context_course::instance($courseid);
             $restorerul = new moodle_url('/backup/restorefile.php', array('contextid'=>$coursecontext->id));
         }
 
-        echo $OUTPUT->box_start();
-        echo $OUTPUT->notification(get_string('executionsuccess', 'backup'), 'notifysuccess');
-        echo $OUTPUT->continue_button($restorerul);
-        echo $OUTPUT->box_end();
+        $output = '';
+        $output .= $renderer->box_start();
+        if (!empty($this->results['include_file_references_to_external_content'])) {
+            $output .= $renderer->notification(get_string('filereferencesincluded', 'backup'), 'notifyproblem');
+        }
+        if (!empty($this->results['missing_files_in_pool'])) {
+            $output .= $renderer->notification(get_string('missingfilesinpool', 'backup'), 'notifyproblem');
+        }
+        $output .= $renderer->notification(get_string('executionsuccess', 'backup'), 'notifysuccess');
+        $output .= $renderer->continue_button($restorerul);
+        $output .= $renderer->box_end();
+
+        return $output;
     }
 }

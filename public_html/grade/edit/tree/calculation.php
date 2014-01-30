@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Edit a calculated grade item
+ *
+ * @package   core_grades
+ * @copyright 2007 Petr Skoda
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once '../../../config.php';
 require_once $CFG->dirroot.'/grade/lib.php';
 require_once $CFG->libdir.'/mathslib.php';
@@ -23,7 +30,7 @@ require_once 'calculation_form.php';
 $courseid  = required_param('courseid', PARAM_INT);
 $id        = required_param('id', PARAM_INT);
 $section   = optional_param('section', 'calculation', PARAM_ALPHA);
-$idnumbers = optional_param('idnumbers', null, PARAM_RAW);
+$idnumbers = optional_param_array('idnumbers', null, PARAM_RAW);
 
 $url = new moodle_url('/grade/edit/tree/calculation.php', array('id'=>$id, 'courseid'=>$courseid));
 if ($section !== 'calculation') {
@@ -36,12 +43,12 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
 }
 
 require_login($course);
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id);
 require_capability('moodle/grade:manage', $context);
 
 // default return url
 $gpr = new grade_plugin_return();
-$returnurl = $gpr->get_return_url($CFG->wwwroot.'/grade/report.php?id='.$course->id);
+$returnurl = $gpr->get_return_url($CFG->wwwroot.'/grade/report/index.php?id='.$course->id);
 
 if (!$grade_item = grade_item::fetch(array('id'=>$id, 'courseid'=>$course->id))) {
     print_error('invaliditemid');
@@ -177,6 +184,7 @@ function get_grade_tree(&$gtree, $element, $current_itemid=null, $errors=null) {
                     $name .= '<div class="error"><span class="error">' . $errors[$grade_item->id].'</span><br />'."\n";
                     $closingdiv = "</div>\n";
                 }
+                $name .= '<label class="accesshide" for="id_idnumber_' . $grade_item->id . '">' . get_string('gradeitems', 'grades')  .'</label>';
                 $name .= '<input class="idnumber" id="id_idnumber_'.$grade_item->id.'" type="text" name="idnumbers['.$grade_item->id.']" />' . "\n";
                 $name .= $closingdiv;
             }

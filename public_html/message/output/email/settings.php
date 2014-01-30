@@ -17,16 +17,17 @@
 /**
  * Email configuration page
  *
- * @package    message
- * @subpackage email
- * @copyright  2011 Lancaster University Network Services Limited
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   message_email
+ * @copyright 2011 Lancaster University Network Services Limited
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext('smtphosts', get_string('smtphosts', 'message_email'), get_string('configsmtphosts', 'message_email'), '', PARAM_RAW));
+    $options = array('' => get_string('none', 'message_email'), 'ssl' => 'SSL', 'tls' => 'TLS');
+    $settings->add(new admin_setting_configselect('smtpsecure', get_string('smtpsecure', 'message_email'), get_string('configsmtpsecure', 'message_email'), '', $options));
     $settings->add(new admin_setting_configtext('smtpuser', get_string('smtpuser', 'message_email'), get_string('configsmtpuser', 'message_email'), '', PARAM_NOTAGS));
     $settings->add(new admin_setting_configpasswordunmask('smtppass', get_string('smtppass', 'message_email'), get_string('configsmtpuser', 'message_email'), ''));
     $settings->add(new admin_setting_configtext('smtpmaxbulk', get_string('smtpmaxbulk', 'message_email'), get_string('configsmtpmaxbulk', 'message_email'), 1, PARAM_INT));
@@ -39,6 +40,7 @@ if ($ADMIN->fulltree) {
     $options = array_merge($options, $charsets);
     $settings->add(new admin_setting_configselect('sitemailcharset', get_string('sitemailcharset', 'message_email'), get_string('configsitemailcharset','message_email'), '0', $options));
     $settings->add(new admin_setting_configcheckbox('allowusermailcharset', get_string('allowusermailcharset', 'message_email'), get_string('configallowusermailcharset', 'message_email'), 0));
+    $settings->add(new admin_setting_configcheckbox('allowattachments', get_string('allowattachments', 'message_email'), get_string('configallowattachments', 'message_email'), 1));
     $options = array('LF'=>'LF', 'CRLF'=>'CRLF');
     $settings->add(new admin_setting_configselect('mailnewline', get_string('mailnewline', 'message_email'), get_string('configmailnewline','message_email'), 'LF', $options));
 }

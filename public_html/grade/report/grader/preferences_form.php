@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,12 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
- * Form for grader report preferences.
+ * Form for grader report preferences
  *
- * @package    moodlecore
- * @subpackage grade
+ * @package    gradereport_grader
  * @copyright  2009 Nicolas Connault
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,8 +40,7 @@ class grader_report_preferences_form extends moodleform {
         $mform    =& $this->_form;
         $course   = $this->_customdata['course'];
 
-        $context = get_context_instance(CONTEXT_COURSE, $course->id);
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_course::instance($course->id);
 
         $canviewhidden = has_capability('moodle/grade:viewhidden', $context);
 
@@ -103,6 +99,9 @@ class grader_report_preferences_form extends moodleform {
         // View capability is the lowest permission. Users with grade:manage or grade:edit must also have grader:view
         if (has_capability('gradereport/grader:view', $context)) {
             $preferences['prefgeneral']['studentsperpage'] = 'text';
+            if (has_capability('moodle/course:viewsuspendedusers', $context)) {
+                $preferences['prefgeneral']['showonlyactiveenrol'] = $checkbox_default;
+            }
             $preferences['prefgeneral']['aggregationposition'] = array(GRADE_REPORT_PREFERENCE_DEFAULT => '*default*',
                                                                        GRADE_REPORT_AGGREGATION_POSITION_FIRST => get_string('positionfirst', 'grades'),
                                                                        GRADE_REPORT_AGGREGATION_POSITION_LAST => get_string('positionlast', 'grades'));
@@ -123,6 +122,7 @@ class grader_report_preferences_form extends moodleform {
 
         foreach ($preferences as $group => $prefs) {
             $mform->addElement('header', $group, get_string($group, 'grades'));
+            $mform->setExpanded($group);
 
             foreach ($prefs as $pref => $type) {
                 // Detect and process dynamically numbered preferences

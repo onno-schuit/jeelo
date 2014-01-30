@@ -111,8 +111,8 @@ abstract class restore_controller_dbops extends restore_dbops {
             // TODO: If not match, exception, table corresponds to another backup/restore operation
             return true;
         }
-        backup_controller_dbops::create_temptable_from_real_table($restoreid, 'backup_ids_template', 'backup_ids_temp');
-        backup_controller_dbops::create_temptable_from_real_table($restoreid, 'backup_files_template', 'backup_files_temp');
+        backup_controller_dbops::create_backup_ids_temp_table($restoreid);
+        backup_controller_dbops::create_backup_files_temp_table($restoreid);
         return false;
     }
 
@@ -123,7 +123,9 @@ abstract class restore_controller_dbops extends restore_dbops {
         $targettablenames = array('backup_ids_temp', 'backup_files_temp');
         foreach ($targettablenames as $targettablename) {
             $table = new xmldb_table($targettablename);
-            $dbman->drop_temp_table($table); // And drop it
+            $dbman->drop_table($table); // And drop it
         }
+        // Invalidate the backup_ids caches.
+        restore_dbops::reset_backup_ids_cached();
     }
 }
