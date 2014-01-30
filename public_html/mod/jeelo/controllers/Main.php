@@ -87,7 +87,7 @@ class Main extends Soda2_Controller {
     # Get list of available courses with correct format
     global $DB;
     //if (!$courses = $DB->get_records_sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC")) {
-    if (!$courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo' ORDER BY id ASC")) {
+    if (!$courses = $this->db->sql("SELECT * FROM {course} WHERE id != 1 AND format = 'jeelo26' ORDER BY id ASC")) {
         exit('Problem in mod/jeelo/controllers/Main.php: No courses found');
     }
 

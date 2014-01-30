@@ -37,6 +37,75 @@ if ($topic = optional_param('topic', 0, PARAM_INT)) {
 }
 // End backwards-compatible aliasing..
 
+
+
+/**** JEELO custom code **/
+exit(print_object($mods));
+// 20140130: ATTENTION: $mods are actually available in this context. 
+// BUT we are having trouble setting the visibility...
+// $mod->set_user_visible(true); // is not working
+
+# Get course default access config
+$access = false;
+$expanded = array();
+
+$course_access = $DB->get_records('jeelo', array('course'=>$course->id));
+if (count($course_access) > 0) {
+  foreach($course_access as $ca) {
+    $access = (bool)$ca->access;
+    $expanded = explode(',', $ca->expanded);
+  }
+}
+
+# Check if mod access is enabled
+$_new_mods = array();
+$student = False;
+
+$controlled_sections = array();
+
+foreach (get_user_roles($context, $USER->id) as $_role) {
+   if ($_role->shortname == 'student') {
+     $student = True;
+   }
+}
+if ($student) {
+// cm_info
+  foreach ($mods as $modid=>$mod) {
+    $data = $DB->get_records('jeelo_access', array('type'=>$mod->section,
+						   'userid'=>$USER->id,
+						   'activity'=>$mod->id));
+    if (!array_key_exists($mod->section, $controlled_sections)) {
+        $controlled_sections[$mod->section] = false;
+    }
+
+    if (count($data) > 0) {
+      foreach($data as $config) {
+	if ($config->level == 1) {
+	  //$mod->visible = true;
+      //  $mod->set_user_visible(true);
+	} else {
+	  //$mod->visible = false;
+       // $mod->set_user_visible(false);
+	}
+      }
+    } else {
+      //$mod->visible = false; // Default to false
+        //$mod->set_user_visible(false);
+    }
+    
+    if ($mod->visible) {
+      // if at least one mod in section is visible - set section as visible
+      $controlled_sections[$mod->section] = True;
+      $_new_mods[$modid] = $mod;
+    }
+  }
+  
+  $mods = $_new_mods;
+}
+
+# End of jeelo access checks
+
+
 $context = context_course::instance($course->id);
 
 if (($marker >=0) && has_capability('moodle/course:setcurrentsection', $context) && confirm_sesskey()) {
@@ -57,4 +126,4 @@ if (!empty($displaysection)) {
 }
 
 // Include course format js module
-$PAGE->requires->js('/course/format/topics/format.js');
+$PAGE->requires->js('/course/format/jeelo26/format.js');

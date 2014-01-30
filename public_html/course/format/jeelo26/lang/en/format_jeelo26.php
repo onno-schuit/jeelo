@@ -24,10 +24,8 @@
  */
 
 $string['currentsection'] = 'This topic';
-$string['sectionname'] = 'Topic';
-$string['pluginname'] = 'Topics format';
+$string['sectionname'] = 'Jeelo26';
+$string['pluginname'] = 'Jeelo26 format';
 $string['section0name'] = 'General';
 $string['page-course-view-topics'] = 'Any course main page in topics format';
 $string['page-course-view-topics-x'] = 'Any course page in topics format';
-$string['hidefromothers'] = 'Hide topic';
-$string['showfromothers'] = 'Show topic';

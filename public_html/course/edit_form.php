@@ -128,6 +128,11 @@ class course_edit_form extends moodleform {
             $mform->setConstants('idnumber', $course->idnumber);
         }
 
+        $mform->addElement('text','groupyear', get_string('groupyear', 'launcher'),'maxlength="100"  size="10"');
+        $mform->addHelpButton('groupyear', 'groupyear', 'launcher');
+        $mform->setType('groupyear', PARAM_RAW);
+
+
         // Description.
         $mform->addElement('header', 'descriptionhdr', get_string('description'));
         $mform->setExpanded('descriptionhdr');

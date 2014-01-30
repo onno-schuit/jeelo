@@ -18,7 +18,7 @@
  * This file contains main class for the course format Topic
  *
  * @since     2.0
- * @package   format_topics
+ * @package   format_jeelo26
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,11 +29,11 @@ require_once($CFG->dirroot. '/course/format/lib.php');
 /**
  * Main class for the Topics course format
  *
- * @package    format_topics
+ * @package    format_jeelo26
  * @copyright  2012 Marina Glancy
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class format_topics extends format_base {
+class format_jeelo26 extends format_base {
 
     /**
      * Returns true if this course format uses sections
@@ -58,7 +58,7 @@ class format_topics extends format_base {
             return format_string($section->name, true,
                     array('context' => context_course::instance($this->courseid)));
         } else if ($section->section == 0) {
-            return get_string('section0name', 'format_topics');
+            return get_string('section0name', 'format_jeelo26');
         } else {
             return get_string('topic').' '.$section->section;
         }
