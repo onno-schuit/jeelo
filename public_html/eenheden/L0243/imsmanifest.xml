@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<manifest identifier="L0243_MANIFEST" version="1.1" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+	<metadata>
+		<schema>ADL SCORM</schema>
+		<schemaversion>1.2</schemaversion>
+		<lom xmlns="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsmd_rootv1p2p1 imsmd_rootv1p2p1.xsd">
+			<general>
+				<title>
+					<langstring xml:lang="en-US">243 Verzorg je zintuigen</langstring>
+				</title>
+				<catalogentry>
+					<catalog>Flash Companion eLearning Studio Course</catalog>
+					<entry>
+						<langstring xml:lang="en-US">L0243_MANIFEST</langstring>
+					</entry>
+				</catalogentry>
+				<language>en-US</language>
+				<description>
+					<langstring xml:lang="en-US"></langstring>
+				</description>
+				<aggregationlevel>
+					<source>
+						<langstring xml:lang="x-none">LOMv1.0</langstring>
+					</source>
+					<value>
+						<langstring xml:lang="x-none">3</langstring>
+					</value>
+				</aggregationlevel>
+				<keyword>
+					<langstring xml:lang="en-US">243 Verzorg je zintuigen</langstring>
+				</keyword>
+			</general>
+			<lifecycle>
+				<version>
+					<langstring xml:lang="x-none"></langstring>
+				</version>
+				<status>
+					<source>
+						<langstring xml:lang="x-none">LOMv1.0</langstring>
+					</source>
+					<value>
+						<langstring xml:lang="x-none">final</langstring>
+					</value>
+				</status>
+			</lifecycle>
+			<metametadata>
+				<metadatascheme>ADL SCORM 1.2</metadatascheme>
+				<language>en-US</language>
+			</metametadata>
+			<technical>
+				<format>text/html</format>
+				<format>application/x-shockwave-flash</format>
+			</technical>
+			<educational></educational>
+			<rights>
+				<cost>
+					<source>
+						<langstring xml:lang="x-none">LOMv1.0</langstring>
+					</source>
+					<value>
+						<langstring xml:lang="x-none">no</langstring>
+					</value>
+				</cost>
+				<copyrightandotherrestrictions>
+					<source>
+						<langstring xml:lang="x-none">LOMv1.0</langstring>
+					</source>
+					<value>
+						<langstring xml:lang="x-none">yes</langstring>
+					</value>
+				</copyrightandotherrestrictions>
+			</rights>
+			<classification>
+				<purpose>
+					<source>
+						<langstring xml:lang="x-none">LOMv1.0</langstring>
+					</source>
+					<value>
+						<langstring xml:lang="x-none">Skill Level</langstring>
+					</value>
+				</purpose>
+				<description>
+					<langstring xml:lang="en-US"></langstring>
+				</description>
+				<keyword>
+					<langstring xml:lang="en-US">Flash Companion eLearning Studio</langstring>
+				</keyword>
+			</classification>
+		</lom>
+	</metadata>	
+	
+	<organizations default="TOC1">
+		<organization identifier="TOC1">
+			<title>243 Verzorg je zintuigen</title>
+			<item identifier="I_SCO0" identifierref="SCO0">
+				<title>243 Verzorg je zintuigen</title>
+			</item>
+		</organization>
+	</organizations>
+	
+	
+	<resources>
+		<resource identifier="SCO0" type="webcontent" adlcp:scormtype="sco" href="player.html">
+			<file href="player.html"></file>
+			<dependency identifierref="ALLRESOURCES"></dependency>
+		</resource>
+		<resource identifier="ALLRESOURCES" type="webcontent" adlcp:scormtype="asset">
+<file href="media/audio/L0243A01.mp3"></file>
+<file href="media/audio/L0243A02.mp3"></file>
+<file href="media/audio/L0243A03.mp3"></file>
+<file href="media/audio/L0243A04.mp3"></file>
+<file href="media/audio/L0243A05.mp3"></file>
+<file href="media/audio/L0243A06.mp3"></file>
+<file href="media/audio/L0243A07.mp3"></file>
+<file href="media/audio/L0243A08.mp3"></file>
+<file href="media/audio/L0243A09.mp3"></file>
+<file href="media/audio/L0243A10.mp3"></file>
+<file href="media/audio/L0243A11.mp3"></file>
+<file href="media/audio/L0243A12.mp3"></file>
+<file href="media/audio/L0243A13.mp3"></file>
+<file href="media/audio/L0243A14.mp3"></file>
+<file href="media/audio/L0243A15.mp3"></file>
+<file href="media/audio/L0243A16.mp3"></file>
+<file href="media/audio/L0243A17.mp3"></file>
+<file href="media/audio/L0243A18.mp3"></file>
+<file href="media/audio/L0243A19.mp3"></file>
+<file href="media/audio/L0243A20.mp3"></file>
+<file href="media/audio/L0243A21.mp3"></file>
+<file href="media/audio/L0243A22.mp3"></file>
+<file href="media/audio/L0243A23.mp3"></file>
+<file href="media/audio/L0243A24.mp3"></file>
+<file href="media/audio/L0243A25.mp3"></file>
+<file href="media/audio/L0243A26.mp3"></file>
+<file href="media/audio/L0243A27.mp3"></file>
+<file href="media/audio/L0243A28.mp3"></file>
+<file href="media/audio/L0243A29.mp3"></file>
+<file href="media/audio/L0243A30.mp3"></file>
+<file href="media/audio/L0243A31.mp3"></file>
+<file href="media/audio/L0243A32.mp3"></file>
+<file href="media/images/L0243B01.jpg"></file>
+<file href="media/images/L0243B02.jpg"></file>
+<file href="media/images/L0243B03.jpg"></file>
+<file href="media/images/L0243B04.jpg"></file>
+<file href="media/images/L0243B05.jpg"></file>
+<file href="media/images/L0243B06.jpg"></file>
+<file href="media/images/L0243B07.jpg"></file>
+<file href="media/images/L0243B08.jpg"></file>
+<file href="media/images/L0243B09.jpg"></file>
+<file href="media/images/L0243B10.jpg"></file>
+<file href="media/images/L0243B11.jpg"></file>
+<file href="media/images/L0243B12.jpg"></file>
+<file href="media/images/L0243B13.jpg"></file>
+<file href="media/images/L0243B14.jpg"></file>
+<file href="media/images/L0243B15.jpg"></file>
+<file href="media/images/L0243B16.jpg"></file>
+<file href="media/images/L0243B17.jpg"></file>
+<file href="media/images/L0243B18.jpg"></file>
+<file href="media/images/L0243B19.jpg"></file>
+<file href="media/images/L0243B20.jpg"></file>
+
+			<file href="swfs/templateswfs/rapidintake_certificate/ri_certificate_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_definitions/definitions.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_image/ri_image_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_imageaudio/ri_imageaudio_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_imageaudiolink/ri_imageaudiolink_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_imagerollover/rapidintake_imagerollover.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_jigsaw/jigsaw_template.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_stepbystep/ri_stepbystep_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_stepbystep/ri_stepbystep_pg_test.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_text/ri_text_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_text/ri_text_pg_.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textaudio/ri_textaudio_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textaudioswf/ri_textaudioswf_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textimage/ri_textimage_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textimage/ri_textimage_pg_test.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textimageaudio/ri_textimageaudio_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textimageaudiolink/ri_textimageaudiolink_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textimagelink/ri_textimagelink_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textswf/ri_textswf_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textswf/ri_textswf_pg_new.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_textvideo/ri_textvideo_pg.swf"></file>
+			<file href="swfs/templateswfs/rapidintake_video/ri_video_pg.swf"></file>
+			<file href="swfs/templateswfs/hint_icon.swf"></file>
+			<file href="swfs/templateswfs/placeholder.txt"></file>
+			<file href="swfs/templateswfs/template_styles.css"></file>
+			<file href="swfs/templateswfs/tip_icon.swf"></file>
+			<file href="swfs/templateswfs/warning_icon.swf"></file>
+			<file href="swfs/combo.swf"></file>
+			<file href="swfs/quiz.css"></file>
+			<file href="swfs/quiz.swf"></file>
+			<file href="swfs/quiz_cjz.swf"></file>
+			<file href="swfs/quiz_tjz.swf"></file>
+			<file href="swfs/quiz_tts.swf"></file>
+			<file href="_gsdata_/2009-1215-051315-ONEC-VAIO-JeeloP2.log"></file>
+			<file href="_gsdata_/2009-1215-051421-ONEC-VAIO-JeeloP2.log"></file>
+			<file href="_gsdata_/2010-0110-165522-ONEC-VAIO-JeeloP2-user-action.log"></file>
+			<file href="AC_RunActiveContent.js"></file>
+			<file href="adlcp_rootv1p2.xsd"></file>
+			<file href="course_logo.html"></file>
+			<file href="course_logo.swf"></file>
+			<file href="course_logo_new.html"></file>
+			<file href="glossary.css"></file>
+			<file href="glossary.swf"></file>
+			<file href="glossary.xml"></file>
+			<file href="glossary_menu.css"></file>
+			<file href="ie_activecontent_fix.js"></file>
+			<file href="imscp_rootv1p1p2.xsd"></file>
+			<file href="imsmanifest.xml"></file>
+			<file href="imsmd_rootv1p2p1.xsd"></file>
+			<file href="ims_xml.xsd"></file>
+			<file href="media_control.swf"></file>
+			<file href="narration.css"></file>
+			<file href="narration.swf"></file>
+			<file href="player.html"></file>
+			<file href="player.swf"></file>
+			<file href="player_activiteiten.swf"></file>
+			<file href="player_stapper.swf"></file>
+			<file href="player_steen.swf"></file>
+			<file href="player_trainer.swf"></file>
+			<file href="player_wijzer.swf"></file>
+			<file href="preview.htm"></file>
+			<file href="preview.swf"></file>
+			<file href="quiz.xml"></file>
+			<file href="sco.xml"></file>
+			<file href="start.htm"></file>
+			<file href="toc.swf"></file>
+		</resource>
+	</resources>
+</manifest>

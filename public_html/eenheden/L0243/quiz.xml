@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<questions xmlns="www.rapidintake.com/xmlgrammars/fc/quiz">
+<quiz intro="intro" passComplete="false" failIncomplete="false" print_results="false" email_results="false" LMS_name="false" showresults="true" quizmode="test" randomize="false" numquestions="2" recordStatus="apiCompleted" incReview="true" incRetakeButton="false" number_questions="true" reportScore="true" id="CJZ">
+<introText heading="Controleer jezelf"><![CDATA[<P ALIGN="LEFT"><FONT    LETTERSPACING="0" KERNING="0"> </FONT></P>]]></introText>
+<question id="Vraag_1" tracking="true" objectiveID="Vraag 1" weight="1" overrideFeedback="true" qtype="MCIMAGE">
+<questionText filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A09.mp3"><![CDATA[<P ALIGN="LEFT"><FONT LETTERSPACING="0" KERNING="0">Aan welke eisen heb je voldaan? Kruis aan.</FONT></P>]]></questionText>
+<distractors randomize="false">
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A10.mp3" correct="true" wrap="false"><![CDATA[Met schone handen heb ik mijn ogen schoongemaakt.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A11.mp3" correct="true" wrap="true"><![CDATA[Met een wattenstaafje heb ik mijn oren schoongemaakt.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A12.mp3" correct="true" wrap="true"><![CDATA[Met een papieren zakdoek heb ik mijn neus schoongemaakt.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A13.mp3" correct="true" wrap="true"><![CDATA[Met een tandenstoker en een tandenborstel heb ik mijn mond en tong fris gemaakt.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A14.mp3" correct="true" wrap="false"><![CDATA[Met vaseline heb ik mijn huid soepel gemaakt.]]></distractor>
+</distractors>
+<feedback>
+<correctFeedback><![CDATA[Goed. Je voldoet aan alle eisen.]]></correctFeedback>
+<triesFeedback><![CDATA[Je voldoet nog niet aan alle eisen. Zorg dat je de volgende keer wel aan alle eisen voldoet.]]></triesFeedback>
+</feedback>
+</question>
+
+<question id="Vraag_2" tracking="true" objectiveID="Vraag 2" weight="1" overrideFeedback="true" qtype="MCIMAGE">
+<questionText filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A15.mp3"><![CDATA[<P ALIGN="LEFT"><FONT LETTERSPACING="0" KERNING="0">Aan welke eisen heb je voldaan? Kruis aan.</FONT></P>]]></questionText>
+<distractors randomize="false">
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A16.mp3" correct="true" wrap="false"><![CDATA[Mijn ogen zijn schoon. Er zit geen vuiltje in.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A17.mp3" correct="true" wrap="false"><![CDATA[Mijn oren zijn schoon. Je ziet geen oorsmeer.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A18.mp3" correct="true" wrap="true"><![CDATA[Mijn neus is schoon. Hij is niet vol. Er zit ook geen snotje in.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A19.mp3" correct="true" wrap="true"><![CDATA[Mijn mond en tong zijn fris. Er zit geen vuil op mijn tong. En ook niet tussen mijn tanden.]]></distractor>
+<distractor  filePath="http://www.jeelo.nl/bfgdfgdx/L0243/media/audio/L0243A20.mp3" correct="true" wrap="false"><![CDATA[Mijn huid is soepel. Je ziet geen droge plekjes.]]></distractor>
+</distractors>
+<feedback>
+<correctFeedback><![CDATA[Goed. Je voldoet aan alle eisen.]]></correctFeedback>
+<triesFeedback><![CDATA[Je voldoet nog niet aan alle eisen. Zorg dat je de volgende keer wel aan alle eisen voldoet.]]></triesFeedback>
+</feedback>
+</question>
+
+</quiz>
+</questions>
