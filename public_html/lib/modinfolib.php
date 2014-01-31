@@ -1591,10 +1591,11 @@ class cm_info implements IteratorAggregate {
      * display of this module link for the current user.
      * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
      * @param bool $uservisible
+     * @param bool $check_state     Set this to false to omit the dynamic state check // Added by Onno Schuit, Solin, for Jeelo - 20140131
      * @return void
      */
-    public function set_user_visible($uservisible) {
-        $this->check_not_view_only();
+    public function set_user_visible($uservisible, $check_state = true) {
+        if ($check_state) $this->check_not_view_only();
         $this->uservisible = $uservisible;
     }
 
