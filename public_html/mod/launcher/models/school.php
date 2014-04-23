@@ -333,8 +333,11 @@ class school extends user {
 
 
     function dump_codebase() {
+        global $CFG;
         $target = $this->get_dump_file('code');
-        return shell_exec("cd {$this->global_root} ; tar -czp --exclude='public_html/config.php' -f {$target} public_html/*");
+        $parts = explode('/', $CFG->dirroot);
+        $public_html = end($parts);
+        return shell_exec("cd {$this->global_root} ; tar -czp --exclude='{$public_html}/config.php' -f {$target} {$public_html}/*");
     } // function dump_codebase
 
 

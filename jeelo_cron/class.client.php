@@ -14,8 +14,9 @@ class client extends base {
     static $host = 'localhost';
 
     static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
-    static $target_folder =  '/home/jeelos';
-    static $log_file =  '/var/log/jeelo/client.txt';
+    static $target_folder =  '/home/jeelos26';
+    static $log_file =  '/var/log/jeelo26/client.txt';
+
 
 
     public static function parent_test() {
@@ -180,7 +181,9 @@ class client extends base {
             'request' => 'get_database',
             'id' => $client_moodle_id
         );
-        shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );               
+        $command =  sprintf("wget -O $target '%s'", self::get_request_url($request));
+        print "\nclient::get_database_from_server shell_exec: $command\n";
+        shell_exec($command);               
     } // function get_database_from_server
 
 
@@ -233,6 +236,8 @@ class client extends base {
         $sql = "CREATE DATABASE `$database_name` CHARACTER SET utf8 COLLATE utf8_general_ci;";
         self::log($sql);
         self::$db->query($sql);
+        $command = sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", $cs_dbuser, $cs_dbpass);
+        print "\nclient::install_database_from_server shell_exec: $command\n";
         shell_exec(sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", $cs_dbuser, $cs_dbpass));
     } // function install_database
     
@@ -255,6 +260,7 @@ class client extends base {
 
     public static function create_codebase($csv_line) {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
+        echo "\nclient::create_codebase - target path for codebase: $target_path\n";
 		self::get_codebase_from_server($csv_line->id, $target_path);
         self::extract_codebase_contents($target_path);
         self::remove_codebase_from_server($csv_line->id);
@@ -275,6 +281,10 @@ class client extends base {
         $cmd = sprintf("tar -xz -C %s -f %s", dirname($zip_path), $zip_path);
         self::log($cmd);
         shell_exec($cmd);
+        $master26 = dirname($zip_path) . '/master26';
+        if (file_exists($master26)) {
+            shell_exec(sprintf("mv $master26 %s", dirname($zip_path) . '/public_html'));
+        }
         unlink($zip_path);
     } // function extract_codebase_contents
 

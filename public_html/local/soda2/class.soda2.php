@@ -105,7 +105,7 @@ class Soda2 {
   function render() {
     global $OUTPUT;
 
-    try {
+    //try {
       // Find route
       $routes = $this->_resolve_route();
 
@@ -132,12 +132,15 @@ class Soda2 {
         $this->controller->render($result);
       } else {
         // No controller file found, damn
+        exit('No controller file found');
         $this->_dump(sprintf('No controller, damn %s', $_controller_file));
       }
+      /*
     } catch (Exception $e) {
       //$e;
 
       if (! defined('HEADER_PRINTED')) {
+
         //header not yet printed
         @header('HTTP/1.0 404 Not Found');
         echo $OUTPUT->header(get_string('error'));
@@ -165,6 +168,7 @@ class Soda2 {
   
       die();
     }
+       */
   } // function render
 
   private function _dump($data) {

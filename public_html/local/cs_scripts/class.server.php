@@ -144,9 +144,7 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
 
         // use sprintf to replace variables
-        $query = sprintf("SELECT * FROM jeelo_buffer.client_moodles WHERE 
-            id=%d AND is_for_client='%s'",
-            $id, $for);
+        $query = sprintf("SELECT * FROM client_moodles WHERE id=%d AND is_for_client='%s'", $id, $for);
         // run the query
         $row = $db->fetch_row($query);
         
@@ -469,9 +467,11 @@ class server extends base {
 
     public static function handle_request_get_language_zip($query_string) {
         extract(self::_export_query_string($query_string, 'client_moodle_id')); // puts query string into separate variables
-        $home_dir = dirname(__FILE__) . "/../../../";
+        // __FILE__: the full path and filename of the file; dirname: returns parent directory's path
+        $home_dir = dirname(__FILE__) . "/../../..";
         $lang_dir = "$home_dir/moodledata/lang";
         $temp_folder = "$home_dir/moodledata/temp/launcher";
+        echo "\n<br/>server::handle_request_get_language_zip - temp_folder: $temp_folder<br/>\n";
         if (! file_exists($temp_folder) ) mkdir($temp_folder, 755);
         $lang_zip = "$temp_folder/lang_$client_moodle_id.tgz";
         if (file_exists($lang_zip)) shell_exec("rm $lang_zip");
