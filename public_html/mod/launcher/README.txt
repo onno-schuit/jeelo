@@ -107,6 +107,7 @@ Dirs:
 /home/jeelos
 
 /var/log/jeelo
+/var/log/jeelo26
 
 ----
 
@@ -114,6 +115,7 @@ Logs:
 
 
 /var/log/jeelo/client.txt
+/var/log/jeelo26/client.txt
 public_html/local/cs_scripts/server_log.txt
 
 ----

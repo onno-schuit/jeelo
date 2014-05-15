@@ -5,6 +5,7 @@ class client_upgrade {
     static $info; // csv info from server
     
     function run($info) {
+        self::update_server_status($csv_line->id, 'being_upgraded');
         self::$info = $info;
         self::backup_database();
         self::backup_codebase();

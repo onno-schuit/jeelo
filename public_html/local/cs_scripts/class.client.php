@@ -14,10 +14,15 @@ class client extends base {
     static $host = 'localhost';
 
     //static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
+    /*
+     * local TEST settings:
     static $server_url = 'http://jeelo/local/cs_scripts/server.php';
     static $target_folder =  '/home/jeelos';
     static $log_file =  '/var/log/jeelo/client.txt';
+     */
 
+    static $target_folder =  '/home/jeelos26';
+    static $log_file =  '/var/log/jeelo26/client.txt';
 
     public static function parent_test() {
         echo "Okay from client::parent_test";        
