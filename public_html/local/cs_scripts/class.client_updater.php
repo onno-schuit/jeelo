@@ -39,6 +39,7 @@ class client_updater extends client {
     public static $parent_archive_name = 'Archief'; // All 'old' categories are archived to this category
     protected static $_client_id;
     protected static $_admin_email;
+    protected static $_domain;
 
 
     public static function get_admin_user() {
@@ -570,7 +571,10 @@ class client_updater extends client {
         //self::log(sprintf("Checking update status for current installation (%s)", $shortname));
         
         $response = self::get_server_response( $request = array('request' => 'get_status', 'shortname' => $shortname) );
-        if (!$response) die(); // empty response.. weird..
+        if (!$response) {
+            self::log("client_updater#run: call to self::get_server_response returns no response!");
+            die(); // empty response.. weird..
+        }
         
         list($client_id, $status, $email, $archive, $domain) = explode(';', $response);
         self::$_client_id = (int)$client_id;
@@ -582,17 +586,20 @@ class client_updater extends client {
             die();
         }
         
-        self::update_server_status(self::$_client_id, 'being_updated', $_domain);
+        self::update_server_status(self::$_client_id, 'being_updated', self::$_domain);
         switch($status) {
             case 'first_install':
+                self::log("client_updater#run: case first_install");
                 self::run_first_install();                
                 self::run_update($archive);
+                self::_make_and_mail_admin_password();
                 break;
             case 'needs_update':
+                self::log("client_updater#run: case needs_update");
                 self::run_update($archive);
                 break;
         }
-        self::update_server_status(self::$_client_id, 'processed', $_domain, $end_of_process = 1);
+        self::update_server_status(self::$_client_id, 'processed', self::$_domain, $end_of_process = 1);
     } // function run
 
 
@@ -752,7 +759,7 @@ class client_updater extends client {
         return $result;
     }
 
-    static protected function _make_admin_password() {
+    static protected function _make_and_mail_admin_password() {
         global $DB, $CFG;
         require_once($CFG->dirroot . '/user/lib.php');
         $admin_user = $DB->get_record_select('user', 'id=2');
@@ -772,7 +779,6 @@ EOF;
 
         mail(self::$_admin_email, "Nieuw wachtwoord voor Jeelo installatie", $message);
         self::log("Mailed new password for admin to $cs_admin_email");
-        
     }
     
 
@@ -791,10 +797,7 @@ EOF;
 
     static public function run_first_install() {
         self::log("Updating installation after first install");
-        
-        self::_make_admin_password();
         self::_remove_all_courses();
-        
     }
 
 
