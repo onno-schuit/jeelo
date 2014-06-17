@@ -26,7 +26,7 @@ class client extends base {
     static public function run() {
         require_once("class.csv.php");
         
-        self::log("Checking for available clients.");
+        //self::log("Checking for available clients.");
         
         $response = self::get_server_response( $request = array('request' => 'get_available_clients') );
         if ($response) {
@@ -38,7 +38,7 @@ class client extends base {
             }
         }
         
-        self::log("Checking for upgrade.");
+        //self::log("Checking for upgrade.");
         $response = self::get_server_response( $request = array('request' => 'get_next_upgrade') );
         if (!$response) die(); // no clients available for processing.. do nothing
         self::process_upgrade($response);
@@ -462,6 +462,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
             'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
+        // TODO: see if we can make this more transparant, more human readable.
         self::log("Updated status for record $record_id to $status: $response");
     } // function update_server_status
 
