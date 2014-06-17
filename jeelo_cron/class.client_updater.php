@@ -1,1 +1,0 @@
-../public_html/local/cs_scripts/class.client_updater.php

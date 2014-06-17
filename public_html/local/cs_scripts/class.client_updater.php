@@ -3,7 +3,7 @@ if (! defined('CLI_SCRIPT') ) define('CLI_SCRIPT', true);
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once(dirname(__FILE__) . '/../replicator/class.replicator.php');
-require_once(dirname(__FILE__) . '/class.client.php');
+require_once('class.client.php');
 
 /**
  * This class runs on local Moodle clients. It should be invoked as a cron job.
