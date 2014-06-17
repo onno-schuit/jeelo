@@ -459,7 +459,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         $query_string .= "&hash=$hash";
         
         $request_url = $cs_server_url . '?' . $query_string;
-        self::log($request_url);
+        //self::log($request_url);
         
         return $request_url; 
     } // function get_request_url

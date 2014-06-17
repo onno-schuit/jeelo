@@ -567,7 +567,7 @@ class client_updater extends client {
         
         $shortname = $CFG->dbname;
         
-        self::log(sprintf("Checking update status for current installation (%s)", $shortname));
+        //self::log(sprintf("Checking update status for current installation (%s)", $shortname));
         
         $response = self::get_server_response( $request = array('request' => 'get_status', 'shortname' => $shortname) );
         if (!$response) die(); // empty response.. weird..
@@ -807,41 +807,6 @@ EOF;
     } // function clear_server_for
 
     
-    public static function get_server_response($request, $debug = false) {
-		$request_url = self::get_request_url($request);
-        
-        //print_object($request_url);
-        if ($debug) echo die(var_dump($request_url));
-        $response = file_get_contents($request_url);
-        
-        return $response;
-    } // function get_server_response
-
-
-    public static function get_request_url($request) {
-        global $cs_server_url;
-        if (!is_array($request)) {
-            throw new Exception("Parameter should be an associative array");
-        }
-        $request['for'] = self::$client_name;
- 
-        $pairs = array();
-        foreach ($request as $varname=>$value) {
-            $pairs[] = "$varname=$value";
-        }
-        $query_string = join('&', $pairs);
- 
-        // add hash to the $query_string
-        $hash = self::create_hash_from_query_string($query_string);
-        $query_string .= "&hash=$hash";
-        
-        $request_url = $cs_server_url . '?' . $query_string;
-        self::log($request_url);
-        
-        return $request_url; 
-    } // function get_request_url
-    
-
     static public function create_category($name, $parent_id = false) {
         global $DB;
         $newcategory = new stdClass();
