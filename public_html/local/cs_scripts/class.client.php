@@ -1,5 +1,5 @@
 <?php
-require_once("class.base.php");
+require_once(dirname(__FILE__) . "/../public_html/local/cs_scripts/class.base.php");
 require_once(dirname(__FILE__) . "/config.php");
 // For debugging:
 error_reporting(E_ALL);
