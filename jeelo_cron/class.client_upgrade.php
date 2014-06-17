@@ -5,7 +5,7 @@ class client_upgrade {
     static $info; // csv info from server
     
     function run($info) {
-        self::update_server_status($csv_line->id, 'being_upgraded');
+        self::update_server_status($csv_line->id, 'being_upgraded', $info->domain);
         self::$info = $info;
         self::backup_database();
         self::backup_codebase();
@@ -17,7 +17,7 @@ class client_upgrade {
     
     
     static function abort_upgrade() {
-        client::update_server_status(self::$info->id, 'upgraded', $end_of_process = 1);
+        client::update_server_status(self::$info->id, 'upgraded', self::$info->domain, $end_of_process = 1);
         client::log("Upgrade aborted");
         die("Upgrade aborted");
     }

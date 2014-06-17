@@ -13,16 +13,11 @@ class client extends base {
 
     static $host = 'localhost';
 
-    //static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
-    /*
-     * local TEST settings:
-    static $server_url = 'http://jeelo/local/cs_scripts/server.php';
-    static $target_folder =  '/home/jeelos';
-    static $log_file =  '/var/log/jeelo/client.txt';
-     */
-
+    static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
     static $target_folder =  '/home/jeelos26';
     static $log_file =  '/var/log/jeelo26/client.txt';
+
+
 
     public static function parent_test() {
         echo "Okay from client::parent_test";        
@@ -32,7 +27,7 @@ class client extends base {
     static public function run() {
         require_once("class.csv.php");
         
-        self::log("Checking for available clients.");
+        //self::log("Checking for available clients.");
         
         $response = self::get_server_response( $request = array('request' => 'get_available_clients') );
         if ($response) {
@@ -44,7 +39,7 @@ class client extends base {
             }
         }
         
-        self::log("Checking for upgrade.");
+        //self::log("Checking for upgrade.");
         $response = self::get_server_response( $request = array('request' => 'get_next_upgrade') );
         if (!$response) die(); // no clients available for processing.. do nothing
         self::process_upgrade($response);
@@ -60,8 +55,62 @@ class client extends base {
                 self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
                 self::process_new_client($csv_line);
                 break;
+            case 'to_be_deleted':
+                self::update_server_status($csv_line->id, 'being_deleted', $csv_line->domain);
+                static::delete_client($csv_line);
+                break;
         }
     } // function process_client_from_csv
+
+
+    public static function delete_client($csv_line) {
+        static::remove_all_client_folders($csv_line);
+        static::remove_from_apache($csv_line->domain);
+        static::remove_from_buffer($csv_line->id);
+        static::remove_database($database_name = $csv_line->shortcode);
+        static::remove_database_account($username = $csv_line->shortcode);
+    } // function delete_client
+
+
+    // Removes client_moodle entries from buffer_db on central server
+    public static function remove_from_buffer($client_moodle_id) {
+        $request = array(
+            'request'	=> 'remove_from_buffer',
+            'client_moodle_id'		=> $client_moodle_id
+        );
+        self::get_server_response($request);
+    } // function remove_from_buffer
+
+
+    public static function remove_database($database_name) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "DROP DATABASE `$database_name`;";
+        self::log($sql);
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
+    } // function remove_database
+
+
+    public static function remove_database_account($username) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "DROP USER '$username'@'localhost';";
+        self::log($sql);
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
+        $sql = "FLUSH PRIVILEGES;";
+        shell_exec("mysql -u{$cs_dbuser} -p{$cs_dbpass} -e '$sql'");
+        //self::$db->query($sql);
+    } // function remove_database_account
+
+
+    public static function remove_all_client_folders($csv_line) {
+        foreach($csv_line as $column) {
+            if (strpos($column, 'filename') === false) continue;
+            shell_exec("rm -Rf $column");
+        }
+        $homefolder = static::get_or_create_home_folder($csv_line->domain);
+        shell_exec("rm -Rf $homefolder");    
+    } // function remove_all_client_folders
 
 
     public static function process_upgrade($line) {
@@ -105,8 +154,16 @@ class client extends base {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->sql_filename);
         self::get_database_from_server($csv_line->id, $target_path);
         self::install_database($csv_line->shortcode, $target_path);
+        self::truncate_logs($csv_line->shortcode);
         return self::create_database_account($csv_line->shortcode);
     } // function create_database 
+
+
+    public static function truncate_logs($database_name) {
+        global $cs_dbuser, $cs_dbpass;
+        $sql = "TRUNCATE TABLE `" . self::$prefix . "log`;";
+        shell_exec(sprintf("mysql -u%s -p%s -e '$sql' {$database_name}", $cs_dbuser, $cs_dbpass));
+    } // function truncate_logs
 
 
     public static function get_database_from_server($client_moodle_id, $target) {
@@ -115,7 +172,9 @@ class client extends base {
             'request' => 'get_database',
             'id' => $client_moodle_id
         );
-        shell_exec( sprintf("wget -O $target '%s'", self::get_request_url($request)) );               
+        $command =  sprintf("wget -O $target '%s'", self::get_request_url($request));
+        print "\nclient::get_database_from_server shell_exec: $command\n";
+        shell_exec($command);               
     } // function get_database_from_server
 
 
@@ -127,23 +186,38 @@ class client extends base {
      * @return void
      */
     public static function add_to_apache($csv_line) {
-        global $cs_apache_conf_dir;
-        $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $csv_line->domain);
-        $filename = str_replace('.', '_', $filename);
-        $destination = $cs_apache_conf_dir  . '/' . $filename;
+        $destination = static::get_apache_conf_filename($csv_line->domain);
         self::log("Creating apache config file $destination");
-
         $contents = file_get_contents(dirname(__FILE__) . '/apache_vhost_file.txt');
         $contents = str_replace('{domain}', $csv_line->domain, $contents);
         $contents = str_replace('{shortcode}', $csv_line->shortcode, $contents);
 
         file_put_contents($destination, $contents);  
         self::log("File $destination created");
-        
-        self::log("Restarting apache for {$csv_line->domain}");
+        static::restart_apache($csv_line->domain);
+    } // function add_to_apache
+
+
+    public static function remove_from_apache($domain) {
+        $destination = static::get_apache_conf_filename($domain);
+        shell_exec("rm -Rf $destination");
+        static::restart_apache($domain);
+    } // function remove_from_apache
+
+
+    public static function restart_apache($domain) {
+        self::log("Restarting apache for {$domain}");
         shell_exec('apachectl graceful');
         self::log("Apache restarted");
-    } // function add_to_apache
+    } // function restart_apache
+
+
+    public static function get_apache_conf_filename($domain) {
+        global $cs_apache_conf_dir;
+        $filename = preg_replace('/[^A-Za-z0-9_\.+]/', '', $domain);
+        $filename = str_replace('.', '_', $filename);
+        return $cs_apache_conf_dir  . '/' . $filename;
+    } // function get_apache_conf_filename
 
 
     /* @param   string     $zip        Filename and path of the zip containing the database dump
@@ -153,6 +227,8 @@ class client extends base {
         $sql = "CREATE DATABASE `$database_name` CHARACTER SET utf8 COLLATE utf8_general_ci;";
         self::log($sql);
         self::$db->query($sql);
+        $command = sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", $cs_dbuser, $cs_dbpass);
+        print "\nclient::install_database_from_server shell_exec: $command\n";
         shell_exec(sprintf("gunzip -c {$zip} | mysql -u%s -p%s {$database_name}", $cs_dbuser, $cs_dbpass));
     } // function install_database
     
@@ -175,6 +251,7 @@ class client extends base {
 
     public static function create_codebase($csv_line) {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
+        echo "\nclient::create_codebase - target path for codebase: $target_path\n";
 		self::get_codebase_from_server($csv_line->id, $target_path);
         self::extract_codebase_contents($target_path);
         self::remove_codebase_from_server($csv_line->id);
@@ -195,6 +272,10 @@ class client extends base {
         $cmd = sprintf("tar -xz -C %s -f %s", dirname($zip_path), $zip_path);
         self::log($cmd);
         shell_exec($cmd);
+        $master26 = dirname($zip_path) . '/master26';
+        if (file_exists($master26)) {
+            shell_exec(sprintf("mv $master26 %s", dirname($zip_path) . '/public_html'));
+        }
         unlink($zip_path);
     } // function extract_codebase_contents
 
@@ -231,12 +312,12 @@ global \$CFG;
 \$CFG->dbname    = '$database_name';    
 \$CFG->dbuser    = '$database_user';
 \$CFG->dbpass    = '$database_pass';   
-\$CFG->prefix    = 'mdl_';     
+\$CFG->prefix    = '" . self::$prefix . "';
 \$CFG->dboptions = array( 'dbpersist' => false, 'dbsocket'  => false, 'dbport'    => '',   );
 \$CFG->dataroot  = '$home_directory/moodledata';
 \$CFG->dirroot  = '$home_directory/public_html';
 \$CFG->wwwroot  = 'http://$domain';
-\$CFG->directorypermissions = 02777;
+\$CFG->directorypermissions = 0777;
 \$CFG->admin = 'admin';
 require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function get_config_content
@@ -253,10 +334,35 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function create_moodle_config
 
 
-    public static function create_moodle_datadir($home_directory) {
+    public static function create_moodle_datadir($client_moodle_id, $home_directory) {
         $dirname = $home_directory . '/moodledata';
         mkdir($dirname, 0777);
+        chmod($dirname, 0777);
+        $dirname = $home_directory . '/moodledata/temp/backup';
+        mkdir($dirname, 0777, true); // recursive;
+
+        $dirname = $home_directory . '/moodledata/lang';
+        mkdir($dirname, 0777, true); // recursive;
+        static::install_language_files($client_moodle_id, $home_directory);
+        shell_exec("chmod -R 777 $home_directory/moodledata");
     }
+
+
+    public static function install_language_files($client_moodle_id, $home_directory) {
+        self::log("Installing language files into $home_directory/moodledata/lang");               
+        $request = array(
+            'client_moodle_id' => $client_moodle_id,
+            'request' => 'get_language_zip'
+        );
+        $target_directory = $home_directory . '/moodledata/lang';
+        if (!file_exists($target_directory)) {
+            mkdir($target_directory , 0777, true); // recursive;
+        }
+        shell_exec( sprintf("wget -O {$target_directory}/lang.tgz '%s'", self::get_request_url($request)) );
+        shell_exec( "cd $target_directory; tar -xzf lang.tgz; rm lang.tgz; chmod -R 777 *");
+        shell_exec( "cd $home_directory; rm lang.tgz");
+    } // function install_language_files
+
 
     static public function email_school_created($csv_line, $user_and_pass) {
         $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
@@ -311,44 +417,8 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         mail($email_to, $subject, $body, $headers);
     } // function mail_with_headers
 
-
-	/*
-	static public function update_moodle_config($csv_line, $user_and_pass) {
-        $folder = self::$target_folder . $csv_line->domain;
-
-        $config_contents = file_get_contents($folder . '/public_html/config.php');
-        $fields_to_change = array(
-            '$CFG->dirroot'=>self::$target_folder.$csv_line->domain.'/public_html',
-            '$CFG->wwwroot'=>'http://'.$csv_line->domain,
-            '$CFG->dataroot'=>self::$target_folder.$csv_line->domain.'/moodle_data'
-        );
-        foreach($fields_to_change as $field=>$value) {
-            $config_contents = self::set_config_contents($config_contents, $field, $value);
-        }
-        file_put_contents($folder .'/public_html/config.php', $config_contents);
-        //shell_exec("chmod 777 $folder/public_html/config.php");
-
-        // Handle config clean contents now
-        $config_clean_contents = file_get_contents($folder . '/public_html/config_clean.php');
-        $config_clean_contents = self::set_config_contents($config_clean_contents, '$CFG->dbpass', $user_and_pass['password']);
-        file_put_contents($folder .'/public_html/config_clean.php', $config_clean_contents);
-    }
-
-
-    function set_config_contents($config_contents, $field, $value) {
-
-        $offset = strpos($config_contents, $field); // find the line with CFG->dbpass
-
-        $start = strpos($config_contents, '"', $offset); // find first double quote from there
-        $end = strpos($config_contents, '"', $start+1); // find next double quote
-
-        $config_contents = substr($config_contents, 0, $start+1) . $value . substr($config_contents, $end);
-        
-        return $config_contents;
-    }
-    */
     
-    static public function update_server_status($record_id, $status, $end_of_process = 0) {
+    static public function update_server_status($record_id, $status, $domain, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
             'id' => $record_id,
@@ -356,7 +426,8 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
             'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
-        self::log("Updated status for record $record_id to $status: $response");
+        // TODO: see if we can make this more transparant, human readable. E.g.: include school name.
+        self::log("Updated status for $domain with id $record_id to $status: $response");
     } // function update_server_status
 
     

@@ -27,7 +27,7 @@ class client extends base {
     static public function run() {
         require_once("class.csv.php");
         
-        self::log("Checking for available clients.");
+        //self::log("Checking for available clients.");
         
         $response = self::get_server_response( $request = array('request' => 'get_available_clients') );
         if ($response) {
@@ -39,7 +39,7 @@ class client extends base {
             }
         }
         
-        self::log("Checking for upgrade.");
+        //self::log("Checking for upgrade.");
         $response = self::get_server_response( $request = array('request' => 'get_next_upgrade') );
         if (!$response) die(); // no clients available for processing.. do nothing
         self::process_upgrade($response);
@@ -52,11 +52,11 @@ class client extends base {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
         switch($csv_line->status) {
             case 'prepaired_school':
-                self::update_server_status($csv_line->id, 'being_processed');
+                self::update_server_status($csv_line->id, 'being_processed', $csv_line->domain);
                 self::process_new_client($csv_line);
                 break;
             case 'to_be_deleted':
-                self::update_server_status($csv_line->id, 'being_deleted');
+                self::update_server_status($csv_line->id, 'being_deleted', $csv_line->domain);
                 static::delete_client($csv_line);
                 break;
         }
@@ -103,9 +103,6 @@ class client extends base {
     } // function remove_database_account
 
 
-
-
-
     public static function remove_all_client_folders($csv_line) {
         foreach($csv_line as $column) {
             if (strpos($column, 'filename') === false) continue;
@@ -134,7 +131,7 @@ class client extends base {
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
         client_upgrade::run($info);
         
-        self::update_server_status($info->id, 'upgraded', $end_of_process = 1); // all done!               
+        self::update_server_status($info->id, 'upgraded', $info->domain, $end_of_process = 1); // all done!               
     }
 
 
@@ -149,13 +146,7 @@ class client extends base {
         );
         self::create_moodle_datadir($csv_line->id, $home_directory);
         self::add_to_apache($csv_line);
-        self::update_server_status($csv_line->id, 'first_install');
-
-        // Now the site is build and has a solid database. From this point we shall rebuild the courses, users and other content
-        /*
-        self::process_update_client($csv_line);
-        self::email_school_created($csv_line, $user_and_pass);
-        */
+        self::update_server_status($csv_line->id, 'first_install', $csv_line->domain);
     } // function process_new_client
 
     
@@ -373,7 +364,6 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function install_language_files
 
 
-
     static public function email_school_created($csv_line, $user_and_pass) {
         $query = "SELECT * FROM ".self::$prefix."user WHERE username = 'admin'";
         $result = self::remote_execute($csv_line, $query);
@@ -428,43 +418,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function mail_with_headers
 
 
-	/*
-	static public function update_moodle_config($csv_line, $user_and_pass) {
-        $folder = self::$target_folder . $csv_line->domain;
-
-        $config_contents = file_get_contents($folder . '/public_html/config.php');
-        $fields_to_change = array(
-            '$CFG->dirroot'=>self::$target_folder.$csv_line->domain.'/public_html',
-            '$CFG->wwwroot'=>'http://'.$csv_line->domain,
-            '$CFG->dataroot'=>self::$target_folder.$csv_line->domain.'/moodle_data'
-        );
-        foreach($fields_to_change as $field=>$value) {
-            $config_contents = self::set_config_contents($config_contents, $field, $value);
-        }
-        file_put_contents($folder .'/public_html/config.php', $config_contents);
-        //shell_exec("chmod 777 $folder/public_html/config.php");
-
-        // Handle config clean contents now
-        $config_clean_contents = file_get_contents($folder . '/public_html/config_clean.php');
-        $config_clean_contents = self::set_config_contents($config_clean_contents, '$CFG->dbpass', $user_and_pass['password']);
-        file_put_contents($folder .'/public_html/config_clean.php', $config_clean_contents);
-    }
-
-
-    function set_config_contents($config_contents, $field, $value) {
-
-        $offset = strpos($config_contents, $field); // find the line with CFG->dbpass
-
-        $start = strpos($config_contents, '"', $offset); // find first double quote from there
-        $end = strpos($config_contents, '"', $start+1); // find next double quote
-
-        $config_contents = substr($config_contents, 0, $start+1) . $value . substr($config_contents, $end);
-        
-        return $config_contents;
-    }
-    */
-    
-    static public function update_server_status($record_id, $status, $end_of_process = 0) {
+    static public function update_server_status($record_id, $status, $domain, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
             'id' => $record_id,
@@ -472,7 +426,8 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
             'end_of_process' => $end_of_process,
         );
         $response = self::get_server_response($request);
-        self::log("Updated status for record $record_id to $status: $response");
+        // TODO: see if we can make this more transparant, human readable. E.g.: include school name.
+        self::log("Updated status for $domain with id $record_id to $status: $response");
     } // function update_server_status
 
     
