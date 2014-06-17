@@ -572,16 +572,17 @@ class client_updater extends client {
         $response = self::get_server_response( $request = array('request' => 'get_status', 'shortname' => $shortname) );
         if (!$response) die(); // empty response.. weird..
         
-        list($client_id, $status, $email, $archive) = explode(';', $response);
+        list($client_id, $status, $email, $archive, $domain) = explode(';', $response);
         self::$_client_id = (int)$client_id;
         self::$_admin_email = $email;
+        self::$_domain = $domain;
         
         if (!in_array($status, array('first_install', 'needs_update'))) {
             // we could log 'nothing to do', but if cron runs every minute, the log file will be huge..
             die();
         }
         
-        self::update_server_status(self::$_client_id, 'being_updated');
+        self::update_server_status(self::$_client_id, 'being_updated', $_domain);
         switch($status) {
             case 'first_install':
                 self::run_first_install();                
@@ -591,7 +592,7 @@ class client_updater extends client {
                 self::run_update($archive);
                 break;
         }
-        self::update_server_status(self::$_client_id, 'processed', $end_of_process = 1);
+        self::update_server_status(self::$_client_id, 'processed', $_domain, $end_of_process = 1);
     } // function run
 
 
@@ -795,18 +796,6 @@ EOF;
         self::_remove_all_courses();
         
     }
-
-
-    static public function update_server_status($record_id, $status, $end_of_process = 0) {
-        $request = array(
-            'request' => 'set_status',
-            'id' => $record_id,
-            'status' => $status,
-            'end_of_process' => $end_of_process,
-        );
-        $response = self::get_server_response($request);
-        self::log("Updated status for record $record_id to $status: $response");
-    } // function update_server_status
 
 
     static public function clear_server_for($client_moodle_id) {

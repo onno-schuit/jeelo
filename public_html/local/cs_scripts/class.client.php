@@ -52,7 +52,7 @@ class client extends base {
         self::log("Processing id {$csv_line->id}, status {$csv_line->status}");
         switch($csv_line->status) {
             case 'prepaired_school':
-                self::update_server_status($csv_line->id, 'being_processed'); // not for testing purposes
+                self::update_server_status($csv_line->id, 'being_processed', $csv_line->domain);
                 self::process_new_client($csv_line);
                 break;
             case 'to_be_deleted':
@@ -131,7 +131,7 @@ class client extends base {
         require_once(dirname(__FILE__) . "/class.client_upgrade.php");
         client_upgrade::run($info);
         
-        self::update_server_status($info->id, 'upgraded', $end_of_process = 1); // all done!               
+        self::update_server_status($info->id, 'upgraded', $info->domain, $end_of_process = 1); // all done!               
     }
 
 
@@ -144,9 +144,9 @@ class client extends base {
             $database_pass = $database_account['password'],
             $home_directory = static::get_or_create_home_folder($csv_line->domain)
         );
-        self::create_moodle_datadir($home_directory);
+        self::create_moodle_datadir($csv_line->id, $home_directory);
         self::add_to_apache($csv_line);
-        self::update_server_status($csv_line->id, 'first_install');
+        self::update_server_status($csv_line->id, 'first_install', $csv_line->domain);
     } // function process_new_client
 
     
@@ -417,7 +417,7 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
         mail($email_to, $subject, $body, $headers);
     } // function mail_with_headers
 
-    
+
     static public function update_server_status($record_id, $status, $domain, $end_of_process = 0) {
         $request = array(
             'request' => 'set_status',
