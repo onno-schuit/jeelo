@@ -5,7 +5,10 @@ require_once($CFG->dirroot . '/lib/adminlib.php');
 require_once($CFG->dirroot . '/backup/util/includes/backup_includes.php');
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
 require_once($CFG->dirroot . '/backup/moodle2/backup_plan_builder.class.php');
-require_once($CFG->dirroot.'/local/soda/class.user.php');
+require_once($CFG->dirroot . '/local/soda/class.user.php');
+require_once($CFG->dirroot . '/local/cs_scripts/class.db.php');
+require_once($CFG->dirroot . '/local/cs_scripts/class.base.php');
+
 
 class school extends user {
 
@@ -87,6 +90,7 @@ class school extends user {
         $buffer->status = $status;
         $buffer->archive        = $this->get_archive();
 
+        self::log("school#update_buffer_status - user_id: $user_id; course_id: $course_id ");
         $BUFFER_DB->update_record('client_moodles', $buffer);
     } // function update_buffer_status
 
@@ -256,6 +260,7 @@ class school extends user {
      */
     function backup_course($user_id, $course_id) {
         // MODE_HUB backups by definition never have user info
+        self::log("school#backup_course - user_id: $user_id; course_id: $course_id ");
         $bc = new backup_controller($type = backup::TYPE_1COURSE,
                                     $id = $course_id, 
                                     $format = backup::FORMAT_MOODLE,
@@ -275,7 +280,10 @@ class school extends user {
 
     function compress_courses() {
         $target = $this->get_dump_file('courses');
-        $output = shell_exec("cd {$this->dumps_location}/courses; tar -cz -f $target *.zip");
+        $cmd = "cd {$this->dumps_location}/courses; tar -cz -f $target *.zip";
+
+        self::log("school#compress_courses: $cmd");
+        $output = shell_exec($cmd);
         $output = shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
     } // function compress_courses
 
@@ -322,7 +330,9 @@ class school extends user {
 
         // Compress them into 1 file
         $target = $this->get_dump_file('csv');
-        shell_exec("cd {$this->dumps_location}/csv ; tar -cz -f {$target} users.csv groups.csv");
+        $cmd = "cd {$this->dumps_location}/csv ; tar -cz -f {$target} users.csv groups.csv";
+        self::log("school#dump_csv_files: $cmd");
+        shell_exec($cmd);
         
         // Finally delete the created csv files, we now got them compressed anyway
         unlink("{$this->dumps_location}/csv/users.csv");
@@ -337,16 +347,17 @@ class school extends user {
         $target = $this->get_dump_file('code');
         $parts = explode('/', $CFG->dirroot);
         $public_html = end($parts);
-        return shell_exec("cd {$this->global_root} ; tar -czp --exclude='{$public_html}/config.php' -f {$target} {$public_html}/*");
+        $cmd = "cd {$this->global_root} ; tar -czp --exclude='{$public_html}/config.php' -f {$target} {$public_html}/*";
+        return shell_exec($cmd);
+        self::log("school#dump_codebase: $cmd");
     } // function dump_codebase
 
 
     function dump_database() {
         global $CFG;
-
         $target = $this->get_dump_file('db');
-
         $cmd = "mysqldump -u{$CFG->dbuser} -p{$CFG->dbpass} {$CFG->dbname} | gzip > {$target}";
+        self::log("school#dump_database: $cmd");
         return shell_exec("mysqldump -u{$CFG->dbuser} -p{$CFG->dbpass} {$CFG->dbname} | gzip > {$target}");
     } // function dump_database
 

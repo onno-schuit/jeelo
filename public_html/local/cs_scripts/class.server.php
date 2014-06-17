@@ -81,7 +81,7 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
 
         $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' AND status IN ('" . join(static::$prepaired_status_array, "', '") . "')";
-        self::log($query);
+        //self::log($query);
 
         $rows = $db->fetch_rows($query);
 
@@ -113,7 +113,7 @@ class server extends base {
         $for = str_replace("'", '', $for); // sanitize user input
         if ($db->fetch_field("SELECT COUNT(id) FROM client_moodles WHERE is_for_client='$for'
             AND status='being_upgraded'")) {
-                self::log("Checking upgrade records: upgrade already in progress");
+                //self::log("Checking upgrade records: upgrade already in progress");
                 die(); // upgrade already in progress.. wait for it to end..
                 
         }
@@ -121,7 +121,7 @@ class server extends base {
         $query = "SELECT * FROM client_moodles WHERE is_for_client='$for' 
             AND status IN ('processed')
             AND to_be_upgraded=1 LIMIT 1";
-        self::log($query);
+        //self::log($query);
 
         $row = $db->fetch_row($query);
         $row['customcss'] = '';
@@ -298,7 +298,7 @@ class server extends base {
 
         $query = sprintf("SELECT * FROM client_courses WHERE client_moodle_id = %d;", $client_moodle_id);
         
-        self::log($query);
+        //self::log($query);
         
         // run the query
         $rows = $db->fetch_rows($query);
@@ -321,7 +321,7 @@ class server extends base {
 
         // use sprintf to replace variables
         $query = sprintf("SELECT * FROM {client_categories} WHERE client_moodle_id = %d", $client_moodle_id);
-        self::log($query);
+        //self::log($query);
 
         // run the query
         $rows = $db->fetch_rows($query); 
@@ -442,7 +442,7 @@ class server extends base {
         // use sprintf to replace variables
         $query = sprintf("SELECT * FROM client_moodles WHERE id = %d;", $client_moodle_id);
         
-        self::log($query);
+        //self::log($query);
         
         // run the query
         $rows = $db->fetch_rows($query);

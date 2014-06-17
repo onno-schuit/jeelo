@@ -15,7 +15,7 @@ class client extends base {
 
     static $server_url = 'http://localhost/jeelo/local/cs_scripts/server.php';
     static $target_folder =  '/home/jeelos26';
-    static $log_file =  '/var/log/jeelo26/client.txt';
+    //static $log_file =  '/var/log/jeelo26/client.txt'; // Now set in base class
 
 
 
