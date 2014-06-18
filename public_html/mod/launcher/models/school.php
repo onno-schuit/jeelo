@@ -187,6 +187,9 @@ class school extends user {
 
         if (!$this->has_categories_selected()) return true;
         if (!$categories = $this->get_categories_selected()) return false;
+
+        // This is a dirty hack to solve an issue where many, many new topics (sections) are somehow being created automatically
+        $DB->execute(" DELETE FROM `mdl_course_sections` WHERE name IS NULL AND summary IS NULL AND (sequence IS NULL OR sequence LIKE '') AND section > 0 ");
         
         // Delete existing courses and categories from buffer DB, for this client
         $BUFFER_DB->delete_records_select('client_courses', " client_moodle_id = {$this->buffer_id} ");
