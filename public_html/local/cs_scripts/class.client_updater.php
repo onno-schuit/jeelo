@@ -305,7 +305,7 @@ class client_updater extends client {
         global $DB, $CFG;
 
         if (! property_exists($user, "current_user") ) {
-            echo "\nCould not find Moodle record for {$user->voornaam} {$user->achternaam} (assign_role)\n";
+            self::log("Could not find Moodle record for {$user->voornaam} {$user->achternaam} (assign_role)");
             return false;
         }
         $context = $DB->get_record('context', array('contextlevel' => $context_level, 'instanceid' => $instance_id));
@@ -431,7 +431,10 @@ class client_updater extends client {
     public static function create_site_wide_role($user) {
         global $DB, $CFG;
         if ( (! $user->schoolrol) || trim($user->schoolrol) == '') return;
-        if (!$role_shortname = static::map_role($user->schoolrol)) return false;
+        if (!$role_shortname = static::map_role($user->schoolrol)) {
+            self::log("WARNING: could not find a role shortname for schoolrole {$user->schoolrol} for user {$user->email}");
+            return false;
+        }
         static::assign_role($user, $role_shortname, $context_level = 10, $instance_id = 0);
     } // function create_site_wide_role
 
@@ -526,6 +529,7 @@ class client_updater extends client {
         static::$db->query($sql);
         // utf8_encode is necessary because DB contains utf8, but $user contains data derived from latin1 csv
         if (! $record = $DB->get_record('user', array('username' => utf8_encode($new_user->username), 'mnethostid' => $new_user->mnethostid)) ) {
+            self::log("Could not find record for {$new_user->username} in create_user. Exiting now.");
             exit("Could not find record for {$new_user->username} in create_user");
         }
         $user->current_user = $record;

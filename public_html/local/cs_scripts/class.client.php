@@ -251,7 +251,7 @@ class client extends base {
 
     public static function create_codebase($csv_line) {
         $target_path = self::get_or_create_home_folder($csv_line->domain) . '/' . basename($csv_line->codebase_filename);
-        echo "\nclient::create_codebase - target path for codebase: $target_path\n";
+        //echo "\nclient::create_codebase - target path for codebase: $target_path\n";
 		self::get_codebase_from_server($csv_line->id, $target_path);
         self::extract_codebase_contents($target_path);
         self::remove_codebase_from_server($csv_line->id);
