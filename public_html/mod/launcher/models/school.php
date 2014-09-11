@@ -195,7 +195,8 @@ class school extends user {
         $BUFFER_DB->delete_records_select('client_courses', " client_moodle_id = {$this->buffer_id} ");
         $BUFFER_DB->delete_records_select('client_categories', " client_moodle_id = {$this->buffer_id} ");
 
-        shell_exec("cd {$this->dumps_location}/courses ; rm -Rf *");
+        //shell_exec("cd {$this->dumps_location}/courses ; rm -Rf *"); // if cd command fails, content of current dir is deleted...
+        shell_exec("rm -Rf {$this->dumps_location}/courses/*");
 
         // Dump category
         foreach($categories as $category) {
@@ -287,7 +288,8 @@ class school extends user {
 
         base::log("school#compress_courses: $cmd");
         $output = shell_exec($cmd);
-        $output = shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
+        //$output = shell_exec("cd {$this->dumps_location}/courses; rm *.zip");
+        $output = shell_exec("rm {$this->dumps_location}/courses/*.zip");
     } // function compress_courses
 
 
@@ -325,7 +327,8 @@ class school extends user {
 
         if (!$this->has_csv_files_received()) return true;
 
-        shell_exec("cd {$this->dumps_location}/csv ; rm -Rf *");
+        //shell_exec("cd {$this->dumps_location}/csv ; rm -Rf *");
+        shell_exec("rm -Rf {$this->dumps_location}/csv/*");
 
         // Move uploaded csv files to /etc/moodle_clients
         move_uploaded_file($this->upload_users['tmp_name'], "{$this->dumps_location}/csv/users.csv");
