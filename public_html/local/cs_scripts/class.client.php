@@ -465,5 +465,17 @@ require_once(dirname(__FILE__) . '/lib/setup.php');";
     } // function get_request_url
 
 
+    function update_all_clients() {
+        // Get domain names from table jeelo_buffer26.client_moodles
+        // For each name, execute the script /home/jeelos26/[domain_name]/public_html/local/cs_scripts/client_updater.php 
+
+		$rows = self::$db->fetch_rows(" SELECT id, domain FROM client_moodles ");
+        foreach($rows as $row) {
+            $domain = $row['domain'];
+            shell_exec("php -f /home/jeelos26/$domain/public_html/local/cs_scripts/client_updater.php");
+        }
+    } // function update_all_clients
+
+
 } // class client 
 
